@@ -2,7 +2,7 @@ NAME = webserver
 
 SRC_DIR = src/
 
-FILES = webserver.cpp
+FILES = webserver.cpp init/init.cpp utils/errorMsg.cpp
 
 SRC = $(addprefix $(SRC_DIR), $(FILES))
 
@@ -21,11 +21,11 @@ $(NAME): $(SRC)
 	@echo "Compilation complete."
 
 clean:
-	rm -f $(NAME)
-	@clear
-	@echo "All cleaned!"
+	@echo "Nothing to clean"
+	@echo "Try 'make fclean' instead"
 
 fclean: clean
+	rm -f $(NAME)
 
 re: fclean all
 
