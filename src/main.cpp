@@ -8,10 +8,8 @@ int	main(int ac, char **av)
 		std::cerr << "Error: bad input\n";
 	}
 
-	Config	c;
-
 	try {
-		c.startParsingFile(av[1]);
+		AConfig	config(av[1]);
 	} catch (std::exception& e) {
 		std::cerr << e.what();
 	}

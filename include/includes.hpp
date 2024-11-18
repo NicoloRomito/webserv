@@ -10,6 +10,27 @@
 #include <vector> // IWYU pragma: keep
 #include <poll.h>
 
+// enum	ContextType {
+// 	SERVER,
+// 	LOCATION,
+// 	UNKNOWN
+// };
+
+enum	DirectiveType {
+	HTTP,
+	SERVER,
+	LISTEN,
+	SERVER_NAME,
+	ROOT,
+	INDEX,
+	ERROR_PAGE,
+	CLIENT_MAX_BODY_SIZE,
+	AUTOINDEX,
+	LOCATION,
+	CGI_PASS,
+	UNKNOWN
+};
+
 void error(std::string msg);
 
 //init socket
