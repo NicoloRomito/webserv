@@ -18,7 +18,7 @@ void clientHandler(int clientSocket, bool& shouldRemove) {
         }
         close(clientSocket); // Close the socket on error or disconnect
         shouldRemove = true; // Mark this client FD for removal
-        return;
+        return; 
     }
 
     // Print the received message
