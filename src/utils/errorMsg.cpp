@@ -5,6 +5,6 @@ void Errors::error(std::string msg) {
 	std::cerr << "[Webserver LINE: " << __LINE__ << "] -> Error: " << msg << '\n'; 
 }
 
-const char * Errors::UnknownDirectiveException::what() const throw(){
+const char * Errors::UnknownDirectiveException::what() const throw() {
 	return "Unknown directive\n";
 }

@@ -1,11 +1,15 @@
 #ifndef INCLUDES_HPP
 # define INCLUDES_HPP
 
+#include "Directives/config.hpp"
 #include <iostream> // IWYU pragma: keep 
 #include <cstring> // IWYU pragma: keep
 #include <netinet/in.h> // IWYU pragma: keep
 #include <sys/socket.h>
 #include <unistd.h>
+#include <sstream>
+#include <fstream>
+#include <string>
 #include <map> // IWYU pragma: keep
 #include <vector> // IWYU pragma: keep
 #include <poll.h>
@@ -31,7 +35,15 @@ enum	DirectiveType {
 	UNKNOWN
 };
 
-void error(std::string msg);
+// errors
+void 	error(std::string msg);
+
+// parsing
+void						startParsing(std::string file);
+AConfig*					createBlock(const std::string& directive, std::vector<std::string> args, std::stringstream& file);
+std::string					parseDirective(const std::string& directive);
+DirectiveType				getDirectiveType(const std::string& dir);
+std::vector<std::string>	returnLine(const std::string& line);
 
 //init socket
 int initSocket();

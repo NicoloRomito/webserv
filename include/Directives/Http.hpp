@@ -6,6 +6,8 @@ class	Http : public AConfig {
 	private:
 
 	public:
-		Http();
+		Http(std::stringstream file);
 		~Http();
+
+	
 };

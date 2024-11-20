@@ -1,5 +1,5 @@
 #include "../include/includes.hpp"
-#include "../include/config.hpp"
+#include "../include/Directives/config.hpp"
 #include <exception>
 
 int	main(int ac, char **av)
@@ -9,7 +9,7 @@ int	main(int ac, char **av)
 	}
 
 	try {
-		AConfig	config(av[1]);
+		startParsing(av[1]);
 	} catch (std::exception& e) {
 		std::cerr << e.what();
 	}

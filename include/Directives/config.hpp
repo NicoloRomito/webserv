@@ -12,13 +12,10 @@ class	AConfig
 		std::map<std::string, AConfig *>	_directives;
 
 	public:
-		AConfig(std::string file);
+		AConfig();
 		virtual ~AConfig();
 
 		virtual AConfig*	createDirective(const std::string& directive, std::vector<std::string> args);
 };
-
-	std::string		parseDirective(const std::string& directive);
-	DirectiveType	getDirectiveType(const std::string& dir);
 
 #endif
