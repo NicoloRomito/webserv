@@ -1,7 +1,6 @@
 #ifndef INCLUDES_HPP
 # define INCLUDES_HPP
 
-
 // #include "Directives/config.hpp"
 #include <iostream> // IWYU pragma: keep 
 #include <cstring> // IWYU pragma: keep
@@ -16,13 +15,6 @@
 #include <poll.h>
 
 class AConfig;
-
-
-// enum	ContextType {
-// 	SERVER,
-// 	LOCATION,
-// 	UNKNOWN
-// };
 
 enum	DirectiveType {
 	HTTP,

@@ -1,6 +1,7 @@
 #include "../../include/Directives/Server.hpp"
+#include "../../include/Directives/Location.hpp"
 
-Server::Server(std::stringstream& file) {
+Server::Server(std::stringstream& file) : AConfig() {
 	std::string	line;
 	std::string	directive;
 	std::vector<std::string>	args;
@@ -15,13 +16,23 @@ Server::Server(std::stringstream& file) {
 			if (directive.empty()) {
 				continue;
 			}
+            if (directive == "location") {
+				_directives[directive] = createBlock(directive, file);
+				continue;
+			}
 			_directives[directive] = createDirective(directive, args);
 		} else
 			break;
 	}
 }
 
-Server::~Server() {}
+Server::~Server() {
+	std::map<std::string, AConfig*>::iterator it = this->_directives.begin();
+	for (; it != this->_directives.end(); it++) {
+		delete it->second;
+	}
+	this->_directives.clear();
+}
 
 AConfig*	Server::createBlock(const std::string& directive, std::stringstream& file) {
 	DirectiveType	type = getDirectiveType(directive);

@@ -1,6 +1,6 @@
 #include "../../include/Directives/Location.hpp"
 
-Location::Location(std::stringstream& file) {
+Location::Location(std::stringstream& file) : AConfig() {
 	std::string	line;
 	std::string	directive;
 	std::vector<std::string>	args;
@@ -19,4 +19,12 @@ Location::Location(std::stringstream& file) {
 		} else
 			break;
 	}
+}
+
+Location::~Location() {
+	std::map<std::string, AConfig*>::iterator it = this->_directives.begin();
+	for (; it != this->_directives.end(); it++) {
+		delete it->second;
+	}
+	this->_directives.clear();
 }

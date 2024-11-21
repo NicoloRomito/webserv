@@ -1,5 +1,6 @@
 #include "../../include/Directives/Http.hpp"
 #include "../../include/Directives/Server.hpp"
+#include "../../include/Directives/Location.hpp"
 #include <sstream>
 
 Http::Http(std::stringstream& file) : AConfig() {
@@ -26,7 +27,13 @@ Http::Http(std::stringstream& file) : AConfig() {
 	}
 }
 
-Http::~Http() {}
+Http::~Http() {
+	std::map<std::string, AConfig*>::iterator it = this->_directives.begin();
+	for (; it != this->_directives.end(); it++) {
+		delete it->second;
+	}
+	this->_directives.clear();
+}
 
 AConfig*	Http::createBlock(const std::string& directive, std::stringstream& file) {
 	DirectiveType	type = getDirectiveType(directive);

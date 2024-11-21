@@ -4,8 +4,6 @@
 #include "../../../include/includes.hpp"
 #include <sstream>
 
-std::vector<std::string>	returnLine(const std::string& line);
-
 AConfig::AConfig() {}
 
 AConfig::~AConfig() {}
