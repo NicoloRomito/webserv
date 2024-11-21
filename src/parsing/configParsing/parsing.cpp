@@ -7,23 +7,6 @@
 #include <sstream>
 #include <string>
 
-std::map<std::string, AConfig*>	_directives;
-
-AConfig*	createBlock(const std::string& directive, std::stringstream file) {
-	DirectiveType	type = getDirectiveType(directive);
-
-	if (type == HTTP) {
-		return new Http(file);
-	} else if (type == SERVER) {
-		return new Server(file);
-	} else if (type == LOCATION) {
-		return new Location(file);
-	} else {
-		error("Unknown directive");
-		return NULL;
-	}
-}
-
 std::string	parseDirective(const std::string& directive)
 {
 	DirectiveType	type = getDirectiveType(directive);
@@ -84,31 +67,12 @@ void	startParsing(std::string file) {
 		error("File opening failed");
 	}
 
-	std::vector<std::string>	_tokens;
-
-	if (std::getline(configFile, token)) {
-		if (token != "http {") {
-			error("First directive must be http");
+	while (std::getline(configFile, token)) {
+		if (token.find("http") != std::string::npos) {
+			configStream << configFile.rdbuf();
+			Http*	http = new Http(configStream);
 			return;
 		}
 	}
-
-	while (std::getline(configFile, token)) {
-		_tokens = returnLine(token); // get the args divided in the line
-		directive = parseDirective(_tokens[0]); // get the name of the directive, if not returns UNKNOWN.
-		if (directive == "http" && std::find(_tokens.begin(), _tokens.end(), "{") != _tokens.end()) {
-			_tokens.erase(_tokens.begin());
-			_directives[directive] = createDirective(directive, _tokens, configStream); // create the new directive
-		}
-		else if (directive == "server" && std::find(_tokens.begin(), _tokens.end(), "{") != _tokens.end()) {
-			_tokens.erase(_tokens.begin());
-			_directives[directive] = createDirective(directive, _tokens); // create the new directive
-		}
-		else if (directive == "location" && std::find(_tokens.begin(), _tokens.end(), "{") != _tokens.end()) {
-			_tokens.erase(_tokens.begin());
-			_directives[directive] = createDirective(directive, _tokens); // create the new directive
-		}
-		_tokens.erase(_tokens.begin());
-		_directives[directive] = createDirective(directive, _tokens); // create the new directive
-	}
+	error("Configuration File must contain Http block");
 }

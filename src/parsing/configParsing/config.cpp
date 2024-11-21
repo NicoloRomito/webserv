@@ -15,8 +15,6 @@ AConfig*	AConfig::createDirective(const std::string& directive, std::vector<std:
 	DirectiveType	type = getDirectiveType(directive);
 
 	switch (type) {
-		case HTTP:
-			return new Http();
 		case LISTEN:
 			return new Listen(args);
 		case SERVER_NAME:
@@ -31,12 +29,8 @@ AConfig*	AConfig::createDirective(const std::string& directive, std::vector<std:
 			return new ClientMaxBodySize(args);
 		case AUTOINDEX:
 			return new Autoindex(args);
-		case LOCATION:
-			return new Location(args);
 		case CGI_PASS:
 			return new CgiPass(args);
-		case SERVER:
-			return new Server();
 		default:
 			error("Unknown directive");
 	}

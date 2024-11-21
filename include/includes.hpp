@@ -1,7 +1,8 @@
 #ifndef INCLUDES_HPP
 # define INCLUDES_HPP
 
-#include "Directives/config.hpp"
+
+// #include "Directives/config.hpp"
 #include <iostream> // IWYU pragma: keep 
 #include <cstring> // IWYU pragma: keep
 #include <netinet/in.h> // IWYU pragma: keep
@@ -13,6 +14,9 @@
 #include <map> // IWYU pragma: keep
 #include <vector> // IWYU pragma: keep
 #include <poll.h>
+
+class AConfig;
+
 
 // enum	ContextType {
 // 	SERVER,
@@ -40,7 +44,6 @@ void 	error(std::string msg);
 
 // parsing
 void						startParsing(std::string file);
-AConfig*					createBlock(const std::string& directive, std::vector<std::string> args, std::stringstream& file);
 std::string					parseDirective(const std::string& directive);
 DirectiveType				getDirectiveType(const std::string& dir);
 std::vector<std::string>	returnLine(const std::string& line);

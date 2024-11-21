@@ -16,6 +16,8 @@ class	AConfig
 		virtual ~AConfig();
 
 		virtual AConfig*	createDirective(const std::string& directive, std::vector<std::string> args);
+		virtual AConfig*	createBlock(const std::string& directive, std::stringstream& file) = 0;
+
 };
 
 #endif
