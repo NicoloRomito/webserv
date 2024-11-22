@@ -1,7 +1,14 @@
-#include "../../../include/Directives/Http.hpp"
 #include "../../../include/Errors.hpp"
 #include "../../../include/Directives/config.hpp"
 #include "../../../include/includes.hpp"
+#include "../../../include/Directives/Listen.hpp"
+#include "../../../include/Directives/ServerName.hpp"
+#include "../../../include/Directives/Root.hpp"
+#include "../../../include/Directives/Index.hpp"
+#include "../../../include/Directives/ErrorPage.hpp"
+#include "../../../include/Directives/ClientMaxBodySize.hpp"
+#include "../../../include/Directives/Autoindex.hpp"
+#include "../../../include/Directives/CgiPass.hpp"
 #include <sstream>
 
 AConfig::AConfig() {}

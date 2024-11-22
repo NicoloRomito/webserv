@@ -15,6 +15,7 @@ Location::Location(std::stringstream& file) : AConfig() {
 			if (directive.empty()) {
 				continue;
 			}
+			args.erase(args.begin());
 			_directives[directive] = createDirective(directive, args);
 		} else
 			break;

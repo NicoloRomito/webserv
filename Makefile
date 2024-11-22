@@ -1,8 +1,8 @@
 NAME = webserver
 
-SRC_DIR = src/
+SRC_DIR = src/parsing/configParsing/
 
-FILES = main.cpp init/init.cpp utils/errorMsg.cpp
+FILES = main.cpp 
 
 SRC = $(addprefix $(SRC_DIR), $(FILES))
 

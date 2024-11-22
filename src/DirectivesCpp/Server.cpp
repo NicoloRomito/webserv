@@ -20,6 +20,7 @@ Server::Server(std::stringstream& file) : AConfig() {
 				_directives[directive] = createBlock(directive, file);
 				continue;
 			}
+			args.erase(args.begin());
 			_directives[directive] = createDirective(directive, args);
 		} else
 			break;
