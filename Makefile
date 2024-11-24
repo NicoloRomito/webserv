@@ -2,7 +2,7 @@ NAME = webserver
 
 SRC_DIR = src/
 
-FILES = webserver.cpp init/init.cpp utils/errorMsg.cpp
+FILES = main.cpp init/init.cpp utils/errorMsg.cpp 
 
 SRC = $(addprefix $(SRC_DIR), $(FILES))
 
