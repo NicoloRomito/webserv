@@ -34,7 +34,7 @@ enum	DirectiveType {
 void 	error(std::string msg);
 
 // parsing
-void						startParsing(std::string file);
+void						startParsing(const std::string& file);
 std::string					parseDirective(const std::string& directive);
 DirectiveType				getDirectiveType(const std::string& dir);
 std::vector<std::string>	returnLine(const std::string& line);

@@ -4,6 +4,7 @@
 #include "../../../include/includes.hpp"
 #include <algorithm>
 #include <cstddef>
+#include <fstream>
 #include <sstream>
 #include <string>
 
@@ -19,19 +20,19 @@ std::string	parseDirective(const std::string& directive)
 }
 
 DirectiveType	getDirectiveType(const std::string& dir) {
-		std::map<std::string, DirectiveType>	model = {
-		{"listen", LISTEN},
-		{"server_name", SERVER_NAME},
-		{"root", ROOT},
-		{"index", INDEX},
-		{"error_page", ERROR_PAGE},
-		{"client_max_body_size", CLIENT_MAX_BODY_SIZE},
-		{"autoindex", AUTOINDEX},
-		{"location", LOCATION},
-		{"cgi_pass", CGI_PASS},
-		{"server", SERVER},
-		{"http", HTTP}
-	};
+		std::map<std::string, DirectiveType>	model;
+
+		model["server"] = SERVER;
+		model["http"] = HTTP;
+		model["location"] = LOCATION;
+		model["cgi_pass"] = CGI_PASS;
+		model["autoindex"] = AUTOINDEX;
+		model["client_max_body_size"] = CLIENT_MAX_BODY_SIZE;
+		model["error_page"] = ERROR_PAGE;
+		model["index"] = INDEX;
+		model["root"] = ROOT;
+		model["server_name"] = SERVER_NAME;
+		model["listen"] = LISTEN;
 
 	std::map<std::string, DirectiveType>::iterator it = model.find(dir);
 	if (it == model.end()) {
@@ -53,12 +54,12 @@ std::vector<std::string>	returnLine(const std::string& line) {
 	return tokens;
 }
 
-void	startParsing(std::string file) {
+void	startParsing(const std::string& file) {
 	if (file.find(".conf") == std::string::npos) {
 		error("File type not correct");
 	}
 
-	std::ifstream	configFile(file);
+	std::ifstream	configFile(file.c_str());
 	std::stringstream	configStream;
 	configStream << configFile.rdbuf();
 	std::string		token, directive, args;
@@ -71,6 +72,7 @@ void	startParsing(std::string file) {
 		if (token.find("http") != std::string::npos) {
 			configStream << configFile.rdbuf();
 			Http*	http = new Http(configStream);
+			(void)http;
 			return;
 		}
 	}
