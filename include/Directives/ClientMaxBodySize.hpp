@@ -7,8 +7,8 @@ class	ClientMaxBodySize : public AConfig {
 		size_t	_bodySize;
 
 	public:
-		ClientMaxBodySize(std::vector<std::string> args);
+		ClientMaxBodySize(const std::vector<std::string>& args);
 		~ClientMaxBodySize();
 
-		size_t	getSize() const;
+		const size_t&	getSize() const;
 };

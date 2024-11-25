@@ -1,5 +1,6 @@
 #include "../../include/Directives/Server.hpp"
 #include "../../include/Directives/Location.hpp"
+#include "../../include/Errors.hpp"
 
 Server::Server(std::stringstream& file) : AConfig() {
 	std::string	line;
@@ -7,7 +8,7 @@ Server::Server(std::stringstream& file) : AConfig() {
 	std::vector<std::string>	args;
 
 	while (std::getline(file, line)) {
-		if (line.empty()) {
+		if (line.empty() || !checkLine(line)) {
 			continue;
 		}
 		if (line.find("}") == std::string::npos) { // if the closing bracket is still not found
@@ -22,6 +23,7 @@ Server::Server(std::stringstream& file) : AConfig() {
 			}
 			args.erase(args.begin());
 			_directives[directive] = createDirective(directive, args);
+			// std::cout << 
 		} else
 			break;
 	}
@@ -41,7 +43,6 @@ AConfig*	Server::createBlock(const std::string& directive, std::stringstream& fi
 	if (type == LOCATION) {
 		return new Location(file);
 	} else {
-		error("Unknown directive");
-		return NULL;
+		throw Errors::UnknownDirectiveException();
 	}
 }

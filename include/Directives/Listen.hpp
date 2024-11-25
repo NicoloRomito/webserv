@@ -13,6 +13,6 @@ class Listen : public AConfig {
 		Listen(const std::vector<std::string>& args);
 		~Listen();
 
-		std::string	getPort() const;
-		std::string	getIp() const;
+		const std::string&	getPort() const;
+		const std::string&	getIp() const;
 };

@@ -7,7 +7,7 @@ class	Root : public AConfig {
 		std::string	_path;
 
 	public:
-		Root(std::vector<std::string> args);
+		Root(const std::vector<std::string>& args);
 		~Root();
 
 		const std::string&	getPath() const;

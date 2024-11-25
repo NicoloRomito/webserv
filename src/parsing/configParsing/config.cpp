@@ -2,6 +2,7 @@
 #include "../../../include/Directives/config.hpp"
 #include "../../../include/includes.hpp"
 #include "../../../include/Directives/Listen.hpp"
+#include "../../../include/Directives/Server.hpp"
 #include "../../../include/Directives/ServerName.hpp"
 #include "../../../include/Directives/Root.hpp"
 #include "../../../include/Directives/Index.hpp"
@@ -37,7 +38,21 @@ AConfig*	AConfig::createDirective(const std::string& directive, std::vector<std:
 		case CGI_PASS:
 			return new CgiPass(args);
 		default:
-			error("Unknown directive");
+			throw Errors::UnknownDirectiveException();
+	}
+	return NULL;
+}
+
+AConfig*	AConfig::createBlock(const std::string& directive, std::stringstream& file) {
+	DirectiveType	type = getDirectiveType(directive);
+
+	switch (type) {
+		case SERVER:
+			return new Server(file);
+		case LOCATION:
+			return new Location(file);
+		default:
+			throw Errors::UnknownDirectiveException();
 	}
 	return NULL;
 }

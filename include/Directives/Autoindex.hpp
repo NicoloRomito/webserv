@@ -7,8 +7,8 @@ class	Autoindex : public AConfig {
 		bool	_autoindex;
 
 	public:
-		Autoindex(std::vector<std::string> args);
+		Autoindex(const std::vector<std::string>& args);
 		~Autoindex();
 
-		bool	getAutoindex() const;
+		const bool&	getAutoindex() const;
 };

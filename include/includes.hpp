@@ -33,6 +33,10 @@ enum	DirectiveType {
 // errors
 void 	error(std::string msg);
 
+// utils
+bool	isNumber(const std::string& str);
+bool	checkLine(const std::string& line);
+
 // parsing
 void						startParsing(const std::string& file);
 std::string					parseDirective(const std::string& directive);

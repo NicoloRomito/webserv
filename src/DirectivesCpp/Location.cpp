@@ -6,7 +6,11 @@ Location::Location(std::stringstream& file) : AConfig() {
 	std::vector<std::string>	args;
 
 	while (std::getline(file, line)) {
-		if (line.empty()) {
+		if (line.empty() || !checkLine(line)) {
+			continue;
+		}
+		if (line.find("{") != std::string::npos) {
+			_path = returnLine(line)[1];
 			continue;
 		}
 		if (line.find("}") == std::string::npos) { // if the closing bracket is still not found
@@ -28,4 +32,8 @@ Location::~Location() {
 		delete it->second;
 	}
 	this->_directives.clear();
+}
+
+const std::string&	Location::getPath() const {
+	return _path;
 }

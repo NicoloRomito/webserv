@@ -8,8 +8,8 @@ class	ServerName : public AConfig {
 		std::vector<std::string>	_names;
 
 	public:
-		ServerName(std::vector<std::string> args);
+		ServerName(std::vector<std::string>& args);
 		~ServerName();
 
-		
+		const std::vector<std::string>&	getNames() const;
 };

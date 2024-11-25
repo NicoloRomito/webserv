@@ -1,21 +1,10 @@
 #include "../../include/includes.hpp"
-#include <cctype>
-#include <string>
 #include "../../include/Directives/Listen.hpp"
-
-bool	isNumber(const std::string& str) {
-	for (size_t i = 0; i < str.size(); i++) {
-		if (!std::isdigit(str[i])) {
-			return false;
-		}
-	}
-	return true;
-}
+#include "../../include/Errors.hpp"
 
 Listen::Listen(const std::vector<std::string>& args) {
 	if (args.size() < 1) {
-		error("Listen directive must have at least 1 argument");
-		return;
+		throw Errors::TooFewArgsException();
 	}
 	if (args[0].find(":") != std::string::npos) {
 		if (!isNumber(args[0].substr(args[0].find(":") + 1)))
@@ -32,3 +21,11 @@ Listen::Listen(const std::vector<std::string>& args) {
 }
 
 Listen::~Listen() {}
+
+const std::string&	Listen::getPort() const {
+	return _port;
+}
+
+const std::string&	Listen::getIp() const {
+	return _ip;
+}

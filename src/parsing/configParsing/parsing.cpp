@@ -2,6 +2,7 @@
 #include "../../../include/Directives/Server.hpp"
 #include "../../../include/Directives/Location.hpp"
 #include "../../../include/includes.hpp"
+#include "../../../include/Errors.hpp"
 #include <algorithm>
 #include <cstddef>
 #include <fstream>
@@ -13,7 +14,7 @@ std::string	parseDirective(const std::string& directive)
 	DirectiveType	type = getDirectiveType(directive);
 
 	if (type == UNKNOWN) {
-		error("Unknown directive");
+		Errors::error("Unknown directive");
 		return NULL;
 	}
 	return directive;
@@ -35,10 +36,11 @@ DirectiveType	getDirectiveType(const std::string& dir) {
 		model["listen"] = LISTEN;
 
 	std::map<std::string, DirectiveType>::iterator it = model.find(dir);
-	if (it == model.end()) {
-		return UNKNOWN;
+	std::cout << it->first << std::endl;
+	if (it != model.end()) {
+		return it->second;
 	}
-	return it->second;
+	return UNKNOWN;
 }
 
 
@@ -56,25 +58,27 @@ std::vector<std::string>	returnLine(const std::string& line) {
 
 void	startParsing(const std::string& file) {
 	if (file.find(".conf") == std::string::npos) {
-		error("File type not correct");
+		Errors::error("File type not correct");
+		return;
 	}
 
 	std::ifstream	configFile(file.c_str());
 	std::stringstream	configStream;
-	configStream << configFile.rdbuf();
 	std::string		token, directive, args;
 
 	if (!configFile) {
-		error("File opening failed");
+		Errors::error("File opening failed");
+		return;
 	}
 
 	while (std::getline(configFile, token)) {
 		if (token.find("http") != std::string::npos) {
 			configStream << configFile.rdbuf();
+			std::cout << "Http block found\n";
 			Http*	http = new Http(configStream);
 			(void)http;
 			return;
 		}
 	}
-	error("Configuration File must contain Http block");
+	Errors::error("Configuration File must contain Http block");
 }

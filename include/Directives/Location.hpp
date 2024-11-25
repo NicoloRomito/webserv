@@ -14,6 +14,5 @@ class Location : public AConfig {
 		Location(std::stringstream& file);
 		~Location();
 
-		
-
+		const std::string&	getPath() const;
 };
