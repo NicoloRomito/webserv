@@ -38,7 +38,7 @@ AConfig*	AConfig::createDirective(const std::string& directive, std::vector<std:
 		case CGI_PASS:
 			return new CgiPass(args);
 		default:
-			throw Errors::UnknownDirectiveException();
+			throw Errors::UnknownDirectiveException("Unknown directive", __LINE__, __FILE__);
 	}
 	return NULL;
 }
@@ -52,7 +52,7 @@ AConfig*	AConfig::createBlock(const std::string& directive, std::stringstream& f
 		case LOCATION:
 			return new Location(file);
 		default:
-			throw Errors::UnknownDirectiveException();
+			throw Errors::UnknownDirectiveException("Unknown directive", __LINE__, __FILE__);
 	}
 	return NULL;
 }

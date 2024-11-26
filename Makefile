@@ -23,7 +23,7 @@ DIRECTIVES = $(addprefix $(DIRECTIVES_DIR), $(DIRECTIVES_FILES))
 
 INCLUDES = MutantStack.hpp MutantStack.tpp
 
-CPP = c++
+CPP = g++
 
 CFLAGS = -Wall -Wextra -Werror -g
 

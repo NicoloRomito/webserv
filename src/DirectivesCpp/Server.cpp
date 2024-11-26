@@ -23,7 +23,6 @@ Server::Server(std::stringstream& file) : AConfig() {
 			}
 			args.erase(args.begin());
 			_directives[directive] = createDirective(directive, args);
-			// std::cout << 
 		} else
 			break;
 	}
@@ -43,6 +42,6 @@ AConfig*	Server::createBlock(const std::string& directive, std::stringstream& fi
 	if (type == LOCATION) {
 		return new Location(file);
 	} else {
-		throw Errors::UnknownDirectiveException();
+		throw Errors::UnknownDirectiveException("Unknown directive", __LINE__, __FILE__);
 	}
 }

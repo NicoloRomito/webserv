@@ -10,16 +10,53 @@ class	Errors {
 		~Errors();
 	
 	public:
-		static void	error(std::string msg);
+		static void	error(std::string msg, int line, const char *file);
 
-		class	UnknownDirectiveException : public std::exception {
+		class	BaseException : public std::exception {
+			private:
+				std::string _message;
 			public:
+				BaseException(const std::string& message, int line, const char* file);
+				~BaseException() throw() {};
+
 				virtual const char* what() const throw();
 		};
 
-		class	TooFewArgsException : public std::exception {
+		class	UnknownDirectiveException : public BaseException {
 			public:
-				virtual const char * what() const throw();
+				UnknownDirectiveException(const std::string& message, int line, const char* file)
+					: BaseException(message, line, file) {};
+		};
+
+		class	TooFewArgsException : public BaseException {
+			public:
+				TooFewArgsException(const std::string& message, int line, const char* file)
+					: BaseException(message, line, file) {};
+				
+		};
+
+		class	NoSemiColonException : public BaseException {
+			public:
+				NoSemiColonException(const std::string& message, int line, const char* file)
+					: BaseException(message, line, file) {};
+		};
+
+		class	InvalidBodySizeException : public BaseException {
+			public:
+				InvalidBodySizeException(const std::string& message, int line, const char* file)
+					: BaseException(message, line, file) {};
+		};
+
+		class	InvalidErrorCode : public BaseException {
+			public:
+				InvalidErrorCode(const std::string& message, int line, const char* file)
+					: BaseException(message, line, file) {};
+		};
+
+		class	InvalidArgumentException : public BaseException {
+			public:
+				InvalidArgumentException(const std::string& message, int line, const char* file)
+					: BaseException(message, line, file) {};
 		};
 
 };

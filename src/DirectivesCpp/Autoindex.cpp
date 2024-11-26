@@ -4,13 +4,13 @@
 
 Autoindex::Autoindex(const std::vector<std::string>& args) {
 	if (args.size() != 1)
-		throw Errors::TooFewArgsException();
+		throw Errors::TooFewArgsException("Wrong number of args", __LINE__, __FILE__);
 	if (args[0] == "on")
 		_autoindex = true;
 	else if (args[0] == "off")
 		_autoindex = false;
 	else
-		throw Errors::UnknownDirectiveException();
+		throw Errors::UnknownDirectiveException("Unknown directive", __LINE__, __FILE__);
 }
 
 Autoindex::~Autoindex() {}

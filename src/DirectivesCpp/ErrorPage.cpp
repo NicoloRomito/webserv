@@ -26,7 +26,7 @@ void ErrorPage::addErrorCode(const std::string& code) {
 				_codes.push_back(408);
 				break;
 			default:
-				throw std::invalid_argument("Invalid error code\n");
+				throw Errors::InvalidErrorCode("Invalid error code", __LINE__, __FILE__);
 		}
 	} else if (code[0] == '5') {
 		switch (errorCode) {
@@ -37,7 +37,7 @@ void ErrorPage::addErrorCode(const std::string& code) {
 				_codes.push_back(502);
 				break;
 			default:
-				throw std::invalid_argument("Invalid error code\n");
+				throw Errors::InvalidErrorCode("Invalid error code", __LINE__, __FILE__);
 		}
 	}
 }
@@ -49,7 +49,7 @@ ErrorPage::ErrorPage(const std::vector<std::string>& args) {
 		} else if (it->find(".html") != std::string::npos) {
 			_path = *it;
 		} else {
-			throw std::invalid_argument("Invalid path for error page\n");
+			throw Errors::InvalidArgumentException("Invalid path for error page", __LINE__, __FILE__);
 		}
 	}
 }

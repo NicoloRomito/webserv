@@ -1,14 +1,18 @@
 #include "../../include/includes.hpp"
+#include <sstream>
+#include <string>
 #include "../../include/Errors.hpp"
 
-void Errors::error(std::string msg) {
-	std::cerr << "[Webserver LINE: " << __LINE__ << "] -> Error: " << msg << '\n'; 
+void Errors::error(std::string msg, int line, const char *file) {
+	std::cerr << "[Webserver FILE: " << file << "; -- LINE: " << line << "] -> Error: " << msg << '\n'; 
 }
 
-const char * Errors::UnknownDirectiveException::what() const throw() {
-	return "Unknown directive\n";
+Errors::BaseException::BaseException(const std::string& message, int line, const char* file) {
+	std::ostringstream	oss;
+	oss << line;
+	_message = "\n[Webserver FILE: " + std::string(file) + "; -- LINE: " + oss.str() + "] -> Error: " + message;
 }
 
-const char * Errors::TooFewArgsException::what() const throw() {
-	return "Too few arguments\n";
+const char* Errors::BaseException::what() const throw() {
+	return _message.c_str();
 }

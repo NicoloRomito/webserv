@@ -9,17 +9,12 @@ Http::Http(std::stringstream& file) : AConfig() {
 	std::string	directive;
 	std::vector<std::string>	args;
 
-	std::cout << "Http constructor" << std::endl;
-
-	// std::cout << file.str() << std::endl;
-
 	while (std::getline(file, line)) {
 		if (line.empty() || !checkLine(line)) {
 			continue;
 		}
 		if (line.find("}") == std::string::npos) { // if the closing bracket is still not found
 			args = returnLine(line); // get the args divided in the line
-			// std::cout << args[0] << std::endl;
 			directive = parseDirective(args[0]); // get the name of the directive, if not returns UNKNOWN.
 			if (directive.empty()) {
 				continue;
@@ -29,7 +24,6 @@ Http::Http(std::stringstream& file) : AConfig() {
 				_directives[directive] = createBlock(directive, file);
 				continue;
 			}
-			// std::cout << "Http constructor: " << directive << std::endl;
 			args.erase(args.begin());
 			_directives[directive] = createDirective(directive, args);
 		} else {
@@ -56,6 +50,6 @@ AConfig*	Http::createBlock(const std::string& directive, std::stringstream& file
 	} else if (type == LOCATION) {
 		return new Location(file);
 	} else {
-		throw Errors::UnknownDirectiveException();
+		throw Errors::UnknownDirectiveException("Unknown directive", __LINE__, __FILE__);
 	}
 }
