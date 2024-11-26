@@ -2,7 +2,7 @@
 #include "../../include/Directives/Listen.hpp"
 #include "../../include/Errors.hpp"
 
-Listen::Listen(const std::vector<std::string>& args) {
+Listen::Listen(const std::vector<std::string>& args) : AConfig(), _port("8080"), _ip("127.0.0.1") {
 	if (args.size() < 1) {
 		throw Errors::TooFewArgsException("Wrong number of args", __LINE__, __FILE__);
 	}

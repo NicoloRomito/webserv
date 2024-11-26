@@ -14,7 +14,7 @@ std::string	parseDirective(const std::string& directive)
 	DirectiveType	type = getDirectiveType(directive);
 
 	if (type == UNKNOWN) {
-		throw Errors::UnknownDirectiveException("Unknown directive", __LINE__, __FILE__);
+		throw Errors::UnknownDirectiveException("Unknown directive " + directive, __LINE__, __FILE__);
 	}
 	return directive;
 }
@@ -73,6 +73,7 @@ void	startParsing(const std::string& file) {
 		if (token.find("http") != std::string::npos) {
 			configStream << configFile.rdbuf();
 			Http*	http = new Http(configStream);
+
 			(void)http;
 			return;
 		}

@@ -10,6 +10,7 @@ int	main(int ac, char **av)
 
 	try {
 		startParsing(av[1]);
+		// Http *http = new Http(stream); 
 	} catch (std::exception& e) {
 		std::cerr << e.what();
 	}

@@ -20,7 +20,6 @@ Http::Http(std::stringstream& file) : AConfig() {
 				continue;
 			}
 			if (directive == "server" || directive == "location") {
-				std::cout << "Http constructor: " << directive << std::endl;
 				_directives[directive] = createBlock(directive, file);
 				continue;
 			}

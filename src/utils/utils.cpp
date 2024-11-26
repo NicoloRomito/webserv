@@ -10,7 +10,7 @@ bool	checkLine(const std::string& line) {
 		if (line[i] == '\t' || line[i] == ' ') {
 			continue;
 		}
-		if (isalpha(line[i])) {
+		else {
 			return true;
 		}
 
