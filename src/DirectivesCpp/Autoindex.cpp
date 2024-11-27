@@ -5,9 +5,9 @@
 Autoindex::Autoindex(const std::vector<std::string>& args) {
 	if (args.size() != 1)
 		throw Errors::TooFewArgsException("Wrong number of args", __LINE__, __FILE__);
-	if (args[0] == "on")
+	if (std::string(args[0].begin(), args[0].end() - 1) == "on")
 		_autoindex = true;
-	else if (args[0] == "off")
+	else if (std::string(args[0].begin(), args[0].end() - 1) == "off")
 		_autoindex = false;
 	else
 		throw Errors::UnknownDirectiveException("Unknown directive", __LINE__, __FILE__);

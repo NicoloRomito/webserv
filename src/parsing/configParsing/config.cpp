@@ -56,3 +56,52 @@ AConfig*	AConfig::createBlock(const std::string& directive, std::stringstream& f
 	}
 	return NULL;
 }
+
+void	AConfig::createDefaultDirectives(DirectiveType type) {
+	switch (type) {
+		case HTTP:
+			if (this->_directives.find("client_max_body_size") == this->_directives.end()) {
+				std::vector<std::string> args;
+				args.push_back("1m");
+				this->_directives["client_max_body_size"] = new ClientMaxBodySize(args);
+			}
+			break;
+		case SERVER:
+			if (this->_directives.find("listen") == this->_directives.end()) {
+				std::vector<std::string> args;
+				args.push_back("80");
+				this->_directives["listen"] = new Listen(args);
+			}
+			if (this->_directives.find("server_name") == this->_directives.end()) {
+				std::vector<std::string> args;
+				args.push_back("localhost");
+				this->_directives["server_name"] = new ServerName(args);
+			}
+			if (this->_directives.find("error_page") == this->_directives.end()) {
+				std::vector<std::string> args;
+				args.push_back("404");
+				args.push_back("/404.html");
+				this->_directives["error_page"] = new ErrorPage(args);
+			}
+			break;
+		case LOCATION:
+			if (this->_directives.find("root") == this->_directives.end()) {
+				std::vector<std::string> args;
+				args.push_back("./");
+				this->_directives["root"] = new Root(args);
+			}
+			if (this->_directives.find("index") == this->_directives.end()) {
+				std::vector<std::string> args;
+				args.push_back("index.html");
+				this->_directives["index"] = new Index(args);
+			}
+			if (this->_directives.find("autoindex") == this->_directives.end()) {
+				std::vector<std::string> args;
+				args.push_back("off");
+				this->_directives["autoindex"] = new Autoindex(args);
+			}
+			break;
+		default:
+			break;
+	}
+}

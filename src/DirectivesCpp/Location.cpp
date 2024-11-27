@@ -24,6 +24,7 @@ Location::Location(std::stringstream& file) : AConfig() {
 		} else
 			break;
 	}
+	createDefaultDirectives(LOCATION);
 }
 
 Location::~Location() {

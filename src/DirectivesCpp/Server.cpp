@@ -27,6 +27,7 @@ Server::Server(std::stringstream& file) : AConfig() {
 			break;
 		// create default Listen and ServerName
 	}
+	createDefaultDirectives(SERVER);
 }
 
 Server::~Server() {

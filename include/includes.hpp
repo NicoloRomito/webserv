@@ -1,18 +1,20 @@
 #ifndef INCLUDES_HPP
 # define INCLUDES_HPP
 
-
-#include <iostream> // IWYU pragma: keep 
-#include <cstring> // IWYU pragma: keep
-#include <netinet/in.h> // IWYU pragma: keep
+#include <iostream> 
+#include <cstring>
+#include <netinet/in.h>
 #include <sys/socket.h>
 #include <unistd.h>
 #include <sstream>
 #include <fstream>
 #include <string>
-#include <map> // IWYU pragma: keep
-#include <vector> // IWYU pragma: keep
+#include <map>
+#include <vector>
 #include <poll.h>
+
+// GLOBALE VARIABLES
+extern int ConfigLine;
 
 class AConfig;
 

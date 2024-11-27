@@ -1,6 +1,5 @@
 #include "../../include/includes.hpp"
 #include "../../include/Errors.hpp"
-#include <vector>
 #include "../../include/Directives/ServerName.hpp"
 
 ServerName::ServerName(std::vector<std::string>& args) {

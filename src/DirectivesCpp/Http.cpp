@@ -31,6 +31,7 @@ Http::Http(std::stringstream& file) : AConfig() {
 		if (!line.empty())
 			line.clear();
 	}
+	createDefaultDirectives(HTTP);
 }
 
 Http::~Http() {

@@ -47,7 +47,7 @@ ErrorPage::ErrorPage(const std::vector<std::string>& args) {
 		if (isNumber(*it)) {
 			addErrorCode(*it);
 		} else if (it->find(".html") != std::string::npos) {
-			_path = *it;
+			_path = std::string(it->begin(), it->end() - 1); // remove the last character
 		} else {
 			throw Errors::InvalidArgumentException("Invalid path for error page", __LINE__, __FILE__);
 		}
