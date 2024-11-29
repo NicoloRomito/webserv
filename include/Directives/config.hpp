@@ -19,6 +19,8 @@ class	AConfig
 		virtual AConfig*	createBlock(const std::string& directive, std::stringstream& file);
 
 		void				createDefaultDirectives(DirectiveType type);
+
+		const AConfig*		getDirective(const std::string& directiveName) const;
 };
 
 #endif

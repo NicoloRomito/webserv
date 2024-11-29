@@ -2,6 +2,8 @@
 #include "../../include/Directives/Listen.hpp"
 #include "../../include/Errors.hpp"
 
+Listen::Listen() : _port("8080"), _ip("localhost") {}
+
 Listen::Listen(const std::vector<std::string>& args) : AConfig(), _port("8080"), _ip("127.0.0.1") {
 	if (args.size() < 1) {
 		throw Errors::TooFewArgsException("Wrong number of args", __LINE__, __FILE__);
@@ -18,7 +20,7 @@ Listen::Listen(const std::vector<std::string>& args) : AConfig(), _port("8080"),
 	else {
 		if (!isNumber(std::string(args[0].begin(), args[0].end() - 1)))
 			throw Errors::InvalidArgumentException("Port must be a number", __LINE__, __FILE__);
-		_port = args[0].substr(args[0][0], args[0].size() - 1);
+		_port = std::string(args[0].begin(), args[0].end() - 1);
 		_ip = "localhost";
 	}
 }

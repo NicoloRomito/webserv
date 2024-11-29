@@ -1,4 +1,5 @@
 #include "../../include/Directives/Location.hpp"
+#include "../../include/Errors.hpp"
 
 Location::Location(std::stringstream& file) : AConfig() {
 	std::string	line;
@@ -37,4 +38,13 @@ Location::~Location() {
 
 const std::string&	Location::getPath() const {
 	return _path;
+}
+
+const AConfig*	Location::getDirective(const std::string& directiveName) const {
+	std::map<std::string, AConfig*>::const_iterator it = this->_directives.find(directiveName);
+
+	if (it != this->_directives.end()) {
+		return it->second;
+	}
+	throw Errors::UnknownDirectiveException("Unknown directive", __LINE__, __FILE__);
 }

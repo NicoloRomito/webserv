@@ -14,4 +14,6 @@ class	Http : public AConfig {
 
 		AConfig*	createBlock(const std::string& directive, std::stringstream& file);
 
+		// const AConfig*	getServer(const std::string& directiveName) const;
+
 };

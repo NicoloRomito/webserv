@@ -9,6 +9,7 @@ class	ErrorPage : public AConfig {
 		std::string	_path;
 
 	public:
+		ErrorPage(int errorCode);
 		ErrorPage(const std::vector<std::string>& args);
 		~ErrorPage();
 

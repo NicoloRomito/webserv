@@ -2,6 +2,8 @@
 #include "../../include/Directives/Location.hpp"
 #include "../../include/Errors.hpp"
 
+int	locationN = 0;
+
 Server::Server(std::stringstream& file) : AConfig() {
 	std::string	line;
 	std::string	directive;
@@ -18,7 +20,7 @@ Server::Server(std::stringstream& file) : AConfig() {
 				continue;
 			}
             if (directive == "location") {
-				_directives[directive] = createBlock(directive, file);
+				_directives[directive + to_string(++locationN)] = createBlock(directive, file);
 				continue;
 			}
 			args.erase(args.begin());
@@ -46,4 +48,13 @@ AConfig*	Server::createBlock(const std::string& directive, std::stringstream& fi
 	} else {
 		throw Errors::UnknownDirectiveException("Unknown directive", __LINE__, __FILE__);
 	}
+}
+
+const AConfig*	Server::getDirective(const std::string& directiveName) const {
+	std::map<std::string, AConfig*>::const_iterator it = this->_directives.find(directiveName);
+
+	if (it != this->_directives.end()) {
+		return it->second;
+	}
+	throw Errors::UnknownDirectiveException("Unknown directive", __LINE__, __FILE__);
 }

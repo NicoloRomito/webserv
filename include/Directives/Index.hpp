@@ -7,6 +7,7 @@ class	Index : public AConfig {
 		std::string	_defaultFile;
 
 	public:
+		Index();
 		Index(const std::vector<std::string>& args);
 		~Index();
 

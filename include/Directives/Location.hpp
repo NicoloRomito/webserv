@@ -15,4 +15,6 @@ class Location : public AConfig {
 		~Location();
 
 		const std::string&	getPath() const;
+
+		const AConfig*	getDirective(const std::string& directiveName) const;
 };

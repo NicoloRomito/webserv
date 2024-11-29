@@ -1,6 +1,6 @@
 #include "../../../include/Errors.hpp"
 #include "../../../include/Directives/config.hpp"
-#include "../../../include/includes.hpp"
+#include "../../../include/Directives/Http.hpp"
 #include "../../../include/Directives/Listen.hpp"
 #include "../../../include/Directives/Server.hpp"
 #include "../../../include/Directives/ServerName.hpp"
@@ -10,6 +10,10 @@
 #include "../../../include/Directives/ClientMaxBodySize.hpp"
 #include "../../../include/Directives/Autoindex.hpp"
 #include "../../../include/Directives/CgiPass.hpp"
+#include "../../../include/Directives/Location.hpp"
+#include "../../../include/Directives/Http.hpp"
+#include "../../../include/Directives/Server.hpp"
+#include "../../../include/includes.hpp"
 #include <sstream>
 
 AConfig::AConfig() {}
@@ -60,48 +64,63 @@ AConfig*	AConfig::createBlock(const std::string& directive, std::stringstream& f
 void	AConfig::createDefaultDirectives(DirectiveType type) {
 	switch (type) {
 		case HTTP:
-			if (this->_directives.find("client_max_body_size") == this->_directives.end()) {
-				std::vector<std::string> args;
-				args.push_back("1m");
-				this->_directives["client_max_body_size"] = new ClientMaxBodySize(args);
-			}
+			if (this->_directives.find("client_max_body_size") == this->_directives.end())
+				this->_directives["client_max_body_size"] = new ClientMaxBodySize();
 			break;
 		case SERVER:
-			if (this->_directives.find("listen") == this->_directives.end()) {
-				std::vector<std::string> args;
-				args.push_back("80");
-				this->_directives["listen"] = new Listen(args);
-			}
-			if (this->_directives.find("server_name") == this->_directives.end()) {
-				std::vector<std::string> args;
-				args.push_back("localhost");
-				this->_directives["server_name"] = new ServerName(args);
-			}
+			if (this->_directives.find("listen") == this->_directives.end())
+				this->_directives["listen"] = new Listen();
+
+			if (this->_directives.find("server_name") == this->_directives.end())
+				this->_directives["server_name"] = new ServerName();
+
 			if (this->_directives.find("error_page") == this->_directives.end()) {
-				std::vector<std::string> args;
-				args.push_back("404");
-				args.push_back("/404.html");
-				this->_directives["error_page"] = new ErrorPage(args);
+				this->_directives["error_page"] = new ErrorPage(400);
+				this->_directives["error_page"] = new ErrorPage(500);
 			}
 			break;
 		case LOCATION:
-			if (this->_directives.find("root") == this->_directives.end()) {
-				std::vector<std::string> args;
-				args.push_back("./");
-				this->_directives["root"] = new Root(args);
-			}
-			if (this->_directives.find("index") == this->_directives.end()) {
-				std::vector<std::string> args;
-				args.push_back("index.html");
-				this->_directives["index"] = new Index(args);
-			}
-			if (this->_directives.find("autoindex") == this->_directives.end()) {
-				std::vector<std::string> args;
-				args.push_back("off");
-				this->_directives["autoindex"] = new Autoindex(args);
-			}
+			if (this->_directives.find("cgi_pass") == this->_directives.end())
+				this->_directives["cgi_pass"] = new CgiPass();
+			if (this->_directives.find("root") == this->_directives.end())
+				this->_directives["root"] = new Root();
+
+			if (this->_directives.find("index") == this->_directives.end())
+				this->_directives["index"] = new Index();
+
+			if (this->_directives.find("autoindex") == this->_directives.end())
+				this->_directives["autoindex"] = new Autoindex();
 			break;
 		default:
 			break;
 	}
+}
+
+const AConfig*	AConfig::getDirective(const std::string& directiveName) const {
+	if (this->_directives.find(directiveName) != this->_directives.end()) {
+		DirectiveType	type = checkDirectiveType(directiveName);
+		switch (type) {
+			case SERVER:
+				return _directives.at(directiveName);
+			case LISTEN:
+				return _directives.at(directiveName);
+			case SERVER_NAME:
+				return _directives.at(directiveName);
+			case ROOT:
+				return _directives.at(directiveName);
+			case INDEX:
+				return _directives.at(directiveName);
+			case ERROR_PAGE:
+				return _directives.at(directiveName);
+			case CLIENT_MAX_BODY_SIZE:
+				return _directives.at(directiveName);
+			case AUTOINDEX:
+				return _directives.at(directiveName);
+			case CGI_PASS:
+				return _directives.at(directiveName);
+			default:
+				break;
+		}
+	}
+	throw Errors::UnknownDirectiveException("Unknown directive", __LINE__, __FILE__);
 }

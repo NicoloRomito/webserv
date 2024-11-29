@@ -20,6 +20,7 @@ std::string	parseDirective(const std::string& directive)
 }
 
 DirectiveType	getDirectiveType(const std::string& dir) {
+
 		std::map<std::string, DirectiveType>	model;
 
 		model["server"] = SERVER;
@@ -54,29 +55,22 @@ std::vector<std::string>	returnLine(const std::string& line) {
 	return tokens;
 }
 
-void	startParsing(const std::string& file) {
+void	startParsing(const std::string& file, std::stringstream& fileStream) {
 	if (file.find(".conf") == std::string::npos) {
-		Errors::error("File type not correct", __LINE__, __FILE__);
-		return;
+		throw Errors::UnknownFileException("Unknown file extension", __LINE__, __FILE__);
 	}
 
 	std::ifstream	configFile(file.c_str());
-	std::stringstream	configStream;
 	std::string		token, directive, args;
 
-	if (!configFile) {
-		Errors::error("File opening failed", __LINE__, __FILE__);
-		return;
-	}
+	if (!configFile)
+		throw Errors::UnknownFileException("File failed to open", __LINE__, __FILE__);
 
 	while (std::getline(configFile, token)) {
 		if (token.find("http") != std::string::npos) {
-			configStream << configFile.rdbuf();
-			Http*	http = new Http(configStream);
-
-			(void)http;
+			fileStream << configFile.rdbuf();
 			return;
 		}
 	}
-	Errors::error("Configuration File must contain Http block", __LINE__, __FILE__);
+	throw Errors::UnknownFileException("No http block found", __LINE__, __FILE__);
 }

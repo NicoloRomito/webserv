@@ -59,4 +59,10 @@ class	Errors {
 					: BaseException(message, line, file) {};
 		};
 
+		class	UnknownFileException : public BaseException {
+			public:
+				UnknownFileException(const std::string& message, int line, const char* file)
+					: BaseException(message, line, file) {};
+		};
+
 };

@@ -1,8 +1,11 @@
 #include "../../include/Directives/Http.hpp"
+#include "../../include/includes.hpp"
 #include "../../include/Directives/Server.hpp"
 #include "../../include/Directives/Location.hpp"
 #include "../../include/Errors.hpp"
 #include <sstream>
+
+int serverN = 0;
 
 Http::Http(std::stringstream& file) : AConfig() {
 	std::string	line;
@@ -19,8 +22,8 @@ Http::Http(std::stringstream& file) : AConfig() {
 			if (directive.empty()) {
 				continue;
 			}
-			if (directive == "server" || directive == "location") {
-				_directives[directive] = createBlock(directive, file);
+			if (directive == "server") {
+				_directives[directive + to_string(++serverN)] = createBlock(directive, file);
 				continue;
 			}
 			args.erase(args.begin());

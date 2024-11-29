@@ -5,6 +5,21 @@
 #include <string>
 #include <vector>
 
+ErrorPage::ErrorPage(int errorCode) {
+	if (errorCode == 500) {
+		this->_codes.push_back(500);
+		this->_codes.push_back(502);
+		_path = "/var/www/html/errors/500.html";
+	} else if (errorCode == 400) {
+		this->_codes.push_back(400);
+		this->_codes.push_back(403);
+		this->_codes.push_back(404);
+		this->_codes.push_back(405);
+		this->_codes.push_back(408);
+		_path = "/var/www/html/errors/400.html";
+	}
+}
+
 void ErrorPage::addErrorCode(const std::string& code) {
 	int errorCode = atoi(code.c_str());
 

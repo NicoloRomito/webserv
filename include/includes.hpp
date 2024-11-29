@@ -15,6 +15,8 @@
 
 // GLOBALE VARIABLES
 extern int ConfigLine;
+extern int	locationN;
+extern int	serverN;
 
 class AConfig;
 
@@ -37,11 +39,13 @@ enum	DirectiveType {
 void 	error(std::string msg);
 
 // utils
-bool	isNumber(const std::string& str);
-bool	checkLine(const std::string& line);
+DirectiveType	checkDirectiveType(const std::string& dir);
+bool			isNumber(const std::string& str);
+bool			checkLine(const std::string& line);
+std::string 	to_string(int value);
 
 // parsing
-void						startParsing(const std::string& file);
+void						startParsing(const std::string& file, std::stringstream& fileStream);
 std::string					parseDirective(const std::string& directive);
 DirectiveType				getDirectiveType(const std::string& dir);
 std::vector<std::string>	returnLine(const std::string& line);

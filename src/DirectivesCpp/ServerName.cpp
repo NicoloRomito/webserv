@@ -2,6 +2,10 @@
 #include "../../include/Errors.hpp"
 #include "../../include/Directives/ServerName.hpp"
 
+ServerName::ServerName() {
+	this->_names.push_back("localhost");
+}
+
 ServerName::ServerName(std::vector<std::string>& args) {
 	if (args.size() < 1) {
 		throw Errors::TooFewArgsException("Wrong number of args", __LINE__, __FILE__);

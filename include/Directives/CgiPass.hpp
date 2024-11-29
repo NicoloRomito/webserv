@@ -7,11 +7,12 @@
 
 class	CgiPass : public AConfig {
 	private:
-		std::string	_path;
+		std::vector<std::string> _cgiPaths;
 
 	public:
+		CgiPass();
 		CgiPass(const std::vector<std::string>& args);
 		~CgiPass();
 
-		const std::string&	getPath() const;
+		const std::vector<std::string>&	getPath() const;
 };

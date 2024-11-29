@@ -10,6 +10,7 @@ class Listen : public AConfig {
 		std::string	_ip;
 
 	public:
+		Listen();
 		Listen(const std::vector<std::string>& args);
 		~Listen();
 
