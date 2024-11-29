@@ -2,7 +2,7 @@ NAME = webserver
 
 SRC_DIR = src/
 
-FILES = main.cpp init/init.cpp utils/errorMsg.cpp 
+FILES = main.cpp init/init.cpp utils/errorMsg.cpp classes/logic/Request.cpp
 
 SRC = $(addprefix $(SRC_DIR), $(FILES))
 

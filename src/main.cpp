@@ -1,4 +1,5 @@
 #include "../include/includes.hpp" // IWYU pragma: keep
+#include "classes/headers/Request.hpp"
 #include <csignal>
 #include <sys/poll.h>
 #include <vector>
@@ -8,8 +9,11 @@
 
 int QUIT = 0;
 
+
 void clientHandler(int clientSocket) {
     char buffer[1024] = {0};
+    Request *request = new Request();
+
 
     // Receive data from the client
     int bytesReceived = recv(clientSocket, buffer, sizeof(buffer), 0);
@@ -22,12 +26,12 @@ void clientHandler(int clientSocket) {
         close(clientSocket); // Close the socket on error or disconnect
         return; 
     }
-
     // Print the received message
+    request->parseRequest(buffer);
     std::cout << "Message from client: " << buffer << std::endl;
 
     // Optionally, send a response back to the client
-    const char* response = "Message received\n";
+    const char* response = "Message received\n";    
     send(clientSocket, response, strlen(response), 0);
 }
 
@@ -56,7 +60,7 @@ int main() {
     // Prepare for polling
     std::vector<pollfd> pollFds;
     pollfd serverPollFd = {serverSocket, POLLIN, 0};
-    pollFds.push_back(serverPollFd);
+    pollFds.push_back(serverPollFd);   
 
     signal(SIGINT, sigHandler);
     while (true) {
@@ -66,9 +70,9 @@ int main() {
             std::cerr << "Error with poll." << std::endl;
             break;
         }
-
         // Check if the server socket is ready to accept a new connection
         if (pollFds[0].revents & POLLIN) {
+            std::cout << "while\n";
             int clientSocket = accept(serverSocket, NULL, NULL);
             if (clientSocket < 0) {
                 std::cerr << "Client connection failed." << std::endl;
