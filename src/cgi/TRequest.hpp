@@ -11,8 +11,9 @@ class TRequest {
 	public:
 		std::string getMethod();
 		std::string getCotentLength();
-		std::string getUri();
+		std::string getPath();
 		std::string getQuery();
+		std::string getUrl();
 		std::string getHeader(std::string value);
 };
 

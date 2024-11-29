@@ -25,7 +25,6 @@ Server::Server(std::stringstream& file) : AConfig() {
 			_directives[directive] = createDirective(directive, args);
 		} else
 			break;
-		// create default Listen and ServerName
 	}
 }
 

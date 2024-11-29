@@ -4,6 +4,7 @@
 #include "../../include/includes.hpp"
 #include "../../include/Directives/Server.hpp"
 #include "./TRequest.hpp"
+#include <vector>
 
 class Cgi{
 
@@ -12,7 +13,7 @@ class Cgi{
 
 	public:
 		Cgi();
-		Cgi(TRequest request, Server server);
+		Cgi(TRequest request, std::vector<std::string> cgi_pass);
 };
 
 #endif
