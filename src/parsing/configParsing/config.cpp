@@ -75,8 +75,8 @@ void	AConfig::createDefaultDirectives(DirectiveType type) {
 				this->_directives["server_name"] = new ServerName();
 
 			if (this->_directives.find("error_page") == this->_directives.end()) {
-				this->_directives["error_page"] = new ErrorPage(400);
-				this->_directives["error_page"] = new ErrorPage(500);
+				this->_directives["error_page" + to_string(400)] = new ErrorPage(400);
+				this->_directives["error_page" + to_string(500)] = new ErrorPage(500);
 			}
 			break;
 		case LOCATION:
@@ -96,31 +96,3 @@ void	AConfig::createDefaultDirectives(DirectiveType type) {
 	}
 }
 
-const AConfig*	AConfig::getDirective(const std::string& directiveName) const {
-	if (this->_directives.find(directiveName) != this->_directives.end()) {
-		DirectiveType	type = checkDirectiveType(directiveName);
-		switch (type) {
-			case SERVER:
-				return _directives.at(directiveName);
-			case LISTEN:
-				return _directives.at(directiveName);
-			case SERVER_NAME:
-				return _directives.at(directiveName);
-			case ROOT:
-				return _directives.at(directiveName);
-			case INDEX:
-				return _directives.at(directiveName);
-			case ERROR_PAGE:
-				return _directives.at(directiveName);
-			case CLIENT_MAX_BODY_SIZE:
-				return _directives.at(directiveName);
-			case AUTOINDEX:
-				return _directives.at(directiveName);
-			case CGI_PASS:
-				return _directives.at(directiveName);
-			default:
-				break;
-		}
-	}
-	throw Errors::UnknownDirectiveException("Unknown directive", __LINE__, __FILE__);
-}

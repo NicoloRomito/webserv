@@ -18,17 +18,9 @@ int	main(int ac, char **av)
 		startParsing(av[1], fileStream);
 		Http *http = new Http(fileStream);
 
-		const Server *server = dynamic_cast<const Server *>(http->getDirective("server1"));
-		const Server *server2 = dynamic_cast<const Server *>(http->getDirective("server2"));
+		std::string ip = http->getDirective<Server>("server1")->getDirective<Listen>("listen")->getIp();
 
-		const Listen *listen = dynamic_cast<const Listen *>(server->getDirective("listen"));
-		const Listen *listen2 = dynamic_cast<const Listen *>(server2->getDirective("listen"));
-
-		std::cout << "Port -> " << listen->getPort() << std::endl;
-		std::cout << "IP: " << listen->getIp() << std::endl;
-
-		std::cout << "Port -> " << listen2->getPort() << std::endl;
-		std::cout << "IP: " << listen2->getIp() << std::endl;
+		std::cout << "IP: " << ip << std::endl;
 
 		delete http;
 	} catch (std::exception& e) {

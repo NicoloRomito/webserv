@@ -49,12 +49,3 @@ AConfig*	Server::createBlock(const std::string& directive, std::stringstream& fi
 		throw Errors::UnknownDirectiveException("Unknown directive", __LINE__, __FILE__);
 	}
 }
-
-const AConfig*	Server::getDirective(const std::string& directiveName) const {
-	std::map<std::string, AConfig*>::const_iterator it = this->_directives.find(directiveName);
-
-	if (it != this->_directives.end()) {
-		return it->second;
-	}
-	throw Errors::UnknownDirectiveException("Unknown directive", __LINE__, __FILE__);
-}
