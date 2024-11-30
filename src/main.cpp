@@ -1,6 +1,9 @@
 #include "../include/includes.hpp" // IWYU pragma: keep
 #include "classes/headers/Request.hpp"
 #include <csignal>
+#include <fstream>
+#include <ostream>
+#include <sstream>
 #include <sys/poll.h>
 #include <vector>
 #include <unistd.h>
@@ -9,11 +12,25 @@
 
 int QUIT = 0;
 
+void readIndex(std::string &respose) {
+    std::ifstream file;
+    std::string line;
+
+    file.open("src/www/static/index.html");
+    if (!file.is_open()) {
+        std::cout << "not open\n";
+    }
+    while (getline(file, line, '\0')) {
+        line.insert(line.size() - 2, "\r");
+        respose += line;
+    }
+}
 
 void clientHandler(int clientSocket) {
     char buffer[1024] = {0};
     Request *request = new Request();
-
+    std::ostringstream oss;
+    std::string index;
 
     // Receive data from the client
     int bytesReceived = recv(clientSocket, buffer, sizeof(buffer), 0);
@@ -31,8 +48,20 @@ void clientHandler(int clientSocket) {
     std::cout << "Message from client: " << buffer << std::endl;
 
     // Optionally, send a response back to the client
-    const char* response = "Message received\n";    
-    send(clientSocket, response, strlen(response), 0);
+    std::string response = 
+        "HTTP/1.1 200 OK\r\n"
+        "Content-Type: text/html\r\n"
+        "Content-Length: ";
+    readIndex(index);
+    std::cout << index.length() << '\n';
+    oss << index.length();
+    response += oss.str();
+    std::cout << response << '\n';
+    response += "\r\n\r\n";
+    response += index;
+    //std::cout << "response" << response << '\n';
+    // Send the response to the client
+    send(clientSocket, response.c_str(), response.size(), MSG_CONFIRM);
 }
 
 void sigHandler(int signal) {
@@ -45,7 +74,8 @@ void sigHandler(int signal) {
 int main() {
     // Create the server socket
     int serverSocket = initSocket();
-    if (serverSocket == -1) return 0;
+    if (serverSocket == -1)
+        return 0;
 
     // Set socket option to allow reuse of address/port
     int opt = 1;
@@ -65,7 +95,7 @@ int main() {
     signal(SIGINT, sigHandler);
     while (true) {
         // Use poll to wait for incoming connections or data
-        int pollResult = poll(pollFds.data(), pollFds.size(), -1); // -1 to block indefinitely
+        int pollResult = poll(pollFds.data(), pollFds.size(), 200); // -1 to block indefinitely
         if (pollResult < 0) {
             std::cerr << "Error with poll." << std::endl;
             break;
@@ -87,7 +117,7 @@ int main() {
 
         // Check each client socket for incoming data
         for (size_t i = 1; i < pollFds.size(); i++) {
-            if (pollFds[i].revents & POLLIN) {
+            if (pollFds[i].revents & POLLIN || pollFds[i].revents & POLLOUT) {
                 clientHandler(pollFds[i].fd);
                 if (QUIT) break;
                 // Don't remove client socket from poll list; keep it for further communication

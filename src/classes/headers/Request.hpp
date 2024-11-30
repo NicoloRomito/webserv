@@ -12,17 +12,19 @@ class Request {
 		std::string method;
 		std::string version;
 		std::string path;
+		std::string host;
 	public:
 		Request();
 		~Request();
 		void parseRequest(std::string buffer);
-		// std::string getUri();
-		// std::string getUrl();
+		std::string getUri() const;
+		// std::string getUrl() const;
 		// std::string getBody();
 		// std::string getHeader();
 		std::string getMethod() const;
 		std::string getVersion() const;
 		std::string getPath() const;
+		// std::string getHost() const;
 };
 
 #endif

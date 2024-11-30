@@ -2,43 +2,55 @@
 #include <cstddef>
 
 Request::Request():  uri(""), url(""),
-					header(""), body(""), method(""), version(""), path("") {}
+					header(""), body(""), method(""), 
+					version(""), path(""), host("") {}
 
 Request::~Request() {}
 
-std::vector<std::string> split(std::string buffer) {
+std::vector<std::string> split(std::string buffer, char delim) {
 	std::vector<std::string> splitReq;
-	size_t						i;
-	int						skip;
-	std::string				key;
+	size_t						i = 0;
+	int						found;
+	std::string				word;
 
-	while (i < buffer.size() && buffer[i] != '\n') {
-		while (buffer[i] == 32) {
+	while (buffer[0] == 32)
+		buffer.erase(0, 1);
+	while (buffer[buffer.size() - 1] == 32)
+		buffer.erase(buffer.size() - 1, 1);
+
+	while (i < buffer.size()) {
+		while (buffer[i] == delim)
 			i++;
-		}
-		skip = buffer.find(32, i);
-		if (skip == -1)
-			skip = buffer.find('\n', i);
-		key.insert(0, buffer, i, skip - i);
-		std::cout << key << '\n';
-		splitReq.push_back(key);
-		i += key.length();
-		key.clear();
-		if (skip == -1) skip = 1;
-		std::cout << skip << '\n';
+		found = buffer.find(delim, i);
+		if (found == -1)
+			found = buffer.size();
+		word.insert(0, buffer, i, found - i);
+		std::cout << word << '\n';
+		splitReq.push_back(word);
+		i = found;
+		word.clear();
 	}
+	return splitReq;
 }
 
 void Request::parseRequest(std::string buffer) {
 	std::vector<std::string> splitReq;
 
 
-	splitReq = split(buffer);
-	this->method = splitReq[0];
-	this->path = splitReq[1];
-	this->version = splitReq[2];
-	// std::cout << buffer << '\n';
-	
+	splitReq = split(buffer, 32);
+
+
+	std::cout << "-----splitted------\n";
+	std::cout << splitReq.size() << '\n';
+	for (size_t i = 0; i < splitReq.size(); i++) {
+		std::cout << splitReq[i] << '\n';
+	}
+	std::cout << "-----end------\n";
+
+	// this->method = splitReq[0];
+	// this->path = splitReq[1];
+	// this->version = splitReq[2].erase(splitReq[2].find('\r'), 1);
+
 }
 
 std::string Request::getMethod() const {
@@ -51,4 +63,8 @@ std::string Request::getVersion() const {
 
 std::string Request::getPath() const {
 	return this->path;
+}
+
+std::string Request::getUri() const {
+	return "http://" + this->host + this->path;
 }
