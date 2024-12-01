@@ -7,7 +7,7 @@ CgiPass::CgiPass() {}
 
 CgiPass::CgiPass(const std::vector<std::string>& args) {
 	if (args.size() < 1 || args.size() > 3) {
-		throw Errors::TooFewArgsException("Wrong number of args", __LINE__, __FILE__);
+		throw Errors::TooFewArgsException("Wrong number of args", ConfigLine, __FILE__);
 	}
 	for (std::vector<std::string>::iterator it = _cgiPaths.begin(); it != _cgiPaths.end(); it++) {
 		if (it == _cgiPaths.end() - 1) {

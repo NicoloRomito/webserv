@@ -9,12 +9,14 @@
 #include <sstream>
 #include <string>
 
+int	ConfigLine = 0;
+
 std::string	parseDirective(const std::string& directive)
 {
 	DirectiveType	type = getDirectiveType(directive);
 
 	if (type == UNKNOWN) {
-		throw Errors::UnknownDirectiveException("Unknown directive " + directive, __LINE__, __FILE__);
+		throw Errors::UnknownDirectiveException("Unknown directive " + directive, ConfigLine, __FILE__);
 	}
 	return directive;
 }
@@ -67,6 +69,7 @@ void	startParsing(const std::string& file, std::stringstream& fileStream) {
 		throw Errors::UnknownFileException("File failed to open", __LINE__, __FILE__);
 
 	while (std::getline(configFile, token)) {
+		ConfigLine++;
 		if (token.find("http") != std::string::npos) {
 			fileStream << configFile.rdbuf();
 			return;

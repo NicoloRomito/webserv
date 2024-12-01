@@ -14,7 +14,7 @@
 #include <poll.h>
 
 // GLOBALE VARIABLES
-extern int ConfigLine;
+extern int	ConfigLine;
 extern int	locationN;
 extern int	serverN;
 

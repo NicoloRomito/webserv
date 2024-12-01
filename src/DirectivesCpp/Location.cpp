@@ -7,6 +7,7 @@ Location::Location(std::stringstream& file) : AConfig() {
 	std::vector<std::string>	args;
 
 	while (std::getline(file, line)) {
+		ConfigLine++;
 		if (line.empty() || !checkLine(line)) {
 			continue;
 		}
@@ -46,5 +47,5 @@ const AConfig*	Location::getDirective(const std::string& directiveName) const {
 	if (it != this->_directives.end()) {
 		return it->second;
 	}
-	throw Errors::UnknownDirectiveException("Unknown directive", __LINE__, __FILE__);
+	throw Errors::UnknownDirectiveException("Unknown directive", ConfigLine, __FILE__);
 }

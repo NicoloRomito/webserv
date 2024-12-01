@@ -13,6 +13,7 @@ Http::Http(std::stringstream& file) : AConfig() {
 	std::vector<std::string>	args;
 
 	while (std::getline(file, line)) {
+		ConfigLine++;
 		if (line.empty() || !checkLine(line)) {
 			continue;
 		}
@@ -53,6 +54,6 @@ AConfig*	Http::createBlock(const std::string& directive, std::stringstream& file
 	} else if (type == LOCATION) {
 		return new Location(file);
 	} else {
-		throw Errors::UnknownDirectiveException("Unknown directive", __LINE__, __FILE__);
+		throw Errors::UnknownDirectiveException("Unknown directive", ConfigLine, __FILE__);
 	}
 }

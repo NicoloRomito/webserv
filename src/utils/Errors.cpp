@@ -10,7 +10,7 @@ void Errors::error(std::string msg, int line, const char *file) {
 Errors::BaseException::BaseException(const std::string& message, int line, const char* file) {
 	std::ostringstream	oss;
 	oss << line;
-	_message = "\n[Webserver FILE: " + std::string(file) + "; -- LINE: " + oss.str() + "] -> Error: " + message;
+	_message = "\n[Webserver EXCEPTION FILE CALL: " + std::string(file) + "; -- CONFIGURATION FILE LINE: " + oss.str() + "] -> Error: " + message + '\n';
 }
 
 const char* Errors::BaseException::what() const throw() {
