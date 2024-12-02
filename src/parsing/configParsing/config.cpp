@@ -14,6 +14,7 @@
 #include "../../../include/Directives/Http.hpp"
 #include "../../../include/Directives/Server.hpp"
 #include "../../../include/includes.hpp"
+#include <iostream>
 #include <sstream>
 
 AConfig::AConfig() {}
@@ -74,10 +75,10 @@ void	AConfig::createDefaultDirectives(DirectiveType type) {
 			if (this->_directives.find("server_name") == this->_directives.end())
 				this->_directives["server_name"] = new ServerName();
 
-			if (this->_directives.find("error_page") == this->_directives.end()) {
-				this->_directives["error_page" + to_string(400)] = new ErrorPage(400);
-				this->_directives["error_page" + to_string(500)] = new ErrorPage(500);
-			}
+			if (this->_directives.find(this->_dName + "error_page4xx") == this->_directives.end())
+				this->_directives[this->_dName + "error_page4xx"] = new ErrorPage(400);
+			if (this->_directives.find(this->_dName + "error_page5xx") == this->_directives.end())
+				this->_directives[this->_dName + "error_page5xx"] = new ErrorPage(500);
 			break;
 		case LOCATION:
 			if (this->_directives.find("cgi_pass") == this->_directives.end())
@@ -96,3 +97,10 @@ void	AConfig::createDefaultDirectives(DirectiveType type) {
 	}
 }
 
+bool	AConfig::alreadyExists(const std::string& directiveName) const {
+	std::map<std::string, AConfig *>::const_iterator it = _directives.find(directiveName);
+
+	if (it != _directives.end())
+		return true;
+	return false;
+}

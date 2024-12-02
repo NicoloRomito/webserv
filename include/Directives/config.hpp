@@ -3,13 +3,15 @@
 
 #include "../includes.hpp"
 #include "../Errors.hpp"
+#include <iostream>
 #include <string>
 #include <vector>
 
 class	AConfig
 {
 	protected:
-		std::vector<std::string>	_tokens;
+		std::string							_dName;
+		std::vector<std::string>			_tokens;
 		std::map<std::string, AConfig *>	_directives;
 
 	public:
@@ -20,6 +22,8 @@ class	AConfig
 		virtual AConfig*	createBlock(const std::string& directive, std::stringstream& file);
 
 		void				createDefaultDirectives(DirectiveType type);
+
+		bool				alreadyExists(const std::string& directiveName) const;
 
 		template <typename Directive>
 		const Directive*		getDirective(const std::string& directiveName) const;

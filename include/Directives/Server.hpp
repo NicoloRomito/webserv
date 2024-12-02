@@ -7,7 +7,7 @@ class	AConfig;
 
 class	Server : public AConfig {
 	private:
-
+		
 	public:
 		Server(std::stringstream& file);
 		~Server();

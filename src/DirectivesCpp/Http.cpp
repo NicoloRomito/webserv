@@ -3,7 +3,9 @@
 #include "../../include/Directives/Server.hpp"
 #include "../../include/Directives/Location.hpp"
 #include "../../include/Errors.hpp"
+#include <iostream>
 #include <sstream>
+#include <string>
 
 int serverN = 0;
 
@@ -24,24 +26,28 @@ Http::Http(std::stringstream& file) : AConfig() {
 				continue;
 			}
 			if (directive == "server") {
-				_directives[directive + to_string(++serverN)] = createBlock(directive, file);
+				std::string serverName = directive + to_string(++serverN);
+				_directives[serverName] = createBlock(directive, file);
 				continue;
 			}
 			args.erase(args.begin());
-			_directives[directive] = createDirective(directive, args);
-		} else {
+			if (directive == "client_max_body_size" && !alreadyExists("client_max_body_size"))
+				_directives[directive] = createDirective(directive, args);
+		} else
 			break;
-		}
 		if (!line.empty())
 			line.clear();
 	}
 	createDefaultDirectives(HTTP);
+	args.clear();
 }
 
 Http::~Http() {
 	std::map<std::string, AConfig*>::iterator it = this->_directives.begin();
 	for (; it != this->_directives.end(); it++) {
-		delete it->second;
+		std::cout << "deleting " << it->first << std::endl;
+		if (it->second)
+			delete it->second;
 	}
 	this->_directives.clear();
 }

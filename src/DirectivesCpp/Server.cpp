@@ -1,6 +1,10 @@
 #include "../../include/Directives/Server.hpp"
 #include "../../include/Directives/Location.hpp"
 #include "../../include/Errors.hpp"
+#include <iostream>
+#include <stdint.h>
+#include <math.h>
+#include <string>
 
 int	locationN = 0;
 
@@ -8,6 +12,8 @@ Server::Server(std::stringstream& file) : AConfig() {
 	std::string	line;
 	std::string	directive;
 	std::vector<std::string>	args;
+
+	this->_dName = "server" + to_string(serverN);
 
 	while (std::getline(file, line)) {
 		ConfigLine++;
@@ -21,22 +27,33 @@ Server::Server(std::stringstream& file) : AConfig() {
 				continue;
 			}
             if (directive == "location") {
-				_directives[directive + to_string(++locationN)] = createBlock(directive, file);
+				std::string	locationName = directive + to_string(++locationN);
+				_directives[this->_dName + locationName] = createBlock(directive, file);
 				continue;
 			}
 			args.erase(args.begin());
-			_directives[directive] = createDirective(directive, args);
+			if (directive == "error_page") {
+				std::string errorPageName = directive + to_string(args[0][0]) + "xx";
+				// TODO : check if error page already exists and if the status code is different the directive before it already created.
+				// TODO : if the status code is different but the directive already exists, add the status code to the directive already created.
+				if ((args[0].at(0) == '4' || args[0].at(0) == '5') && !alreadyExists(this->_dName + errorPageName))
+					_directives[this->_dName + errorPageName] = createDirective(directive, args);
+			}
+			else if (directive != "server" && directive != "http" && !alreadyExists(directive))
+				_directives[directive] = createDirective(directive, args);
 		} else
 			break;
-		// create default Listen and ServerName
 	}
 	createDefaultDirectives(SERVER);
+	args.clear();
 }
 
 Server::~Server() {
 	std::map<std::string, AConfig*>::iterator it = this->_directives.begin();
 	for (; it != this->_directives.end(); it++) {
-		delete it->second;
+		std::cout << "deleting " << it->first << std::endl;
+		if (it->second)
+			delete it->second;
 	}
 	this->_directives.clear();
 }

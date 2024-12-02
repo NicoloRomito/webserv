@@ -49,7 +49,7 @@ run: all
 	@./$(NAME) $(CONFIG_FILE)
 
 val: all
-	@valgrind --leak-check=full --show-leak-kinds=all ./$(NAME) $(CONFIG_FILE)
+	@valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes ./$(NAME) $(CONFIG_FILE)
 
 .SILENT:
 

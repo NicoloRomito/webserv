@@ -11,7 +11,6 @@ Listen::Listen(const std::vector<std::string>& args) : AConfig(), _port("8080"),
 	if (args[0].find(":") != std::string::npos) {
 		std::string port = args[0].substr(args[0].find(":") + 1);
 		std::string real_port = std::string(port.begin(), port.end() - 1);
-		std::cout << "real_port: " << real_port << std::endl;
 		if (!isNumber(real_port))
 			throw Errors::InvalidArgumentException("Port must be a number", ConfigLine, __FILE__);
 		_port = real_port;

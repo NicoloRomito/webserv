@@ -1,6 +1,7 @@
 #include "../../include/includes.hpp"
 #include <cctype>
 #include <cstddef>
+#include <iostream>
 
 bool	checkLine(const std::string& line) {
 	for (size_t i = 0; i < line.size(); i++) {
@@ -30,7 +31,19 @@ bool	isNumber(const std::string& str) {
 std::string to_string(int value) {
     std::ostringstream oss;
     oss << value;
-	if (oss.str().empty())
-		return "";
-    return oss.str();
+
+	std::string str = oss.str();
+	oss.clear();
+
+    return str;
+}
+
+std::string to_string(char value) {
+    std::ostringstream oss;
+    oss << value - '0';
+
+	std::string str = oss.str();
+	oss.clear();
+
+    return str;
 }

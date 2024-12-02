@@ -1,10 +1,15 @@
 #include "../../include/Directives/Location.hpp"
+#include "../../include/Directives/Server.hpp"
+#include "../../include/Directives/Http.hpp"
+#include "../../include/includes.hpp"
 #include "../../include/Errors.hpp"
 
 Location::Location(std::stringstream& file) : AConfig() {
 	std::string	line;
 	std::string	directive;
 	std::vector<std::string>	args;
+
+	this->_dName = "location" + to_string(locationN);
 
 	while (std::getline(file, line)) {
 		ConfigLine++;
@@ -22,17 +27,23 @@ Location::Location(std::stringstream& file) : AConfig() {
 				continue;
 			}
 			args.erase(args.begin());
-			_directives[directive] = createDirective(directive, args);
+			if (directive == "error_page") {
+				std::string errorPageName = directive + args.begin()->at(0) + "xx";
+				_directives[errorPageName] = createDirective(directive, args);
+			} else if (directive != "server" && directive != "http" && directive != "location" && !alreadyExists(directive))
+				_directives[directive] = createDirective(directive, args);
 		} else
 			break;
 	}
 	createDefaultDirectives(LOCATION);
+	args.clear();
 }
 
 Location::~Location() {
 	std::map<std::string, AConfig*>::iterator it = this->_directives.begin();
 	for (; it != this->_directives.end(); it++) {
-		delete it->second;
+		if (it->second)
+			delete it->second;
 	}
 	this->_directives.clear();
 }

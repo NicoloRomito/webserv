@@ -9,14 +9,14 @@ ErrorPage::ErrorPage(int errorCode) {
 	if (errorCode == 500) {
 		this->_codes.push_back(500);
 		this->_codes.push_back(502);
-		_path = "/var/www/html/errors/500.html";
+		_path = "/www/html/errors/5xx.html";
 	} else if (errorCode == 400) {
 		this->_codes.push_back(400);
 		this->_codes.push_back(403);
 		this->_codes.push_back(404);
 		this->_codes.push_back(405);
 		this->_codes.push_back(408);
-		_path = "/var/www/html/errors/400.html";
+		_path = "/www/html/errors/4xx.html";
 	}
 }
 
