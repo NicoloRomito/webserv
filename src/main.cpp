@@ -14,6 +14,7 @@
 #include <exception>
 #include <fstream>
 #include <string>
+#include <vector>
 
 int	main(int ac, char **av)
 {
@@ -22,21 +23,30 @@ int	main(int ac, char **av)
 	}
 
 	std::stringstream fileStream;
+	Http *http = new Http();
 
 	try {
 		startParsing(av[1], fileStream);
-		Http *http = new Http(fileStream);
+		http->parse(fileStream);
 
 		std::string path = http->getDirective<Server>("server1")->getDirective<ErrorPage>("server1error_page4xx")->getPath();
+		std::string path_1 = http->getDirective<Server>("server1")->getDirective<ErrorPage>("server1error_page5xx")->getPath();
+		std::vector<int> codes = http->getDirective<Server>("server1")->getDirective<ErrorPage>("server1error_page5xx")->getCodes();
+
+		for (std::vector<int>::iterator it = codes.begin(); it != codes.end(); it++) {
+			std::cout << "CODE " << *it << std::endl;
+		}
 
 		std::cout << "PATH " << path << std::endl;
+
+		std::cout << "PATH " << path_1 << std::endl;
 
 		std::string path2 = http->getDirective<Server>("server2")->getDirective<ErrorPage>("server2error_page4xx")->getPath();
 
 		std::cout << "PATH " << path2 << std::endl;
 
-		delete http;
 	} catch (std::exception& e) {
 		std::cerr << e.what();
 	}
+	delete http;
 }

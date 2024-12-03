@@ -5,6 +5,8 @@
 #include <string>
 #include <vector>
 
+ErrorPage::ErrorPage() {}
+
 ErrorPage::ErrorPage(int errorCode) {
 	if (errorCode == 500) {
 		this->_codes.push_back(500);
@@ -19,6 +21,20 @@ ErrorPage::ErrorPage(int errorCode) {
 		_path = "/www/html/errors/4xx.html";
 	}
 }
+
+ErrorPage::~ErrorPage() {
+	_codes.clear();
+}
+
+
+const std::string& ErrorPage::getPath() const {
+	return _path;
+}
+
+const std::vector<int>& ErrorPage::getCodes() const {
+	return _codes;
+}
+
 
 void ErrorPage::addErrorCode(const std::string& code) {
 	int errorCode = atoi(code.c_str());
@@ -57,7 +73,8 @@ void ErrorPage::addErrorCode(const std::string& code) {
 	}
 }
 
-ErrorPage::ErrorPage(const std::vector<std::string>& args) {
+
+void	ErrorPage::parseDirective(const std::vector<std::string>& args) {
 	for (std::vector<std::string>::const_iterator it = args.begin(); it != args.end(); it++) {
 		if (isNumber(*it)) {
 			addErrorCode(*it);
@@ -67,12 +84,4 @@ ErrorPage::ErrorPage(const std::vector<std::string>& args) {
 			throw Errors::InvalidArgumentException("Invalid path for error page", ConfigLine, __FILE__);
 		}
 	}
-}
-
-ErrorPage::~ErrorPage() {
-	_codes.clear();
-}
-
-const std::string& ErrorPage::getPath() const {
-	return _path;
 }

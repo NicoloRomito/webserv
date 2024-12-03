@@ -1,10 +1,23 @@
 #include "../../include/includes.hpp"
 #include "../../include/Directives/Listen.hpp"
 #include "../../include/Errors.hpp"
+#include <vector>
+
+// TODO: check for more listen directives inside the same server block
 
 Listen::Listen() : _port("8080"), _ip("localhost") {}
 
-Listen::Listen(const std::vector<std::string>& args) : AConfig(), _port("8080"), _ip("127.0.0.1") {
+Listen::~Listen() {}
+
+const std::string&	Listen::getPort() const {
+	return _port;
+}
+
+const std::string&	Listen::getIp() const {
+	return _ip;
+}
+
+void	Listen::parseDirective(const std::vector<std::string>& args) {
 	if (args.size() < 1) {
 		throw Errors::TooFewArgsException("Wrong number of args", ConfigLine, __FILE__);
 	}
@@ -22,14 +35,4 @@ Listen::Listen(const std::vector<std::string>& args) : AConfig(), _port("8080"),
 		_port = std::string(args[0].begin(), args[0].end() - 1);
 		_ip = "localhost";
 	}
-}
-
-Listen::~Listen() {}
-
-const std::string&	Listen::getPort() const {
-	return _port;
-}
-
-const std::string&	Listen::getIp() const {
-	return _ip;
 }

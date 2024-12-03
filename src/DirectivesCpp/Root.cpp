@@ -1,10 +1,18 @@
 #include "../../include/Directives/Root.hpp"
 #include "../../include/Errors.hpp"
 #include "../../include/includes.hpp"
+#include <vector>
 
+// TODO: set real path when ready to test
 Root::Root() : _path("./") {}
 
-Root::Root(const std::vector<std::string>& args) {
+Root::~Root() {}
+
+const std::string&	Root::getPath() const {
+	return this->_path;
+}
+
+void	Root::parseDirective(const std::vector<std::string>& args) {
 	if (args.size() != 1) {
 		throw Errors::TooFewArgsException("Wrong number of args", ConfigLine, __FILE__);
 	}
@@ -14,10 +22,4 @@ Root::Root(const std::vector<std::string>& args) {
 	} else {
 		throw Errors::NoSemiColonException("No semicolon found", ConfigLine, __FILE__);
 	}
-}
-
-Root::~Root() {}
-
-const std::string&	Root::getPath() const {
-	return this->_path;
 }

@@ -9,10 +9,10 @@ class	Server : public AConfig {
 	private:
 		
 	public:
-		Server(std::stringstream& file);
+		Server();
 		~Server();
 
-		// take config file line by line in the while loops for exception handling, using global variable -> ExceptionLine
-		AConfig*	createBlock(const std::string& directive, std::stringstream& file);
+		bool		parseErrorPage(const std::vector<std::string>& args, const std::string& directive);
 
+		void		parse(std::stringstream& file);
 };

@@ -9,7 +9,15 @@
 
 int serverN = 0;
 
-Http::Http(std::stringstream& file) : AConfig() {
+Http::Http() : AConfig() {}
+
+Http::~Http() {
+	std::cout << RED << "\n{ Deleting http\n\n" << WHITE;
+	cleanDirectives();
+	std::cout << RED << "}\n" << WHITE;
+}
+
+void	Http::parse(std::stringstream& file) {
 	std::string	line;
 	std::string	directive;
 	std::vector<std::string>	args;
@@ -21,10 +29,7 @@ Http::Http(std::stringstream& file) : AConfig() {
 		}
 		if (line.find("}") == std::string::npos) { // if the closing bracket is still not found
 			args = returnLine(line); // get the args divided in the line
-			directive = parseDirective(args[0]); // get the name of the directive, if not returns UNKNOWN.
-			if (directive.empty()) {
-				continue;
-			}
+			directive = parseDirective(args.at(0)); // get the name of the directive, if not returns UNKNOWN.
 			if (directive == "server") {
 				std::string serverName = directive + to_string(++serverN);
 				_directives[serverName] = createBlock(directive, file);
@@ -42,24 +47,3 @@ Http::Http(std::stringstream& file) : AConfig() {
 	args.clear();
 }
 
-Http::~Http() {
-	std::map<std::string, AConfig*>::iterator it = this->_directives.begin();
-	for (; it != this->_directives.end(); it++) {
-		std::cout << "deleting " << it->first << std::endl;
-		if (it->second)
-			delete it->second;
-	}
-	this->_directives.clear();
-}
-
-AConfig*	Http::createBlock(const std::string& directive, std::stringstream& file) {
-	DirectiveType	type = getDirectiveType(directive);
-
-	if (type == SERVER) {
-		return new Server(file);
-	} else if (type == LOCATION) {
-		return new Location(file);
-	} else {
-		throw Errors::UnknownDirectiveException("Unknown directive", ConfigLine, __FILE__);
-	}
-}

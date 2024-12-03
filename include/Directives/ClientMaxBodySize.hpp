@@ -12,4 +12,6 @@ class	ClientMaxBodySize : public AConfig {
 		~ClientMaxBodySize();
 
 		const size_t&	getSize() const;
+
+		void	parseDirective(const std::vector<std::string>& args);
 };

@@ -9,8 +9,9 @@ class	ServerName : public AConfig {
 
 	public:
 		ServerName();
-		ServerName(std::vector<std::string>& args);
 		~ServerName();
 
 		const std::vector<std::string>&	getNames() const;
+
+		void		parseDirective(const std::vector<std::string>& args);
 };

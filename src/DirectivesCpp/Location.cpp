@@ -4,7 +4,15 @@
 #include "../../include/includes.hpp"
 #include "../../include/Errors.hpp"
 
-Location::Location(std::stringstream& file) : AConfig() {
+Location::Location() : AConfig() {}
+
+Location::~Location() {
+	std::cout << "\n{ Deleting location\n\n";
+	cleanDirectives();
+	std::cout << "}\n";
+}
+
+void	Location::parse(std::stringstream& file) {
 	std::string	line;
 	std::string	directive;
 	std::vector<std::string>	args;
@@ -37,15 +45,6 @@ Location::Location(std::stringstream& file) : AConfig() {
 	}
 	createDefaultDirectives(LOCATION);
 	args.clear();
-}
-
-Location::~Location() {
-	std::map<std::string, AConfig*>::iterator it = this->_directives.begin();
-	for (; it != this->_directives.end(); it++) {
-		if (it->second)
-			delete it->second;
-	}
-	this->_directives.clear();
 }
 
 const std::string&	Location::getPath() const {

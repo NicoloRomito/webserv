@@ -10,10 +10,13 @@ class	ErrorPage : public AConfig {
 
 	public:
 		ErrorPage(int errorCode);
-		ErrorPage(const std::vector<std::string>& args);
+		ErrorPage();
 		~ErrorPage();
 
 		const std::string&	getPath() const;
+		const std::vector<int>&	getCodes() const;
+
+		void				parseDirective(const std::vector<std::string>& args);
 
 		void				addErrorCode(const std::string& code);
 };

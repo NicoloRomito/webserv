@@ -8,8 +8,9 @@ class	Root : public AConfig {
 
 	public:
 		Root();
-		Root(const std::vector<std::string>& args);
 		~Root();
 
 		const std::string&	getPath() const;
+
+		void	parseDirective(const std::vector<std::string>& args);
 };

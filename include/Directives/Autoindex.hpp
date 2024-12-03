@@ -8,8 +8,9 @@ class	Autoindex : public AConfig {
 
 	public:
 		Autoindex();
-		Autoindex(const std::vector<std::string>& args);
 		~Autoindex();
 
 		const bool&	getAutoindex() const;
+
+		void	parseDirective(const std::vector<std::string>& args);
 };

@@ -4,7 +4,13 @@
 
 Autoindex::Autoindex() : _autoindex(false) {}
 
-Autoindex::Autoindex(const std::vector<std::string>& args) {
+Autoindex::~Autoindex() {}
+
+const bool&	Autoindex::getAutoindex() const {
+	return _autoindex;
+}
+
+void	Autoindex::parseDirective(const std::vector<std::string>& args) {
 	if (args.size() != 1)
 		throw Errors::TooFewArgsException("Wrong number of args", ConfigLine, __FILE__);
 	if (std::string(args[0].begin(), args[0].end() - 1) == "on")
@@ -13,10 +19,4 @@ Autoindex::Autoindex(const std::vector<std::string>& args) {
 		_autoindex = false;
 	else
 		throw Errors::UnknownDirectiveException("Unknown directive", ConfigLine, __FILE__);
-}
-
-Autoindex::~Autoindex() {}
-
-const bool&	Autoindex::getAutoindex() const {
-	return _autoindex;
 }

@@ -65,4 +65,10 @@ class	Errors {
 					: BaseException(message, line, file) {};
 		};
 
+		class	DuplicateDirectiveException : public BaseException {
+			public:
+				DuplicateDirectiveException(const std::string& message, int line, const char* file)
+					: BaseException(message, line, file) {};
+		};
+
 };

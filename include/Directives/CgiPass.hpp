@@ -11,8 +11,11 @@ class	CgiPass : public AConfig {
 
 	public:
 		CgiPass();
-		CgiPass(const std::vector<std::string>& args);
 		~CgiPass();
 
+		void	setDefaultCgiPaths();
+
 		const std::vector<std::string>&	getPath() const;
+
+		void	parseDirective(const std::vector<std::string>& args);
 };

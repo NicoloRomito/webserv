@@ -11,9 +11,10 @@ class Listen : public AConfig {
 
 	public:
 		Listen();
-		Listen(const std::vector<std::string>& args);
 		~Listen();
 
 		const std::string&	getPort() const;
 		const std::string&	getIp() const;
+
+		void				parseDirective(const std::vector<std::string>& args);
 };

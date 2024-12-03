@@ -15,7 +15,7 @@ std::string	parseDirective(const std::string& directive)
 {
 	DirectiveType	type = getDirectiveType(directive);
 
-	if (type == UNKNOWN) {
+	if (type == UNKNOWN || directive.empty()) {
 		throw Errors::UnknownDirectiveException("Unknown directive " + directive, ConfigLine, __FILE__);
 	}
 	return directive;

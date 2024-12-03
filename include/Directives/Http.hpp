@@ -9,9 +9,9 @@ class	Http : public AConfig {
 	private:
 
 	public:
-		Http(std::stringstream& file);
+		Http();
 		~Http();
 
-		AConfig*	createBlock(const std::string& directive, std::stringstream& file);
+		void	parse(std::stringstream& file);
 
 };

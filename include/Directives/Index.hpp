@@ -8,8 +8,9 @@ class	Index : public AConfig {
 
 	public:
 		Index();
-		Index(const std::vector<std::string>& args);
 		~Index();
 
 		const std::string&	getPath() const;
+
+		void				parseDirective(const std::vector<std::string>& args);
 };

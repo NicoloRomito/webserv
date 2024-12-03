@@ -14,6 +14,7 @@
 #include "../../../include/Directives/Http.hpp"
 #include "../../../include/Directives/Server.hpp"
 #include "../../../include/includes.hpp"
+#include <exception>
 #include <iostream>
 #include <sstream>
 
@@ -26,23 +27,39 @@ AConfig*	AConfig::createDirective(const std::string& directive, std::vector<std:
 	DirectiveType	type = getDirectiveType(directive);
 
 	switch (type) {
-		case LISTEN:
-			return new Listen(args);
-		case SERVER_NAME:
-			return new ServerName(args);
-		case ROOT:
-			return new Root(args);
-		case INDEX:
-			return new Index(args);
-		case ERROR_PAGE:
-			return new ErrorPage(args);
-		case CLIENT_MAX_BODY_SIZE:
-			return new ClientMaxBodySize(args);
-		case AUTOINDEX:
-			return new Autoindex(args);
-		case CGI_PASS:
-			return new CgiPass(args);
-		default:
+		case LISTEN: {
+			Listen *listen = new Listen();
+			listen->parseDirective(args);
+			return listen;
+		} case SERVER_NAME: {
+			ServerName *serverName = new ServerName();
+			serverName->parseDirective(args);
+			return serverName;
+		} case ROOT: {
+			Root *root = new Root();
+			root->parseDirective(args);
+			return root;
+		} case INDEX: {
+			Index *index = new Index();
+			index->parseDirective(args);
+			return index;
+		} case ERROR_PAGE: {
+			ErrorPage *errorPage = new ErrorPage();
+			errorPage->parseDirective(args);
+			return errorPage;
+		} case CLIENT_MAX_BODY_SIZE: {
+			ClientMaxBodySize *clientMaxBodySize = new ClientMaxBodySize();
+			clientMaxBodySize->parseDirective(args);
+			return clientMaxBodySize;
+		} case AUTOINDEX: {
+			Autoindex *autoindex = new Autoindex();
+			autoindex->parseDirective(args);
+			return autoindex;
+		} case CGI_PASS: {
+			CgiPass *cgiPass = new CgiPass();
+			cgiPass->parseDirective(args);
+			return cgiPass;
+		} default:
 			throw Errors::UnknownDirectiveException("Unknown directive", ConfigLine, __FILE__);
 	}
 	return NULL;
@@ -51,13 +68,27 @@ AConfig*	AConfig::createDirective(const std::string& directive, std::vector<std:
 AConfig*	AConfig::createBlock(const std::string& directive, std::stringstream& file) {
 	DirectiveType	type = getDirectiveType(directive);
 
-	switch (type) {
-		case SERVER:
-			return new Server(file);
-		case LOCATION:
-			return new Location(file);
-		default:
-			throw Errors::UnknownDirectiveException("Unknown directive", ConfigLine, __FILE__);
+	Server *server = NULL;
+	Location *location = NULL;
+
+	try {	
+		switch (type) {
+			case SERVER: {
+				server = new Server();
+				server->parse(file);
+				return server;
+			} case LOCATION: {
+				location = new Location();
+				location->parse(file);
+				return location;
+			} default:
+				throw Errors::UnknownDirectiveException("Unknown directive", ConfigLine, __FILE__);
+		}
+	} catch (std::exception& e) {
+		delete server;
+		delete location;
+
+		throw e;
 	}
 	return NULL;
 }
@@ -81,8 +112,11 @@ void	AConfig::createDefaultDirectives(DirectiveType type) {
 				this->_directives[this->_dName + "error_page5xx"] = new ErrorPage(500);
 			break;
 		case LOCATION:
-			if (this->_directives.find("cgi_pass") == this->_directives.end())
-				this->_directives["cgi_pass"] = new CgiPass();
+			if (this->_directives.find("cgi_pass") == this->_directives.end()) {
+				CgiPass *cgiPass = new CgiPass();
+				cgiPass->setDefaultCgiPaths();
+				this->_directives["cgi_pass"] = cgiPass;
+			}
 			if (this->_directives.find("root") == this->_directives.end())
 				this->_directives["root"] = new Root();
 
@@ -96,6 +130,17 @@ void	AConfig::createDefaultDirectives(DirectiveType type) {
 			break;
 	}
 }
+
+void	AConfig::cleanDirectives() {
+	std::map<std::string, AConfig*>::iterator it = this->_directives.begin();
+	for (; it != this->_directives.end(); it++) {
+		std::cout << "Deleting directive: " << it->first << std::endl;
+		if (it->second)
+			delete it->second;
+	}
+	this->_directives.clear();
+}
+
 
 bool	AConfig::alreadyExists(const std::string& directiveName) const {
 	std::map<std::string, AConfig *>::const_iterator it = _directives.find(directiveName);
