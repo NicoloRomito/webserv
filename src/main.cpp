@@ -56,7 +56,6 @@ void clientHandler(int clientSocket) {
     std::cout << index.length() << '\n';
     oss << index.length();
     response += oss.str();
-    std::cout << response << '\n';
     response += "\r\n\r\n";
     response += index;
     //std::cout << "response" << response << '\n';
