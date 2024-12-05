@@ -7,9 +7,9 @@
 Location::Location() : AConfig() {}
 
 Location::~Location() {
-	std::cout << "\n{ Deleting location\n\n";
+	// std::cout << "\n{ Deleting location\n\n";
 	cleanDirectives();
-	std::cout << "}\n";
+	// std::cout << "}\n";
 }
 
 void	Location::parse(std::stringstream& file) {
@@ -31,15 +31,15 @@ void	Location::parse(std::stringstream& file) {
 		if (line.find("}") == std::string::npos) { // if the closing bracket is still not found
 			args = returnLine(line); // get the args divided in the line
 			directive = parseDirective(args[0]); // get the name of the directive, if not returns UNKNOWN.
-			if (directive.empty()) {
-				continue;
-			}
 			args.erase(args.begin());
-			if (directive == "error_page") {
-				std::string errorPageName = directive + args.begin()->at(0) + "xx";
-				_directives[errorPageName] = createDirective(directive, args);
-			} else if (directive != "server" && directive != "http" && directive != "location" && !alreadyExists(directive))
-				_directives[directive] = createDirective(directive, args);
+			if (semicolonFound(line)) {
+				if (directive == "error_page") {
+					std::string errorPageName = directive + args.begin()->at(0) + "xx";
+					_directives[errorPageName] = createDirective(directive, args);
+				} else if (directive != "server" && directive != "http" && directive != "location" && !alreadyExists(directive))
+					_directives[directive] = createDirective(directive, args);
+			} else
+				throw Errors::NoSemiColonException("Semicolon at the end of line not found", ConfigLine, __FILE__);
 		} else
 			break;
 	}

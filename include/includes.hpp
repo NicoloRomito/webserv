@@ -48,6 +48,7 @@ void 	error(std::string msg);
 DirectiveType	checkDirectiveType(const std::string& dir);
 bool			isNumber(const std::string& str);
 bool			checkLine(const std::string& line);
+bool			semicolonFound(const std::string& line);
 std::string 	to_string(int value);
 std::string 	to_string(char value);
 

@@ -12,9 +12,9 @@ int serverN = 0;
 Http::Http() : AConfig() {}
 
 Http::~Http() {
-	std::cout << RED << "\n{ Deleting http\n\n" << WHITE;
+	// std::cout << RED << "\n{ Deleting http\n\n" << WHITE;
 	cleanDirectives();
-	std::cout << RED << "}\n" << WHITE;
+	// std::cout << RED << "}\n" << WHITE;
 }
 
 void	Http::parse(std::stringstream& file) {
@@ -36,7 +36,7 @@ void	Http::parse(std::stringstream& file) {
 				continue;
 			}
 			args.erase(args.begin());
-			if (directive == "client_max_body_size" && !alreadyExists("client_max_body_size"))
+			if (directive == "client_max_body_size" && !alreadyExists("client_max_body_size") && semicolonFound(line))
 				_directives[directive] = createDirective(directive, args);
 		} else
 			break;

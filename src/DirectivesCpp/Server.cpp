@@ -10,13 +10,14 @@
 #include <vector>
 
 int	locationN = 0;
+int listenN = 0;
 
 Server::Server() : AConfig() {}
 
 Server::~Server() {
-	std::cout << GREEN << "\n{ Deleting server\n\n" << WHITE;
+	// std::cout << GREEN << "\n{ Deleting server\n\n" << WHITE;
 	cleanDirectives();
-	std::cout << GREEN << "}\n" << WHITE;
+	// std::cout << GREEN << "}\n" << WHITE;
 }
 
 void	Server::parse(std::stringstream& file) {
@@ -43,19 +44,31 @@ void	Server::parse(std::stringstream& file) {
 				continue;
 			}
 			args.erase(args.begin());
-			if (directive == "error_page") {
-				if (!parseErrorPage(args, directive))
-					throw Errors::InvalidErrorCode("Invalid error code", ConfigLine, __FILE__);
-				// TODO : check if error page already exists and if the status code is different the directive before it already created.
-				// TODO : if the status code is different but the directive already exists, add the status code to the directive already created.
-			}
-			else if (directive != "server" && directive != "http" && !alreadyExists(directive))
-				_directives[directive] = createDirective(directive, args);
+			if (semicolonFound(line)) {
+				if (directive == "error_page") {
+					if (!parseErrorPage(args, directive))
+						throw Errors::InvalidErrorCode("Invalid error code", ConfigLine, __FILE__);
+					// TODO : check if error page already exists and if the status code is different the directive before it already created.
+					// TODO : if the status code is different but the directive already exists, add the status code to the directive already created.
+				} else if (directive == "listen") {
+					parseListen(args, directive, ++listenN);
+				} else if (directive != "server" && directive != "http" && !alreadyExists(directive))
+					_directives[directive] = createDirective(directive, args);
+			} else
+				throw Errors::NoSemiColonException("Semicolon at the end of line not found", ConfigLine, __FILE__);
 		} else
 			break;
 	}
 	createDefaultDirectives(SERVER);
 	args.clear();
+}
+
+void	Server::parseListen(const std::vector<std::string>& args, const std::string& directive, int listenN) {
+	std::string	listenName = directive + to_string(listenN);
+	if (!alreadyExists(listenName)) {
+		_directives[listenName] = createDirective(directive, args);
+	} else
+		throw Errors::DuplicateDirectiveException("Duplicate directives are not allowed", ConfigLine, __FILE__);
 }
 
 bool	Server::parseErrorPage(const std::vector<std::string>& args, const std::string& directive) {

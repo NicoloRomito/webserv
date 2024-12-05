@@ -88,7 +88,7 @@ AConfig*	AConfig::createBlock(const std::string& directive, std::stringstream& f
 		delete server;
 		delete location;
 
-		throw e;
+		throw;
 	}
 	return NULL;
 }
@@ -134,7 +134,7 @@ void	AConfig::createDefaultDirectives(DirectiveType type) {
 void	AConfig::cleanDirectives() {
 	std::map<std::string, AConfig*>::iterator it = this->_directives.begin();
 	for (; it != this->_directives.end(); it++) {
-		std::cout << "Deleting directive: " << it->first << std::endl;
+		// std::cout << "Deleting directive: " << it->first << std::endl;
 		if (it->second)
 			delete it->second;
 	}

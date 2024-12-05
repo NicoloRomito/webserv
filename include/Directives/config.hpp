@@ -40,7 +40,7 @@ Directive*	AConfig::getDirective(const std::string& directiveName) const {
 			return directive;
 		throw Errors::UnknownDirectiveException("Directive found but type mismatch", __LINE__, __FILE__);
 	}
-	throw Errors::UnknownDirectiveException("Unknown directive", __LINE__, __FILE__);
+	throw Errors::UnknownDirectiveException("Unknown directive " + directiveName, __LINE__, __FILE__);
 }
 
 #endif

@@ -47,3 +47,20 @@ std::string to_string(char value) {
 
     return str;
 }
+
+bool	semicolonFound(const std::string& line) {
+	size_t i = 0;
+	for (i = line.size() - 1; i > 0; i--) {
+		if (std::isspace(line[i])) {
+			continue;
+		} else break;
+	}
+	if (i == line.size()) {
+		if (line[i - 1] == ';')
+			return true;
+	} else {
+		if (line[i] == ';')
+			return true;
+	}
+	return false;
+}
