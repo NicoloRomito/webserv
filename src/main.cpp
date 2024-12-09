@@ -134,7 +134,6 @@ int main(int ac, char **av) {
 	} catch (std::exception& e) {
 		std::cerr << e.what();
 	}
-	delete http;
     // Create the server socket
     int serverSocket = initSocket();
     if (serverSocket == -1)
@@ -165,7 +164,6 @@ int main(int ac, char **av) {
         }
         // Check if the server socket is ready to accept a new connection
         if (pollFds[0].revents & POLLIN) {
-            std::cout << "while\n";
             int clientSocket = accept(serverSocket, NULL, NULL);
             if (clientSocket < 0) {
                 std::cerr << "Client connection failed." << std::endl;
@@ -192,5 +190,6 @@ int main(int ac, char **av) {
     for (size_t i = 0; i < pollFds.size(); i++) {
         close(pollFds[i].fd);
     }
+	delete http;
     return 0;
 }
