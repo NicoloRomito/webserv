@@ -26,10 +26,26 @@ void readIndex(std::string &respose) {
     }
 }
 
+std::string getResponse() {
+    std::ostringstream oss;
+    std::string index;
+
+   std::string response = 
+        "HTTP/1.1 200 OK\r\n"
+        "Content-Type: text/html\r\n"
+        "Content-Length: ";
+    readIndex(index);
+    oss << index.length();
+    response += oss.str();
+    response += "\r\n\r\n";
+    response += index;
+
+    return response;
+}
+
 void clientHandler(int clientSocket) {
     char buffer[1024] = {0};
     Request *request = new Request();
-    std::ostringstream oss;
     std::string index;
 
     // Receive data from the client
@@ -45,19 +61,10 @@ void clientHandler(int clientSocket) {
     }
     // Print the received message
     request->parseRequest(buffer);
-    std::cout << "Message from client: " << buffer << std::endl;
+    // std::cout << "Message from client: " << buffer << std::endl;
 
     // Optionally, send a response back to the client
-    std::string response = 
-        "HTTP/1.1 200 OK\r\n"
-        "Content-Type: text/html\r\n"
-        "Content-Length: ";
-    readIndex(index);
-    std::cout << index.length() << '\n';
-    oss << index.length();
-    response += oss.str();
-    response += "\r\n\r\n";
-    response += index;
+    std::string response = getResponse();
     //std::cout << "response" << response << '\n';
     // Send the response to the client
     send(clientSocket, response.c_str(), response.size(), MSG_CONFIRM);
