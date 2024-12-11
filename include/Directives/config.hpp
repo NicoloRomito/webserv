@@ -1,8 +1,9 @@
 #ifndef CONFIG_HPP
 # define CONFIG_HPP
 
-#include "../includes.hpp"
 #include "../Errors.hpp"
+#include "../includes.hpp"
+#include <map>
 #include <iostream>
 #include <string>
 #include <vector>

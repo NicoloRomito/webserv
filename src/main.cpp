@@ -1,12 +1,8 @@
-#include "../include/includes.hpp" // IWYU pragma: keep
 #include "classes/headers/Request.hpp"
 #include <csignal>
-#include <fstream>
 #include <ostream>
 #include <sstream>
 #include <sys/poll.h>
-#include <vector>
-#include <unistd.h>
 #include <cstring>
 #include <iostream>
 #include "../include/includes.hpp"
@@ -74,7 +70,7 @@ std::string getResponse() {
 void clientHandler(int clientSocket) {
     char buffer[1024] = {0};
     Request *request = new Request();
-    std::string index;
+    std::string response;
 
     // Receive data from the client
     int bytesReceived = recv(clientSocket, buffer, sizeof(buffer), 0);
@@ -85,17 +81,26 @@ void clientHandler(int clientSocket) {
             std::cerr << "Error receiving data." << std::endl;
         }
         close(clientSocket); // Close the socket on error or disconnect
-        return; 
+        return;
     }
     // Print the received message
     request->parseRequest(buffer);
     // std::cout << "Message from client: " << buffer << std::endl;
 
+    // std::string method = request->getMethod();
     // Optionally, send a response back to the client
-    std::string response = getResponse();
+    response = getResponse();
+    std::cout << "Request path: " << request->getPath() << std::endl;
+    // if (method == "GET") {
+    // } else if (method == "POST") {
+
+    //     response = "HTTP/1.1 200 OK\r\n\r\n";
+    // } else {
+    //     response = "HTTP/1.1 405 Method Not Allowed\r\n\r\n";
+    // }
     //std::cout << "response" << response << '\n';
     // Send the response to the client
-    send(clientSocket, response.c_str(), response.size(), MSG_CONFIRM);
+    send(clientSocket, response.c_str(), response.size(), MSG_CONFIRM); // needs a check with throw error
 }
 
 void sigHandler(int signal) {
@@ -141,18 +146,21 @@ int main(int ac, char **av) {
 
     // Set socket option to allow reuse of address/port
     int opt = 1;
-    socketOption(serverSocket, opt);
+    if (socketOption(serverSocket, opt) == -1) 
+        return 0;
 
     // Specify the address
     sockaddr_in serverAddress;
-    runSocket(serverAddress, serverSocket);
+    if (runSocket(serverAddress, serverSocket, http->getDirective<Server>("server1")->getDirective<Listen>("listen1")->getPort()) == -1) {
+        return 0;
+    } 
 
     std::cout << "Server listening on port " << ntohs(serverAddress.sin_port) << "..." << std::endl;
 
     // Prepare for polling
     std::vector<pollfd> pollFds;
     pollfd serverPollFd = {serverSocket, POLLIN, 0};
-    pollFds.push_back(serverPollFd);   
+    pollFds.push_back(serverPollFd);
 
     signal(SIGINT, sigHandler);
     while (true) {
@@ -170,7 +178,10 @@ int main(int ac, char **av) {
                 continue;
             }
             std::cout << "Client connected." << std::endl;
-            
+            if (setNonBlocking(clientSocket) == -1) {
+                close(clientSocket);
+                continue;
+            }
             // Add the new client socket to the poll list
             pollfd clientPollFd = {clientSocket, POLLIN, 0};
             pollFds.push_back(clientPollFd);
@@ -185,6 +196,7 @@ int main(int ac, char **av) {
                 // No socket closing after receiving one message
             }
         }
+        if (QUIT) break;
     }
     std::cout << "pollfds = " << pollFds.size() << std::endl;
     for (size_t i = 0; i < pollFds.size(); i++) {

@@ -25,6 +25,19 @@ extern int	locationN;
 extern int	serverN;
 
 class AConfig;
+class Server;
+class Listen;
+class Http;
+class Location;
+class ServerName;
+class Root;
+class Index;
+class ErrorPage;
+class ClientMaxBodySize;
+class Autoindex;
+class CgiPass;
+
+class Request;
 
 enum	DirectiveType {
 	HTTP,
@@ -59,8 +72,9 @@ DirectiveType				getDirectiveType(const std::string& dir);
 std::vector<std::string>	returnLine(const std::string& line);
 
 //init socket
-int initSocket();
-int socketOption(int serverSocket, int opt = 1);
-int runSocket(sockaddr_in &serverAddress, int serverSocket);
+int		initSocket();
+int		setNonBlocking(int socket);
+int		socketOption(int serverSocket, int opt = 1);
+int		runSocket(sockaddr_in &serverAddress, int serverSocket, const std::string& port);
 
 #endif
