@@ -12,6 +12,7 @@
 #include <map>
 #include <vector>
 #include <poll.h>
+#include <sys/wait.h>
 
 # define RED "\033[1;31m"
 # define GREEN "\033[1;32m"

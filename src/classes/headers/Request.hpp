@@ -2,6 +2,7 @@
 # define REQUEST_HPP
 
 #include "../../../include/includes.hpp" // IWYU pragma: keep
+#include <string>
 
 class Request {
 	private:
@@ -13,6 +14,7 @@ class Request {
 		std::string version;
 		std::string path;
 		std::string host;
+		std::string _cgiOutput;
 	public:
 		Request();
 		~Request();
@@ -24,6 +26,8 @@ class Request {
 		std::string getMethod() const;
 		std::string getVersion() const;
 		std::string getPath() const;
+		std::string getCgiOutput() const;
+		void setCgiOutput(const std::string);
 		// std::string getHost() const;
 };
 

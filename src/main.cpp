@@ -1,3 +1,4 @@
+#include "cgi/Cgi.hpp"
 #include "classes/headers/Request.hpp"
 #include <csignal>
 #include <ostream>
@@ -36,21 +37,30 @@
 
 int QUIT = 0;
 
-void readIndex(std::string &respose) {
+void readIndex(std::string &response, Request* req) {
     std::ifstream file;
     std::string line;
+    Cgi* cgi;
 
-    file.open("src/www/static/index.html");
+    if (req->getPath().substr(0, 8) == "/cgi-bin")
+    {
+        cgi = new Cgi(*req);
+        cgi->executeCgi(req);
+        file.open(req->getCgiOutput().c_str());
+        delete cgi;
+    }
+    else 
+        file.open("src/www/static/index.html");
     if (!file.is_open()) {
         std::cout << "not open\n";
     }
     while (getline(file, line, '\0')) {
         line.insert(line.size() - 2, "\r");
-        respose += line;
+        response += line;
     }
 }
 
-std::string getResponse() {
+std::string getResponse(Request* req) {
     std::ostringstream oss;
     std::string index;
 
@@ -58,7 +68,7 @@ std::string getResponse() {
         "HTTP/1.1 200 OK\r\n"
         "Content-Type: text/html\r\n"
         "Content-Length: ";
-    readIndex(index);
+    readIndex(index, req);
     oss << index.length();
     response += oss.str();
     response += "\r\n\r\n";
@@ -89,8 +99,9 @@ void clientHandler(int clientSocket) {
 
     // std::string method = request->getMethod();
     // Optionally, send a response back to the client
-    response = getResponse();
+    response = getResponse(request);
     std::cout << "Request path: " << request->getPath() << std::endl;
+    delete request;
     // if (method == "GET") {
     // } else if (method == "POST") {
 

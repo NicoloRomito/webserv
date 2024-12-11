@@ -6,6 +6,7 @@ SRC_DIR = src/
 ERRORS_DIR = src/utils/
 PARSING_DIR = src/parsing/configParsing/
 DIRECTIVES_DIR = src/DirectivesCpp/
+CGI_DIR = src/cgi/
 
 FILES = init/init.cpp utils/errorMsg.cpp classes/logic/Request.cpp
 MAIN = main.cpp
@@ -15,12 +16,15 @@ PARSING_FILES = config.cpp parsing.cpp
 DIRECTIVES_FILES = Autoindex.cpp ErrorPage.cpp Index.cpp CgiPass.cpp \
 					Location.cpp ClientMaxBodySize.cpp Root.cpp Server.cpp \
 					Http.cpp Listen.cpp ServerName.cpp 
+CGI_FILES = Cgi.cpp
+
 
 SRC = $(addprefix $(SRC_DIR), $(MAIN) $(FILES))
 UTILS = $(addprefix $(ERRORS_DIR), $(UTILS_FILES))
 ERRORS = $(addprefix $(ERRORS_DIR), $(ERRORS_FILES))
 PARSING = $(addprefix $(PARSING_DIR), $(PARSING_FILES))
 DIRECTIVES = $(addprefix $(DIRECTIVES_DIR), $(DIRECTIVES_FILES))
+CGI = $(addprefix $(CGI_DIR), $(CGI_FILES))
 
 INCLUDES = MutantStack.hpp MutantStack.tpp
 
@@ -33,7 +37,7 @@ C98 = -std=c++98
 all: $(NAME)
 
 $(NAME): $(SRC) $(UTILS) $(ERRORS) $(PARSING) $(DIRECTIVES)
-	$(CPP) $(CFLAGS) $(C98) $(SRC) $(UTILS) $(ERRORS) $(PARSING) $(DIRECTIVES) -o $(NAME)
+	$(CPP) $(CFLAGS) $(C98) $(SRC) $(UTILS) $(ERRORS) $(PARSING) $(DIRECTIVES) $(CGI) -o $(NAME)
 	@clear
 	@echo "Compilation complete."
 

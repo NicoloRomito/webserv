@@ -45,6 +45,7 @@ void Request::parseRequest(std::string buffer) {
 	for (size_t i = 0; i < splitReq.size(); i++) {
 		std::cout << splitReq[i] << '\n';
 	}
+	this->path = splitReq[1];
 	std::cout << "-----end------\n";
 
 	// this->method = splitReq[0];
@@ -68,3 +69,10 @@ std::string Request::getPath() const {
 std::string Request::getUri() const {
 	return "http://" + this->host + this->path;
 }
+
+void	Request::setCgiOutput(const std::string toSet)
+{
+	this->_cgiOutput = toSet;
+}
+
+std::string Request::getCgiOutput() const {return this->_cgiOutput;}
