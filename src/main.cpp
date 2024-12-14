@@ -100,7 +100,7 @@ void clientHandler(int clientSocket) {
     // std::string method = request->getMethod();
     // Optionally, send a response back to the client
     response = getResponse(request);
-    std::cout << "Request path: " << request->getPath() << std::endl;
+    // std::cout << "Request path: " << request->getPath() << std::endl;
     delete request;
     // if (method == "GET") {
     // } else if (method == "POST") {

@@ -1,5 +1,7 @@
 #include "../headers/Request.hpp"
+#include <cctype>
 #include <cstddef>
+#include <string>
 
 Request::Request():  uri(""), url(""),
 					header(""), body(""), method(""), 
@@ -7,27 +9,37 @@ Request::Request():  uri(""), url(""),
 
 Request::~Request() {}
 
-std::vector<std::string> split(std::string buffer, char delim) {
+void trimString(std::string &str) {
+	while (isspace(str[0]))
+		str.erase(0, 1);
+	while (isspace(str[str.size() - 1]))
+		str.erase(str.size() - 1, 1);
+
+}
+
+void printVec(std::vector<std::string> vec) {
+	std::cout << "---VECTOR PRINT---\n";
+	for (size_t i = 0; i < vec.size(); i++) {
+		std::cout << i << ": " << vec[i] << '\n';
+	}
+	std::cout << "---END---\n";
+}
+
+std::vector<std::string> getBasicInfo(std::string buffer, char delim) {
 	std::vector<std::string> splitReq;
 	size_t						i = 0;
-	int						found;
 	std::string				word;
 
-	while (buffer[0] == 32)
-		buffer.erase(0, 1);
-	while (buffer[buffer.size() - 1] == 32)
-		buffer.erase(buffer.size() - 1, 1);
-
+	trimString(buffer);
 	while (i < buffer.size()) {
-		while (buffer[i] == delim)
+		while (buffer[i] && buffer[i] != delim) {
+			word.push_back(buffer[i]);
 			i++;
-		found = buffer.find(delim, i);
-		if (found == -1)
-			found = buffer.size();
-		word.insert(0, buffer, i, found - i);
-		std::cout << word << '\n';
+		}
+		while (buffer[i] && buffer[i] == delim) {
+			i++;
+		}
 		splitReq.push_back(word);
-		i = found;
 		word.clear();
 	}
 	return splitReq;
@@ -36,22 +48,18 @@ std::vector<std::string> split(std::string buffer, char delim) {
 void Request::parseRequest(std::string buffer) {
 	std::vector<std::string> splitReq;
 
+	std::string temp;
 
-	splitReq = split(buffer, 32);
+	temp.insert(0, buffer, 0, buffer.find('\n'));
+	splitReq = getBasicInfo(temp, 32);
 
-
-	std::cout << "-----splitted------\n";
-	std::cout << splitReq.size() << '\n';
-	for (size_t i = 0; i < splitReq.size(); i++) {
-		std::cout << splitReq[i] << '\n';
+	printVec(splitReq);
+	if (splitReq.size() < 3) {
+		error("client error");
 	}
+	this->method = splitReq[0];
 	this->path = splitReq[1];
-	std::cout << "-----end------\n";
-
-	// this->method = splitReq[0];
-	// this->path = splitReq[1];
-	// this->version = splitReq[2].erase(splitReq[2].find('\r'), 1);
-
+	this->version = splitReq[2];
 }
 
 std::string Request::getMethod() const {
