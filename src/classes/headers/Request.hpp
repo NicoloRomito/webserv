@@ -8,8 +8,8 @@ class Request {
 	private:
 		std::string uri;
 		std::string url;
-		std::string header;
-		std::string body;
+		std::map<std::string, std::string> header;
+		std::map<std::string, std::string> body;
 		std::string method;
 		std::string version;
 		std::string path;
@@ -21,8 +21,8 @@ class Request {
 		void parseRequest(std::string buffer);
 		std::string getUri() const;
 		// std::string getUrl() const;
-		// std::string getBody();
-		// std::string getHeader();
+		std::string getBody(std::string key) const;
+		std::string getHeader(std::string key) const ;
 		std::string getMethod() const;
 		std::string getVersion() const;
 		std::string getPath() const;
