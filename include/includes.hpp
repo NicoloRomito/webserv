@@ -76,6 +76,6 @@ std::vector<std::string>	returnLine(const std::string& line);
 int		initSocket();
 int		setNonBlocking(int socket);
 int		socketOption(int serverSocket, int opt = 1);
-int		runSocket(sockaddr_in &serverAddress, int serverSocket, const std::string& port);
+int		runSocket(sockaddr_in &serverAddress, int serverSocket, Http* http);
 
 #endif

@@ -1,5 +1,7 @@
 #include "../../include/includes.hpp" // IWYU pragma: keep
 #include "../../include/Directives/Server.hpp" // IWYU pragma: keep
+#include "../../include/Directives/Http.hpp"
+#include "../../include/Directives/Listen.hpp"
 #include <netinet/in.h>
 #include <string>
 #include <cstdlib>
@@ -40,13 +42,11 @@ int socketOption(int serverSocket, int option) {
 	return 1;
 }
 
-int runSocket(sockaddr_in &serverAddress, int serverSocket, const std::string& port) {
-    int Port = atoi(port.c_str());
-    (void)Port;
-    // /etc/hosts
+int runSocket(sockaddr_in &serverAddress, int serverSocket, Http* http) {
+    int port = atoi(http->getDirective<Server>("server1")->getDirective<Listen>("listen1")->getPort().c_str());
 
 	serverAddress.sin_family = AF_INET;
-    serverAddress.sin_port = htons(8081);  // Port 8080
+    serverAddress.sin_port = htons(port);
     serverAddress.sin_addr.s_addr = htonl(INADDR_ANY);  // Bind to any address
 
     // binding the socket to the address

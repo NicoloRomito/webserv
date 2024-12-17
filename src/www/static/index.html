@@ -83,23 +83,42 @@
     <div class="container">
         <h1>Webserver</h1>
         <p>Upload your file below:</p>
-        <form action="/upload" method="post" enctype="multipart/form-data">
+        <form action="/upload" method="POST">
             <label for="file-upload">Choose a file</label>
-            <input id="file-upload" type="file" name="file">
+            <input id="file-upload" type="file" name="file" onchange="previewFile()">
+            <img id="blah" src="#" alt="your image"/>
             <div class="upload-info" id="file-name">No file chosen</div>
             <button type="submit">Upload</button>
         </form>
     </div>
-
     <script>
         // Show the selected file name
         const fileInput = document.getElementById('file-upload');
         const fileNameDisplay = document.getElementById('file-name');
+        
 
         fileInput.addEventListener('change', () => {
             const fileName = fileInput.files[0]?.name || 'No file chosen';
             fileNameDisplay.textContent = fileName;
         });
+
+		function previewFile() {
+  		const preview = document.querySelector("#blah");
+  		const file = document.querySelector("input[type=file]").files[0];
+  		const reader = new FileReader();
+
+  		reader.addEventListener(
+  		  "load",
+  		  () => {
+            preview.src = reader.result;
+  		  },
+  		  false,
+  		);
+	  
+  		if (file) {
+  		  reader.readAsDataURL(file);
+  		}
+	}
     </script>
 </body>
 </html>

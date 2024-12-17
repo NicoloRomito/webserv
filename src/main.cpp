@@ -60,19 +60,41 @@ void readIndex(std::string &response, Request* req) {
     }
 }
 
+std::string handlePostReq(Request* req) {
+    std::string response;
+    // std::cout << req->getHeader("Content-Length") << std::endl;
+    // std::string body = req->getHeader("Content-Length");
+        response = 
+            "HTTP/1.1 201 Created\r\n"
+            "Content-Type:" + req->getHeader("Content-Type") + "\r\n"
+            "Content-Length: ";
+        response += "0";
+        response += "\r\n\r\n";
+    
+    return response;
+}
+
 std::string getResponse(Request* req) {
     std::ostringstream oss;
     std::string index;
+    std::string response = "";
 
-   std::string response = 
-        "HTTP/1.1 200 OK\r\n"
-        "Content-Type: text/html\r\n"
-        "Content-Length: ";
-    readIndex(index, req);
-    oss << index.length();
-    response += oss.str();
-    response += "\r\n\r\n";
-    response += index;
+    if (req->getMethod() == "GET")
+    {   
+        response = 
+            "HTTP/1.1 200 OK\r\n"
+            "Content-Type: text/html\r\n"
+            "Content-Length: ";
+        readIndex(index, req);
+        oss << index.length();
+        response += oss.str();
+        response += "\r\n\r\n";
+        response += index;
+    } else if (req->getMethod() == "POST") {
+        handlePostReq(req);
+    } else if (req->getMethod() == "DELETE") {
+        response = "HTTP/1.1 405 Method Not Allowed\r\n\r\n";
+    }
 
     return response;
 }
@@ -95,23 +117,18 @@ void clientHandler(int clientSocket) {
     }
     // Print the received message
     request->parseRequest(buffer);
-    // std::cout << "Message from client: " << buffer << std::endl;
-
-    // std::string method = request->getMethod();
+    std::string method = request->getMethod();
     // Optionally, send a response back to the client
-    response = getResponse(request);
     // std::cout << "Request path: " << request->getPath() << std::endl;
+    response = getResponse(request);
     delete request;
-    // if (method == "GET") {
-    // } else if (method == "POST") {
-
-    //     response = "HTTP/1.1 200 OK\r\n\r\n";
-    // } else {
-    //     response = "HTTP/1.1 405 Method Not Allowed\r\n\r\n";
-    // }
     //std::cout << "response" << response << '\n';
     // Send the response to the client
+    if (response.empty()) {
+        response = "HTTP/1.1 404 Not Found\r\n\r\n";
+    }
     send(clientSocket, response.c_str(), response.size(), MSG_CONFIRM); // needs a check with throw error
+    // std::cout << "Response sent." << std::endl;
 }
 
 void sigHandler(int signal) {
@@ -129,24 +146,6 @@ int main(int ac, char **av) {
 	try {
 		startParsing(av[1], fileStream);
 		http->parse(fileStream);
-
-		std::string ip = http->getDirective<Server>("server1")->getDirective<Listen>("listen1")->getPort();
-
-		std::string path_1 = http->getDirective<Server>("server1")->getDirective<Listen>("listen2")->getPort();
-		// std::vector<int> codes = http->getDirective<Server>("server1")->getDirective<ErrorPage>("server1error_page5xx")->getCodes();
-
-		// for (std::vector<int>::iterator it = codes.begin(); it != codes.end(); it++) {
-		// 	std::cout << "CODE " << *it << std::endl;
-		// }
-
-		std::cout << "PORT " << ip << std::endl;
-
-		std::cout << "PORT " << path_1 << std::endl;
-
-		// std::string path2 = http->getDirective<Server>("server2")->getDirective<ErrorPage>("server2error_page4xx")->getPath();
-
-		// std::cout << "PATH " << path2 << std::endl;
-
 	} catch (std::exception& e) {
 		std::cerr << e.what();
 	}
@@ -162,7 +161,7 @@ int main(int ac, char **av) {
 
     // Specify the address
     sockaddr_in serverAddress;
-    if (runSocket(serverAddress, serverSocket, http->getDirective<Server>("server1")->getDirective<Listen>("listen1")->getPort()) == -1) {
+    if (runSocket(serverAddress, serverSocket, http) == -1) {
         return 0;
     } 
 

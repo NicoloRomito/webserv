@@ -22,7 +22,7 @@ class Request {
 		std::string getUri() const;
 		// std::string getUrl() const;
 		std::string getBody(std::string key) const;
-		std::string getHeader(std::string key) const ;
+		std::string getHeader(std::string key) const;
 		std::string getMethod() const;
 		std::string getVersion() const;
 		std::string getPath() const;
