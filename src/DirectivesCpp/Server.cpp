@@ -10,14 +10,11 @@
 #include <vector>
 
 int	locationN = 0;
-int listenN = 0;
 
-Server::Server() : AConfig() {}
+Server::Server() : AConfig(), _nListen(0) {}
 
 Server::~Server() {
-	// std::cout << GREEN << "\n{ Deleting server\n\n" << WHITE;
 	cleanDirectives();
-	// std::cout << GREEN << "}\n" << WHITE;
 }
 
 void	Server::parse(std::stringstream& file) {
@@ -25,7 +22,7 @@ void	Server::parse(std::stringstream& file) {
 	std::string	directive;
 	std::vector<std::string>	args;
 
-	this->_dName = "server" + to_string(serverN);
+	this->_dName = "server" + int_to_string(serverN);
 
 	while (std::getline(file, line)) {
 		ConfigLine++;
@@ -39,8 +36,8 @@ void	Server::parse(std::stringstream& file) {
 				continue;
 			}
             if (directive == "location") {
-				std::string	locationName = directive + to_string(++locationN);
-				_directives[this->_dName + locationName] = createBlock(directive, file);
+				std::string	locationName = this->_dName + directive + int_to_string(++locationN);
+				_directives[locationName] = createBlock(directive, file);
 				continue;
 			}
 			args.erase(args.begin());
@@ -48,14 +45,12 @@ void	Server::parse(std::stringstream& file) {
 				if (directive == "error_page") {
 					if (!parseErrorPage(args, directive))
 						throw Errors::InvalidErrorCode("Invalid error code", ConfigLine, __FILE__);
-					// TODO : check if error page already exists and if the status code is different the directive before it already created.
-					// TODO : if the status code is different but the directive already exists, add the status code to the directive already created.
 				} else if (directive == "listen") {
-					parseListen(args, directive, ++listenN);
+					parseListen(args, directive, ++_nListen);
 				} else if (directive != "server" && directive != "http" && !alreadyExists(directive))
 					_directives[directive] = createDirective(directive, args);
 			} else
-				throw Errors::NoSemiColonException("Semicolon at the end of line not found", ConfigLine, __FILE__);
+				throw Errors::NoSemiColonException("Semicolon Exception: Too many semicolons or no semicolon found", ConfigLine, __FILE__);
 		} else
 			break;
 	}
@@ -64,7 +59,7 @@ void	Server::parse(std::stringstream& file) {
 }
 
 void	Server::parseListen(const std::vector<std::string>& args, const std::string& directive, int listenN) {
-	std::string	listenName = directive + to_string(listenN);
+	std::string	listenName = directive + int_to_string(listenN);
 	if (!alreadyExists(listenName)) {
 		_directives[listenName] = createDirective(directive, args);
 	} else
@@ -98,4 +93,8 @@ bool	Server::parseErrorPage(const std::vector<std::string>& args, const std::str
 	}
 
 	return false;
+}
+
+int	Server::getNumberOfListen() const {
+	return _nListen;
 }

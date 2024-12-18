@@ -60,19 +60,9 @@ void readIndex(std::string &response, Request* req) {
     }
 }
 
-std::string handlePostReq(Request* req) {
-    std::string response;
-    // std::cout << req->getHeader("Content-Length") << std::endl;
-    // std::string body = req->getHeader("Content-Length");
-        response = 
-            "HTTP/1.1 201 Created\r\n"
-            "Content-Type:" + req->getHeader("Content-Type") + "\r\n"
-            "Content-Length: ";
-        response += "0";
-        response += "\r\n\r\n";
-    
-    return response;
-}
+// std::string HandleRequest(Request* request) {
+
+// }
 
 std::string getResponse(Request* req) {
     std::ostringstream oss;
@@ -80,7 +70,9 @@ std::string getResponse(Request* req) {
     std::string response = "";
 
     if (req->getMethod() == "GET")
-    {   
+    {
+		std::cout << "\n" << req->getPath() << "\n\n";
+        // handleRequest(req);
         response = 
             "HTTP/1.1 200 OK\r\n"
             "Content-Type: text/html\r\n"
@@ -91,8 +83,26 @@ std::string getResponse(Request* req) {
         response += "\r\n\r\n";
         response += index;
     } else if (req->getMethod() == "POST") {
-        handlePostReq(req);
+        response = 
+            "HTTP/1.1 200 OK\r\n"
+            "Content-Type: text/html\r\n"
+            "Content-Length: ";
+        readIndex(index, req);
+        oss << index.length();
+        response += oss.str();
+        response += "\r\n\r\n";
+        response += index;
     } else if (req->getMethod() == "DELETE") {
+        response = 
+            "HTTP/1.1 200 OK\r\n"
+            "Content-Type: text/html\r\n"
+            "Content-Length: ";
+        readIndex(index, req);
+        oss << index.length();
+        response += oss.str();
+        response += "\r\n\r\n";
+        response += index;
+    } else {
         response = "HTTP/1.1 405 Method Not Allowed\r\n\r\n";
     }
 
@@ -119,16 +129,13 @@ void clientHandler(int clientSocket) {
     request->parseRequest(buffer);
     std::string method = request->getMethod();
     // Optionally, send a response back to the client
-    // std::cout << "Request path: " << request->getPath() << std::endl;
     response = getResponse(request);
     delete request;
-    //std::cout << "response" << response << '\n';
     // Send the response to the client
     if (response.empty()) {
         response = "HTTP/1.1 404 Not Found\r\n\r\n";
     }
     send(clientSocket, response.c_str(), response.size(), MSG_CONFIRM); // needs a check with throw error
-    // std::cout << "Response sent." << std::endl;
 }
 
 void sigHandler(int signal) {
@@ -148,6 +155,7 @@ int main(int ac, char **av) {
 		http->parse(fileStream);
 	} catch (std::exception& e) {
 		std::cerr << e.what();
+        return 0;
 	}
     // Create the server socket
     int serverSocket = initSocket();
@@ -155,15 +163,13 @@ int main(int ac, char **av) {
         return 0;
 
     // Set socket option to allow reuse of address/port
-    int opt = 1;
-    if (socketOption(serverSocket, opt) == -1) 
+    if (socketOption(serverSocket, 1) == -1) 
         return 0;
 
     // Specify the address
     sockaddr_in serverAddress;
-    if (runSocket(serverAddress, serverSocket, http) == -1) {
+    if (runSocket(serverAddress, serverSocket, http) == -1)
         return 0;
-    } 
 
     std::cout << "Server listening on port " << ntohs(serverAddress.sin_port) << "..." << std::endl;
 

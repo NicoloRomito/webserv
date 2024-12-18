@@ -35,3 +35,6 @@
 #configurations
 .vscode
 .clangd
+
+# Executables
+webserver

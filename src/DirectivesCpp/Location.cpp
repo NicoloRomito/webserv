@@ -17,7 +17,7 @@ void	Location::parse(std::stringstream& file) {
 	std::string	directive;
 	std::vector<std::string>	args;
 
-	this->_dName = "location" + to_string(locationN);
+	this->_dName = "location" + int_to_string(locationN);
 
 	while (std::getline(file, line)) {
 		ConfigLine++;

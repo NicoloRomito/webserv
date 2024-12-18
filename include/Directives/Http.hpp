@@ -13,5 +13,5 @@ class	Http : public AConfig {
 		~Http();
 
 		void	parse(std::stringstream& file);
-
+		void	compareServerPorts();
 };

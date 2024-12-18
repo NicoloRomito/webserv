@@ -14,7 +14,6 @@ bool	checkLine(const std::string& line) {
 		else {
 			return true;
 		}
-
 	}
 	return false;
 }
@@ -28,7 +27,7 @@ bool	isNumber(const std::string& str) {
 	return true;
 }
 
-std::string to_string(int value) {
+std::string int_to_string(int value) {
     std::ostringstream oss;
     oss << value;
 
@@ -54,6 +53,15 @@ bool	semicolonFound(const std::string& line) {
 		if (std::isspace(line[i])) {
 			continue;
 		} else break;
+	}
+	int count = 0;
+	for (size_t j = i; j > 0; j--) {
+		if (line[j] == ';') {
+			count++;
+		}
+	}
+	if (count != 1) {
+		return false;
 	}
 	if (i == line.size()) {
 		if (line[i - 1] == ';')

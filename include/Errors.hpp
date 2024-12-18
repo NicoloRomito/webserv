@@ -71,4 +71,10 @@ class	Errors {
 					: BaseException(message, line, file) {};
 		};
 
+		class	SameListenException : public BaseException {
+			public:
+				SameListenException(const std::string& message, int line, const char* file)
+					: BaseException(message, line, file) {};
+		};
+
 };
