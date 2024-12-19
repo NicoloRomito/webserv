@@ -15,20 +15,27 @@ class Request {
 		std::string path;
 		std::string host;
 		std::string _cgiOutput;
+
 	public:
 		Request();
 		~Request();
+
+		// METHODS
 		void parseRequest(std::string buffer);
-		std::string getUri() const;
-		// std::string getUrl() const;
-		std::string getBody(std::string key) const;
-		std::string getHeader(std::string key) const;
-		std::string getMethod() const;
-		std::string getVersion() const;
-		std::string getPath() const;
-		std::string getCgiOutput() const;
+
+		// SETTERS
 		void setCgiOutput(const std::string);
-		// std::string getHost() const;
+
+		// GETTERS
+		// std::string getUrl() const;
+		std::string 		getUri() const;
+		const std::string&	getBody(const std::string& key) const;
+		const std::string&	getHeader(const std::string& key) const;
+		const std::string&	getMethod() const;
+		const std::string&	getVersion() const;
+		const std::string&	getPath() const;
+		const std::string&	getCgiOutput() const;
+		const std::string&	getHost() const;
 };
 
 #endif

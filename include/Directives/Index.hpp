@@ -10,7 +10,7 @@ class	Index : public AConfig {
 		Index();
 		~Index();
 
-		const std::string&	getPath() const;
+		const std::string&	getFile() const;
 
 		void				parseDirective(const std::vector<std::string>& args);
 };

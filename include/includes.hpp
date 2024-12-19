@@ -3,9 +3,14 @@
 
 #include <iostream> 
 #include <cstring>
+#include <sys/poll.h>
 #include <netinet/in.h>
 #include <sys/socket.h>
 #include <unistd.h>
+#include <exception>
+#include <csignal>
+#include <cstdlib>
+#include <ostream>
 #include <sstream>
 #include <fstream>
 #include <string>
@@ -19,8 +24,9 @@
 # define YELLOW "\033[1;33m"
 # define BLUE "\033[1;34m"
 # define WHITE "\033[1;37m"
+# define RESET "\033[0m"
 
-// GLOBALE VARIABLES
+// GLOBAL VARIABLES
 extern int	ConfigLine;
 extern int	locationN;
 extern int	serverN;

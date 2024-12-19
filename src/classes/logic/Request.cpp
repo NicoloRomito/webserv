@@ -114,6 +114,7 @@ void Request::parseRequest(std::string buffer) {
 	if (buffer.empty())
 		return ;
 	this->header = setMap(buffer);
+	this->host = getHeader("Host");
 	std::cout << "get map: " << getHeader("Accept-Encoding") << '\n';
 	// printMap(this->header);
 	if (buffer.empty())
@@ -122,15 +123,19 @@ void Request::parseRequest(std::string buffer) {
 	this->body = setMap(buffer);
 }
 
-std::string Request::getMethod() const {
+void	Request::setCgiOutput(const std::string toSet) {
+	this->_cgiOutput = toSet;
+}
+
+const std::string& Request::getMethod() const {
 	return this->method;
 }
 
-std::string Request::getVersion() const {
+const std::string& Request::getVersion() const {
 	return this->version;
 }
 
-std::string Request::getPath() const {
+const std::string& Request::getPath() const {
 	return this->path;
 }
 
@@ -138,17 +143,18 @@ std::string Request::getUri() const {
 	return "http://" + this->host + this->path;
 }
 
-std::string Request::getHeader(std::string key) const {
+const std::string& Request::getHeader(const std::string& key) const {
 	return this->header.at(key);
 }
 
-std::string Request::getBody(std::string key) const{
+const std::string& Request::getBody(const std::string& key) const{
 	return this->body.at(key);
 }
 
-std::string Request::getCgiOutput() const {return this->_cgiOutput;}
+const std::string& Request::getCgiOutput() const {
+	return this->_cgiOutput;
+}
 
-void	Request::setCgiOutput(const std::string toSet)
-{
-	this->_cgiOutput = toSet;
+const std::string& Request::getHost() const {
+	return this->host;
 }

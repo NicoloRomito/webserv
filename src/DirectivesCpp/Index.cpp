@@ -7,7 +7,7 @@ Index::Index() : _defaultFile("index.html") {}
 
 Index::~Index() {}
 
-const std::string&	Index::getPath() const {
+const std::string&	Index::getFile() const {
 	return this->_defaultFile;
 }
 
