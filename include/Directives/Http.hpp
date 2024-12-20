@@ -7,6 +7,7 @@ class	AConfig;
 
 class	Http : public AConfig {
 	private:
+		int		_serverN;
 
 	public:
 		Http();
@@ -14,4 +15,6 @@ class	Http : public AConfig {
 
 		void	parse(std::stringstream& file);
 		void	compareServerPorts();
+
+		int		getServerN() const;
 };

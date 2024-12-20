@@ -1,5 +1,7 @@
 #include "../include/includes.hpp"
 #include "../include/includeClasses.hpp"
+#include "classes/headers/Response.hpp"
+#include <iostream>
 
 // * NOTE: This is a list of the directives that need to be called with numbers
 // * at the end of the directive name. Here is the list:
@@ -14,9 +16,9 @@
 
 int QUIT = 0;
 
-void readHtml(std::string &response, Request* req) {
-	std::ifstream file;
-	std::string line;
+void	readHtml(std::string &response, Request* req, Response* res) {
+	std::ifstream	file;
+	std::string		line;
 	Cgi* cgi;
 
 	if (req->getPath().substr(0, 8) == "/cgi-bin")
@@ -29,7 +31,7 @@ void readHtml(std::string &response, Request* req) {
 	else 
 		file.open(req->getPath().c_str());
 	if (!file.is_open()) {
-		std::cout << "Html file not open\n";
+		std::cerr << "Html file not found\n";
 	}
 	while (getline(file, line, '\0')) {
 		line.insert(line.size() - 2, "\r");
@@ -37,22 +39,31 @@ void readHtml(std::string &response, Request* req) {
 	}
 }
 
-int	getServerNumber(const std::string& host) {
-	std::string serverNumber = host.substr(host.find(":") + 1, (host.size() - host.find(":")) - 1);
-	return atoi(serverNumber.c_str());
+int	getServerNumber(const std::string& host, Http* http) {
+	std::string port = host.substr(host.find(":") + 1, (host.size() - host.find(":")) - 1);
+	for (int i = 1; i < http->getServerN(); i++) {
+		std::string serverName = "server" + int_to_string(i);
+		for (int j = 1; j < http->getDirective<Server>(serverName)->getNumberOfListen(); j++) {
+			std::string listenName = "listen" + int_to_string(j);
+			if (http->getDirective<Server>(serverName)->getDirective<Listen>(listenName)->getPort() == port)
+				return i;
+		}
+	}
+	return -1;
 }
 
-bool handleGet(Request* req, Http* http) {
-	int serverNumber = getServerNumber(req->getHost());
-	(void)serverNumber;
-	std::string host = req->getHost(); // ex: localhost:8080
+bool handleGet(Request* req, Http* http, Response* res) {
+	int serverNumber = getServerNumber(req->getHost(), http);
+	if (serverNumber == -1) {
+		std::cerr << "Server not found\n";
+		return false;
+	}
 	std::string path = req->getPath(); // /
 	std::string root = http->getDirective<Server>("server1")->getDirective<Root>("root")->getPath(); // src/www/static
 	std::string index = http->getDirective<Server>("server1")->getDirective<Index>("index")->getFile(); // index.html
 	std::string error_page4xx = http->getDirective<Server>("server1")->getDirective<ErrorPage>("server1error_page4xx")->getPath(); // src/www/static/4xx.html
 	std::string error_page5xx = http->getDirective<Server>("server1")->getDirective<ErrorPage>("server1error_page5xx")->getPath(); // src/www/static/5xx.html
 	bool autoindex = http->getDirective<Server>("server1")->getDirective<Autoindex>("autoindex")->getAutoindex(); // true or false
-	std::cout << "host = " << host << std::endl;
 	std::cout << "path = " << path << std::endl;
 	std::cout << "root = " << root << std::endl;
 	std::cout << "index = " << index << std::endl;
@@ -65,9 +76,9 @@ bool handleGet(Request* req, Http* http) {
 	return true;
 }
 
-int handleRequest(Request* request, Http* http) {
+int handleRequest(Request* request, Http* http, Response* res) {
 	if (request->getMethod() == "GET") {
-		if (!handleGet(request, http))
+		if (!handleGet(request, http, res))
 			return 404;
 		return 200;
 	} else if (request->getMethod() == "POST") {
@@ -81,7 +92,8 @@ int handleRequest(Request* request, Http* http) {
 	}
 }
 
-std::string&    generateResponse(std::string& response, Request* req) {
+std::string    generateResponse(Request* req, Response* res) {
+	std::string response;
 	std::ostringstream oss;
 	std::string index;
 
@@ -90,7 +102,7 @@ std::string&    generateResponse(std::string& response, Request* req) {
 		"Content-Type: text/html\r\n"
 		"Content-Length: ";
 
-	readHtml(index, req);
+	readHtml(index, req, res);
 	oss << index.length();
 	response += oss.str();
 	response += "\r\n\r\n";
@@ -99,30 +111,29 @@ std::string&    generateResponse(std::string& response, Request* req) {
 	return response;
 }
 
-std::string getResponse(Request* req, Http* http) {
+void	lookForStatusCode(Request* req, Http* http, Response* res) {
 	std::string response = "";
 
-	switch (handleRequest(req, http)) {
+	switch (handleRequest(req, http, res)) {
 		case 404:
-			response = "HTTP/1.1 404 Not Found\r\n\r\n"; // to set the 404 response (html)
+			res->setResponse("HTTP/1.1 404 Not Found\r\n\r\n"); // to set the 404 response (html)
 			break;
 		case 405:
-			response = "HTTP/1.1 405 Method Not Allowed\r\n\r\n"; // to set the 405 response (html)
+			res->setResponse("HTTP/1.1 405 Method not allowed\r\n\r\n"); // to set the 405 response (html)
 			break;
 		case 200:
-			response = generateResponse(response, req);
+			res->setResponse(generateResponse(req, res));
 			break;
 		default:
-			response = generateResponse(response, req);
+			res->setResponse(generateResponse(req, res));
 			break;
 	}
-
-	return response;
 }
 
-void clientHandler(int clientSocket, Http* http) {
+void	clientHandler(int clientSocket, Http* http) {
 	char buffer[1024] = {0};
 	Request *request = new Request();
+	Response *res = new Response();
 	std::string response;
 
 	// Receive data from the client
@@ -138,14 +149,16 @@ void clientHandler(int clientSocket, Http* http) {
 	}
 	// Print the received message
 	request->parseRequest(buffer);
+
 	// Optionally, send a response back to the client
-	response = getResponse(request, http);
+	lookForStatusCode(request, http, res);
 	delete request;
+
 	// Send the response to the client
-	if (response.empty()) {
-		response = "HTTP/1.1 404 Not Found\r\n\r\n";
-	}
-	send(clientSocket, response.c_str(), response.size(), MSG_CONFIRM); // needs a check with throw error
+	// if (response.empty()) {
+	// 	response = "HTTP/1.1 404 Not Found\r\n\r\n";
+	// }
+	send(clientSocket, res->getResponse().c_str(), res->getResponse().size(), MSG_CONFIRM); // needs a check with throw error
 }
 
 void sigHandler(int signal) {

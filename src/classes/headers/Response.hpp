@@ -5,6 +5,8 @@
 
 class Response {
 	private:
+		int			_statusCode;
+		std::string	_response;
 		std::string _root;
 		std::string _autoindex;
 		std::string _index;
@@ -16,6 +18,8 @@ class Response {
 		~Response();
 
 		// SETTERS
+		void setStatusCode(int statusCode);
+		void setResponse(const std::string& response);
 		void setRoot(const std::string& root);
 		void setAutoindex(const std::string& autoindex);
 		void setIndex(const std::string& index);
@@ -23,9 +27,11 @@ class Response {
 		void setErrorPage5xx(const std::string& error_page5xx);
 
 		// GETTERS
-		const std::string& getRoot() const;
-		const std::string& getAutoindex() const;
-		const std::string& getIndex() const;
-		const std::string& getErrorPage4xx() const;
-		const std::string& getErrorPage5xx() const;
+		int					getStatusCode() const;
+		const std::string&	getResponse() const;
+		const std::string&	getRoot() const;
+		const std::string&	getAutoindex() const;
+		const std::string&	getIndex() const;
+		const std::string&	getErrorPage4xx() const;
+		const std::string&	getErrorPage5xx() const;
 };

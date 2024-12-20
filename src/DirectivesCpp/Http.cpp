@@ -9,18 +9,16 @@
 #include <sstream>
 #include <string>
 
-int serverN = 0;
-
-Http::Http() : AConfig() {}
+Http::Http() : AConfig(), _serverN(0) {}
 
 Http::~Http() {
 	cleanDirectives();
 }
 
 void	Http::compareServerPorts() {
-	if (serverN == 1)
+	if (this->_serverN == 1)
 		return;
-	for (int i = 1; i < serverN; i++) {
+	for (int i = 1; i < this->_serverN; i++) {
 
 		std::string nextServer = "server" + int_to_string(i + 1);
 		Server* serverToCheck = getDirective<Server>("server" + int_to_string(i));
@@ -58,7 +56,7 @@ void	Http::parse(std::stringstream& file) {
 			args = returnLine(line); // get the args divided in the line
 			directive = parseDirective(args.at(0)); // get the name of the directive, if not returns UNKNOWN.
 			if (directive == "server") {
-				std::string serverName = directive + int_to_string(++serverN);
+				std::string serverName = directive + int_to_string(++this->_serverN);
 				_directives[serverName] = createBlock(directive, file);
 				continue;
 			}
