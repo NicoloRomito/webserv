@@ -21,6 +21,8 @@ void	readHtml(std::string &response, Request* req, Response* res) {
 	std::string		line;
 	Cgi* cgi;
 
+	(void) res;
+	std::cout << "\n" << req->getPath() << "\n\n";
 	if (req->getPath().substr(0, 8) == "/cgi-bin")
 	{
 		cgi = new Cgi(*req);
@@ -34,30 +36,32 @@ void	readHtml(std::string &response, Request* req, Response* res) {
 		std::cerr << "Html file not found\n";
 	}
 	while (getline(file, line, '\0')) {
-		line.insert(line.size() - 2, "\r");
+		if (line.size() >= 2)
+			line.insert(line.size() - 2, "\r");
 		response += line;
 	}
 }
 
-int	getServerNumber(const std::string& host, Http* http) {
-	std::string port = host.substr(host.find(":") + 1, (host.size() - host.find(":")) - 1);
-	for (int i = 1; i < http->getServerN(); i++) {
-		std::string serverName = "server" + int_to_string(i);
-		for (int j = 1; j < http->getDirective<Server>(serverName)->getNumberOfListen(); j++) {
-			std::string listenName = "listen" + int_to_string(j);
-			if (http->getDirective<Server>(serverName)->getDirective<Listen>(listenName)->getPort() == port)
-				return i;
-		}
-	}
-	return -1;
-}
+// int	getServerNumber(const std::string& host, Http* http) {
+// 	std::string port = host.substr(host.find(":") + 1, (host.size() - host.find(":")) - 1);
+// 	for (int i = 1; i < http->getServerN(); i++) {
+// 		std::string serverName = "server" + int_to_string(i);
+// 		for (int j = 1; j < http->getDirective<Server>(serverName)->getNumberOfListen(); j++) {
+// 			std::string listenName = "listen" + int_to_string(j);
+// 			if (http->getDirective<Server>(serverName)->getDirective<Listen>(listenName)->getPort() == port)
+// 				return i;
+// 		}
+// 	}
+// 	return -1;
+// }
 
 bool handleGet(Request* req, Http* http, Response* res) {
-	int serverNumber = getServerNumber(req->getHost(), http);
-	if (serverNumber == -1) {
-		std::cerr << "Server not found\n";
-		return false;
-	}
+	// int serverNumber = getServerNumber(req->getHost(), http);
+	// if (serverNumber == -1) {
+	// 	std::cerr << "Server not found\n";
+	// 	return false;
+	// }
+	(void) res;
 	std::string path = req->getPath(); // /
 	std::string root = http->getDirective<Server>("server1")->getDirective<Root>("root")->getPath(); // src/www/static
 	std::string index = http->getDirective<Server>("server1")->getDirective<Index>("index")->getFile(); // index.html
@@ -111,27 +115,28 @@ std::string    generateResponse(Request* req, Response* res) {
 	return response;
 }
 
-void	lookForStatusCode(Request* req, Http* http, Response* res) {
-	std::string response = "";
+// void	lookForStatusCode(Request* req, Http* http, Response* res) {
+// 	std::string response = "";
 
-	switch (handleRequest(req, http, res)) {
-		case 404:
-			res->setResponse("HTTP/1.1 404 Not Found\r\n\r\n"); // to set the 404 response (html)
-			break;
-		case 405:
-			res->setResponse("HTTP/1.1 405 Method not allowed\r\n\r\n"); // to set the 405 response (html)
-			break;
-		case 200:
-			res->setResponse(generateResponse(req, res));
-			break;
-		default:
-			res->setResponse(generateResponse(req, res));
-			break;
-	}
-}
+// 	switch (handleRequest(req, http, res)) {
+// 		case 404:
+// 			res->setResponse("HTTP/1.1 404 Not Found\r\n\r\n"); // to set the 404 response (html)
+// 			break;
+// 		case 405:
+// 			res->setResponse("HTTP/1.1 405 Method not allowed\r\n\r\n"); // to set the 405 response (html)
+// 			break;
+// 		case 200:
+// 			res->setResponse(generateResponse(req, res));
+// 			break;
+// 		default:
+// 			res->setResponse(generateResponse(req, res));
+// 			break;
+// 	}
+// }
 
 void	clientHandler(int clientSocket, Http* http) {
 	char buffer[1024] = {0};
+	(void) http;
 	Request *request = new Request();
 	Response *res = new Response();
 	std::string response;
@@ -149,21 +154,22 @@ void	clientHandler(int clientSocket, Http* http) {
 	}
 	// Print the received message
 	request->parseRequest(buffer);
-
 	// Optionally, send a response back to the client
-	lookForStatusCode(request, http, res);
+	// lookForStatusCode(request, http, res);
+	response = generateResponse(request, res);
 	delete request;
 
 	// Send the response to the client
-	// if (response.empty()) {
-	// 	response = "HTTP/1.1 404 Not Found\r\n\r\n";
-	// }
-	send(clientSocket, res->getResponse().c_str(), res->getResponse().size(), MSG_CONFIRM); // needs a check with throw error
+	if (response.empty()) {
+		response = "HTTP/1.1 404 Not Found\r\n\r\n";
+	}
+	send(clientSocket, response.c_str(), response.size(), MSG_CONFIRM); // needs a check with throw error
 }
 
 void sigHandler(int signal) {
 	if (signal == SIGINT) {
 		std::cout << std::endl;
+		unlinkCgi();
 		QUIT = 1;
 	}
 }

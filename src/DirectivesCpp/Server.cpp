@@ -22,7 +22,7 @@ void	Server::parse(std::stringstream& file) {
 	std::string	directive;
 	std::vector<std::string>	args;
 
-	this->_dName = "server" + int_to_string(serverN);
+	this->_dName = "server" + int_to_string(0);
 
 	while (std::getline(file, line)) {
 		ConfigLine++;

@@ -8,7 +8,7 @@ PARSING_DIR = src/parsing/configParsing/
 DIRECTIVES_DIR = src/DirectivesCpp/
 CGI_DIR = src/cgi/
 
-FILES = init/init.cpp utils/errorMsg.cpp classes/logic/Request.cpp
+FILES = init/init.cpp utils/errorMsg.cpp classes/logic/Request.cpp classes/logic/Response.cpp
 MAIN = main.cpp
 UTILS_FILES = utils.cpp
 ERRORS_FILES = Errors.cpp
@@ -55,6 +55,9 @@ run: all
 
 val: all
 	@valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes ./$(NAME) $(CONFIG_FILE)
+
+debug: all
+	@gdb --args ./webserver config/webserv.conf
 
 .SILENT:
 

@@ -102,13 +102,19 @@ void Request::parseRequest(std::string buffer) {
 	temp.insert(0, buffer, 0, buffer.find('\n'));
 	splitReq = getBasicInfo(temp, 32);
 
-	// printVec(splitReq);
+	printVec(splitReq);
 	if (splitReq.size() < 3) {
 		error("client error");
 	}
-	std::cout << buffer;
 	this->method = splitReq[0];
-	this->path = splitReq[1];
+	if (splitReq[1].find('?') != std::string::npos)
+	{
+		this->path = splitReq[1].substr(0, splitReq[1].find('?'));
+		this->query = splitReq[1].substr(splitReq[1].find('?'), splitReq[1].length());
+	} else {
+		this->path = splitReq[1];
+		this->query = "";
+	}
 	this->version = splitReq[2];
 	buffer.erase(0, temp.length() + 1);
 	if (buffer.empty())
@@ -157,4 +163,8 @@ const std::string& Request::getCgiOutput() const {
 
 const std::string& Request::getHost() const {
 	return this->host;
+}
+
+const std::string& Request::getQuery() const {
+	return this->query;
 }

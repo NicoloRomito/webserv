@@ -8,7 +8,7 @@ bool	checkLine(const std::string& line) {
 		if (line[i] == '#') {
 			return false;
 		}
-		if (line[i] == '\t' || line[i] == ' ') {
+		if (line[i] == '\t' || line[i] == ' ' || line[i] == '\r') {
 			continue;
 		}
 		else {

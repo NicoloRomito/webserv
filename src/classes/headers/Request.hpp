@@ -14,6 +14,7 @@ class Request {
 		std::string version;
 		std::string path;
 		std::string host;
+		std::string query;
 		std::string _cgiOutput;
 
 	public:
@@ -36,6 +37,7 @@ class Request {
 		const std::string&	getPath() const;
 		const std::string&	getCgiOutput() const;
 		const std::string&	getHost() const;
+		const std::string&	getQuery() const;
 };
 
 #endif
