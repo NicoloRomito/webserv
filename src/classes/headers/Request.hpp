@@ -12,8 +12,9 @@ class Request {
 		std::map<std::string, std::string> body;
 		std::string method;
 		std::string version;
-		// std::string path;
+		std::string path;
 		std::string host;
+		std::string query;
 		std::string _cgiOutput;
 
 	public:
@@ -33,9 +34,10 @@ class Request {
 		const std::string&	getHeader(const std::string& key) const;
 		const std::string&	getMethod() const;
 		const std::string&	getVersion() const;
-		// const std::string&	getPath() const;
+		const std::string&	getPath() const;
 		const std::string&	getCgiOutput() const;
 		const std::string&	getHost() const;
+		const std::string&	getQuery() const;
 };
 
 #endif

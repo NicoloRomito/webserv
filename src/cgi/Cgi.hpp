@@ -15,7 +15,7 @@ class Cgi{
 		std::string _cgiPath;
 		char** _argv;
 		char** _envp;
-	
+		char** _createArgv(Request &req);
 
 	public:
 		Cgi(Request & request);
@@ -25,5 +25,7 @@ class Cgi{
 		std::string	getCgiPath();
 		char** getArgv();
 };
+
+void unlinkCgi();
 
 #endif

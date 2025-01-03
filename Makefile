@@ -56,6 +56,9 @@ run: all
 val: all
 	@valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes ./$(NAME) $(CONFIG_FILE)
 
+debug: all
+	@gdb --args ./webserver config/webserv.conf
+
 .SILENT:
 
 .DEFAULT:
