@@ -31,10 +31,11 @@ void	readHtml(std::string &response, Request* req, Response* res) {
 		delete cgi;
 	}
 	else 
-		file.open(req->getPath().c_str());
+		file.open(("." + req->getPath()).c_str());
 	if (!file.is_open()) {
 		std::cerr << "Html file not found\n";
 	}
+	std::cout << "-----------path---------\n" << req->getPath() << '\n';
 	while (getline(file, line, '\0')) {
 		if (line.size() >= 2)
 			line.insert(line.size() - 2, "\r");
@@ -164,6 +165,7 @@ void	clientHandler(int clientSocket, Http* http) {
 		response = "HTTP/1.1 404 Not Found\r\n\r\n";
 	}
 	send(clientSocket, response.c_str(), response.size(), MSG_CONFIRM); // needs a check with throw error
+	delete res;
 }
 
 void sigHandler(int signal) {

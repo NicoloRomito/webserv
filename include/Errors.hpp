@@ -17,6 +17,7 @@ class	Errors {
 				std::string _message;
 			public:
 				BaseException(const std::string& message, int line, const char* file);
+				BaseException(const std::string& message, const char* file);
 				~BaseException() throw() {};
 
 				virtual const char* what() const throw();
@@ -81,6 +82,10 @@ class	Errors {
 			public:
 				InvalidPathException(const std::string& message, int line, const char* file)
 					: BaseException(message, line, file) {};
+		class	MemoryFailException : public BaseException {
+			public:
+				MemoryFailException(const std::string& message, const char* file)
+					: BaseException(message, file) {};
 		};
 
 };

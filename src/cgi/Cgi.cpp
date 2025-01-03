@@ -78,10 +78,7 @@ char**	Cgi::_createArgv(Request &req) {
 		n = countCharInstances(req.getQuery(), '&') + 1;
 		argv = (char **)malloc(sizeof(char*) * (n + 2));
 		if (!argv)
-		{
-			error("failed malloc for argvp");
-			throw;
-		}
+			throw Errors::MemoryFailException("Failed to allocate Memory in _createArgv(Request &req) (1)", "Cgi.cpp");
 		argv[0] = getScriptAbsPath(req.getPath());
 		argv[n + 1] = 0;
 		for (int i = 1; i < n + 1; i++)
@@ -132,7 +129,15 @@ Cgi::Cgi(Request & request) {
 	this->_env["QUERY_STRING"] = "";
 	this->_env["REMOTE_USER"] = "";
 	this->_env["PWD"] = "/www/cgi-bin";
-	this->_argv = this->_createArgv(request);
+	try
+	{
+		this->_argv = this->_createArgv(request);
+	}
+	catch(const std::exception& e)
+	{
+		std::cerr << e.what() << '\n';
+	}
+	
 }
 
 std::string Cgi::getCgiPath() {return this->_cgiPath;}

@@ -4,6 +4,7 @@
 #include "../../include/includes.hpp"
 #include "../../include/Directives/Server.hpp"
 #include "../classes/headers/Request.hpp"
+#include "../../include/Errors.hpp"
 #include <string>
 
 class TRequest;
