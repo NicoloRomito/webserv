@@ -8,7 +8,7 @@ PARSING_DIR = src/parsing/configParsing/
 DIRECTIVES_DIR = src/DirectivesCpp/
 CGI_DIR = src/cgi/
 
-FILES = init/init.cpp utils/errorMsg.cpp classes/logic/Request.cpp
+FILES = init/init.cpp utils/errorMsg.cpp classes/logic/Request.cpp classes/logic/Response.cpp
 MAIN = main.cpp
 UTILS_FILES = utils.cpp
 ERRORS_FILES = Errors.cpp
@@ -19,7 +19,7 @@ DIRECTIVES_FILES = Autoindex.cpp ErrorPage.cpp Index.cpp CgiPass.cpp \
 CGI_FILES = Cgi.cpp
 
 
-SRC = $(addprefix $(SRC_DIR), $(MAIN) $(FILES))
+SRC = $(addprefix $(SRC_DIR), $(FILES))
 UTILS = $(addprefix $(ERRORS_DIR), $(UTILS_FILES))
 ERRORS = $(addprefix $(ERRORS_DIR), $(ERRORS_FILES))
 PARSING = $(addprefix $(PARSING_DIR), $(PARSING_FILES))
@@ -36,8 +36,8 @@ C98 = -std=c++98
 
 all: $(NAME)
 
-$(NAME): $(SRC) $(UTILS) $(ERRORS) $(PARSING) $(DIRECTIVES)
-	$(CPP) $(CFLAGS) $(C98) $(SRC) $(UTILS) $(ERRORS) $(PARSING) $(DIRECTIVES) $(CGI) -o $(NAME)
+$(NAME): $(MAIN) $(SRC) $(UTILS) $(ERRORS) $(PARSING) $(DIRECTIVES) $(CGI)
+	$(CPP) $(CFLAGS) $(C98) $(MAIN) $(SRC) $(UTILS) $(ERRORS) $(PARSING) $(DIRECTIVES) $(CGI) -o $(NAME)
 	@clear
 	@echo "Compilation complete."
 

@@ -1,4 +1,5 @@
 #include "../../include/includes.hpp"
+#include "../../include/includeClasses.hpp"
 #include <cctype>
 #include <cstddef>
 #include <iostream>
@@ -71,4 +72,73 @@ bool	semicolonFound(const std::string& line) {
 			return true;
 	}
 	return false;
+}
+
+bool	isADirectory(const std::string& urlPath, const std::string& root) {
+	std::string requestPath = urlPath;
+	(void)root;
+	struct stat pathStat;
+	if (stat(requestPath.c_str(), &pathStat) == 0) {
+		if (S_ISDIR(pathStat.st_mode))
+			return true;
+	} else {
+		std::cout << "Error: " << requestPath << " is not a directory\n";
+	}
+	return false;
+}
+
+bool	locationMatches(const std::string& urlPath, const std::string& locationPath) {
+	if (urlPath == locationPath) {
+		return true;
+	}
+	return false;
+}
+
+std::string	getCurrentDir() {
+	char cwd[256];
+	if (getcwd(cwd, sizeof(cwd)) == NULL) {
+		// std::cerr << "Error with getcwd\n";
+		return "";
+	}
+	return std::string(cwd);
+}
+
+void	setAllValues(Response* res, Http* http, const std::string& serverName, const std::string& locationName, bool locationExists) {
+	Server *server = http->getDirective<Server>(serverName);
+
+	res->setErrorPage4xx(server->getDirective<ErrorPage>(serverName + "error_page4xx")->getPath());
+	res->setErrorPage5xx(server->getDirective<ErrorPage>(serverName + "error_page5xx")->getPath());
+	res->setAvailableErrorCodes(server->getDirective<ErrorPage>(serverName + "error_page4xx")->getCodes(),
+		server->getDirective<ErrorPage>(serverName + "error_page5xx")->getCodes());
+
+	if (!locationExists) {
+		if (server->getDirective<Index>("index"))
+			res->setIndex(server->getDirective<Index>("index")->getFile());
+		if (server->getDirective<Autoindex>("autoindex"))
+			res->setAutoindex(server->getDirective<Autoindex>("autoindex")->getAutoindex());
+		if (server->getDirective<Root>("root"))
+			res->setRoot(server->getDirective<Root>("root")->getPath());
+		if (server->getDirective<CgiPass>("cgi_pass"))
+			res->setCgiPass(server->getDirective<CgiPass>("cgi_pass")->getPath());
+		if (server->getDirective<ServerName>("server_name"))
+			res->setServerNames(server->getDirective<ServerName>("server_name")->getNames());
+	}
+	else {
+		Location *location = server->getDirective<Location>(locationName);
+		res->setLocationPath(location->getPath());
+		// DEFAULT VALUES FOR LOCATION
+		res->setIndex(location->getDirective<Index>("index")->getFile());
+		res->setAutoindex(location->getDirective<Autoindex>("autoindex")->getAutoindex());
+		res->setRoot(location->getDirective<Root>("root")->getPath());
+		res->setCgiPass(location->getDirective<CgiPass>("cgi_pass")->getPath());
+		// TODO search for directives if they exist
+		if (location->getDirective<ErrorPage>(serverName + "error_page4xx"))
+			res->setErrorPage4xx(location->getDirective<ErrorPage>(serverName + "error_page4xx")->getPath());
+		if (location->getDirective<ErrorPage>(serverName + "error_page5xx"))
+			res->setErrorPage5xx(location->getDirective<ErrorPage>(serverName + "error_page5xx")->getPath());
+		if (location->getDirective<ErrorPage>(serverName + "error_page4xx") || location->getDirective<ErrorPage>(serverName + "error_page5xx"))
+			res->setAvailableErrorCodes(location->getDirective<ErrorPage>(serverName + "error_page4xx")->getCodes(),
+				location->getDirective<ErrorPage>(serverName + "error_page5xx")->getCodes());
+	}
+
 }

@@ -11,14 +11,14 @@ ErrorPage::ErrorPage(int errorCode) {
 	if (errorCode == 500) {
 		this->_codes.push_back(500);
 		this->_codes.push_back(502);
-		_path = "/www/html/errors/5xx.html";
+		_path = "/src/www/static/5xx.html";
 	} else if (errorCode == 400) {
 		this->_codes.push_back(400);
 		this->_codes.push_back(403);
 		this->_codes.push_back(404);
 		this->_codes.push_back(405);
 		this->_codes.push_back(408);
-		_path = "/www/html/errors/4xx.html";
+		_path = "/src/www/static/4xx.html";
 	}
 }
 

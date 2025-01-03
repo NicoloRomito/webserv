@@ -12,7 +12,7 @@ class Request {
 		std::map<std::string, std::string> body;
 		std::string method;
 		std::string version;
-		std::string path;
+		// std::string path;
 		std::string host;
 		std::string _cgiOutput;
 
@@ -27,13 +27,13 @@ class Request {
 		void setCgiOutput(const std::string);
 
 		// GETTERS
-		// std::string getUrl() const;
 		std::string 		getUri() const;
+		const std::string&	getUrlPath() const;
 		const std::string&	getBody(const std::string& key) const;
 		const std::string&	getHeader(const std::string& key) const;
 		const std::string&	getMethod() const;
 		const std::string&	getVersion() const;
-		const std::string&	getPath() const;
+		// const std::string&	getPath() const;
 		const std::string&	getCgiOutput() const;
 		const std::string&	getHost() const;
 };

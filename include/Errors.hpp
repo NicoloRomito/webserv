@@ -77,4 +77,10 @@ class	Errors {
 					: BaseException(message, line, file) {};
 		};
 
+		class	InvalidPathException : public BaseException {
+			public:
+				InvalidPathException(const std::string& message, int line, const char* file)
+					: BaseException(message, line, file) {};
+		};
+
 };

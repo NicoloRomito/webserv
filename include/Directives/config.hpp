@@ -3,6 +3,7 @@
 
 #include "../Errors.hpp"
 #include "../includes.hpp"
+#include <cstddef>
 #include <map>
 #include <iostream>
 #include <string>
@@ -20,7 +21,7 @@ class	AConfig
 		virtual ~AConfig();
 
 		virtual AConfig*	createDirective(const std::string& directive, std::vector<std::string> args);
-		virtual AConfig*	createBlock(const std::string& directive, std::stringstream& file);
+		virtual AConfig*	createBlock(const std::string& directive, std::stringstream& file, const std::string& locationPath);
 		virtual void		cleanDirectives();
 
 		void				createDefaultDirectives(DirectiveType type);
@@ -39,9 +40,9 @@ Directive*	AConfig::getDirective(const std::string& directiveName) const {
 		Directive* directive = dynamic_cast<Directive *>(it->second); 
 		if (directive)
 			return directive;
-		throw Errors::UnknownDirectiveException("Directive found but type mismatch", __LINE__, __FILE__);
+		return NULL;
 	}
-	throw Errors::UnknownDirectiveException("Unknown directive " + directiveName, __LINE__, __FILE__);
+	return NULL;
 }
 
 #endif

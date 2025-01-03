@@ -11,12 +11,10 @@ class Location : public AConfig {
 		std::string	_path;
 
 	public:
-		Location();
+		Location(const std::string& locationPath);
 		~Location();
 
 		const std::string&	getPath() const;
 
 		void				parse(std::stringstream& file);
-
-		const AConfig*		getDirective(const std::string& directiveName) const;
 };

@@ -5,7 +5,7 @@
 
 Request::Request():  uri(""), url(""),
 					header(), body(), method(""), 
-					version(""), path(""), host("") {}
+					version(""), host("") {}
 
 Request::~Request() {}
 
@@ -108,7 +108,7 @@ void Request::parseRequest(std::string buffer) {
 	}
 	std::cout << buffer;
 	this->method = splitReq[0];
-	this->path = splitReq[1];
+	this->url = splitReq[1];
 	this->version = splitReq[2];
 	buffer.erase(0, temp.length() + 1);
 	if (buffer.empty())
@@ -135,12 +135,16 @@ const std::string& Request::getVersion() const {
 	return this->version;
 }
 
-const std::string& Request::getPath() const {
-	return this->path;
-}
+// const std::string& Request::getPath() const {
+// 	return this->path;
+// }
 
 std::string Request::getUri() const {
-	return "http://" + this->host + this->path;
+	return "http://" + this->host + this->url;
+}
+
+const std::string& Request::getUrlPath() const {
+	return this->url;
 }
 
 const std::string& Request::getHeader(const std::string& key) const {

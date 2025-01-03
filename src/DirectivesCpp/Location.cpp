@@ -4,12 +4,10 @@
 #include "../../include/includes.hpp"
 #include "../../include/Errors.hpp"
 
-Location::Location() : AConfig() {}
+Location::Location(const std::string& locationPath) : AConfig(), _path(locationPath) {}
 
 Location::~Location() {
-	// std::cout << "\n{ Deleting location\n\n";
 	cleanDirectives();
-	// std::cout << "}\n";
 }
 
 void	Location::parse(std::stringstream& file) {
@@ -17,15 +15,11 @@ void	Location::parse(std::stringstream& file) {
 	std::string	directive;
 	std::vector<std::string>	args;
 
-	this->_dName = "location" + int_to_string(locationN);
+	this->_dName = "location" + int_to_string(++locationN);
 
 	while (std::getline(file, line)) {
 		ConfigLine++;
 		if (line.empty() || !checkLine(line)) {
-			continue;
-		}
-		if (line.find("{") != std::string::npos) {
-			_path = returnLine(line)[1];
 			continue;
 		}
 		if (line.find("}") == std::string::npos) { // if the closing bracket is still not found
@@ -49,13 +43,4 @@ void	Location::parse(std::stringstream& file) {
 
 const std::string&	Location::getPath() const {
 	return _path;
-}
-
-const AConfig*	Location::getDirective(const std::string& directiveName) const {
-	std::map<std::string, AConfig*>::const_iterator it = this->_directives.find(directiveName);
-
-	if (it != this->_directives.end()) {
-		return it->second;
-	}
-	throw Errors::UnknownDirectiveException("Unknown directive", ConfigLine, __FILE__);
 }

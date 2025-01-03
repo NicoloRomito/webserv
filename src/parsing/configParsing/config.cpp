@@ -65,7 +65,7 @@ AConfig*	AConfig::createDirective(const std::string& directive, std::vector<std:
 	return NULL;
 }
 
-AConfig*	AConfig::createBlock(const std::string& directive, std::stringstream& file) {
+AConfig*	AConfig::createBlock(const std::string& directive, std::stringstream& file, const std::string& locationPath) {
 	DirectiveType	type = getDirectiveType(directive);
 
 	Server *server = NULL;
@@ -78,7 +78,7 @@ AConfig*	AConfig::createBlock(const std::string& directive, std::stringstream& f
 				server->parse(file);
 				return server;
 			} case LOCATION: {
-				location = new Location();
+				location = new Location(locationPath);
 				location->parse(file);
 				return location;
 			} default:

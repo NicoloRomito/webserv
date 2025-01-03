@@ -4,7 +4,7 @@
 #include <vector>
 
 // TODO: set real path when ready to test
-Root::Root() : _path("./") {}
+Root::Root() : _path("/src/www/static") {}
 
 Root::~Root() {}
 
@@ -17,6 +17,8 @@ void	Root::parseDirective(const std::vector<std::string>& args) {
 		throw Errors::TooFewArgsException("Wrong number of args", ConfigLine, __FILE__);
 	}
 	if (args[0].find(";") != std::string::npos) {
+		if (*args[0].begin() != '/')
+			throw Errors::InvalidPathException("Path must start with '/'", ConfigLine, __FILE__);
 		this->_path = std::string(args[0].begin(), args[0].end() - 1);
 		return;
 	} else {

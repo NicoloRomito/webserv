@@ -13,7 +13,7 @@
 std::string getScriptName(Request request) {
 
 	std::string delimiter = "/";
-	std::string url = request.getPath();
+	std::string url = request.getUrlPath();
 	std::string tmp;
 
 	while (url.find(delimiter) != std::string::npos)
@@ -72,16 +72,16 @@ Cgi::Cgi(Request & request) {
 	this->_env["SERVER_PROTOCOL"] = "http/1.1";
 	this->_env["SERVER_PORT"] = getPort();
 	this->_env["REQUEST_METHOD"] = request.getMethod();
-	this->_cgiPath = request.getPath();
+	this->_cgiPath = request.getUrlPath();
 	this->_env["PATH_INFO"] = ""; //request.getPath();
-	this->_env["SCRIPT_NAME"] = request.getPath();
+	this->_env["SCRIPT_NAME"] = request.getUrlPath();
 	this->_env["CONTENT_TYPE"] = getHeader("content-type");
 	this->_env["CONTENT_LENGTH"] = getCotentLength();
 	this->_env["QUERY_STRING"] = "";
 	this->_env["REMOTE_USER"] = "";
 	this->_env["PWD"] = "/www/cgi-bin";
 	this->_argv = new char*[2];
-	absFilePath = getScriptPath(request.getPath());
+	absFilePath = getScriptPath(request.getUrlPath());
 	std::cout << absFilePath << "\n";
 	this->_argv[0] = strdup(absFilePath.c_str());
 	this->_argv[1] = 0;

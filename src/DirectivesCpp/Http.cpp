@@ -9,6 +9,8 @@
 #include <sstream>
 #include <string>
 
+int	serverN = 0;
+
 Http::Http() : AConfig(), _serverN(0) {}
 
 Http::~Http() {
@@ -57,7 +59,7 @@ void	Http::parse(std::stringstream& file) {
 			directive = parseDirective(args.at(0)); // get the name of the directive, if not returns UNKNOWN.
 			if (directive == "server") {
 				std::string serverName = directive + int_to_string(++this->_serverN);
-				_directives[serverName] = createBlock(directive, file);
+				_directives[serverName] = createBlock(directive, file, "");
 				continue;
 			}
 			args.erase(args.begin());
@@ -72,5 +74,29 @@ void	Http::parse(std::stringstream& file) {
 	args.clear();
 
 	compareServerPorts();
+}
+
+std::string	Http::getServerName(const std::string& host) {
+	std::string port = host.substr(host.find(":") + 1, (host.size() - host.find(":")) - 1);
+	for (int i = 1; i < _serverN; i++) {
+		std::string serverName = "server" + int_to_string(i);
+		int numberOfListen = this->getDirective<Server>(serverName)->getNumberOfListen();
+		for (int j = 1; j < numberOfListen; j++) {
+			std::string listenName = "listen" + int_to_string(j);
+			if (this->getDirective<Server>(serverName)->getDirective<Listen>(listenName)->getPort() == port)
+				return "server" + int_to_string(i);
+		}
+	}
+	return "";
+}
+
+std::string	Http::getLocationName(const std::string& path, const std::string& serverNumber) {
+	int numberOfLocation = this->getDirective<Server>(serverNumber)->getNumberOfLocation();
+	for (int j = 1; j < numberOfLocation; j++) {
+		std::string locationName = serverNumber + "location" + int_to_string(j);
+		if (this->getDirective<Server>(serverNumber)->getDirective<Location>(locationName)->getPath() == path)
+			return locationName;
+	}
+	return "";
 }
 

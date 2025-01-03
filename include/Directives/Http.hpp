@@ -17,4 +17,6 @@ class	Http : public AConfig {
 		void	compareServerPorts();
 
 		int		getServerN() const;
+		std::string getServerName(const std::string& host);
+		std::string	getLocationName(const std::string& path, const std::string& serverName);
 };

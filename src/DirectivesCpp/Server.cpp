@@ -11,7 +11,7 @@
 
 int	locationN = 0;
 
-Server::Server() : AConfig(), _nListen(0) {}
+Server::Server() : AConfig(), _nListen(0), _locationN(0) {}
 
 Server::~Server() {
 	cleanDirectives();
@@ -22,7 +22,7 @@ void	Server::parse(std::stringstream& file) {
 	std::string	directive;
 	std::vector<std::string>	args;
 
-	this->_dName = "server" + int_to_string(serverN);
+	this->_dName = "server" + int_to_string(++serverN);
 
 	while (std::getline(file, line)) {
 		ConfigLine++;
@@ -36,8 +36,8 @@ void	Server::parse(std::stringstream& file) {
 				continue;
 			}
             if (directive == "location") {
-				std::string	locationName = this->_dName + directive + int_to_string(++locationN);
-				_directives[locationName] = createBlock(directive, file);
+				std::string	locationName = this->_dName + directive + int_to_string(++_locationN);
+				_directives[locationName] = createBlock(directive, file, args[1]);
 				continue;
 			}
 			args.erase(args.begin());
@@ -97,4 +97,8 @@ bool	Server::parseErrorPage(const std::vector<std::string>& args, const std::str
 
 int	Server::getNumberOfListen() const {
 	return _nListen;
+}
+
+int	Server::getNumberOfLocation() const {
+	return _locationN;
 }

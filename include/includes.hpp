@@ -1,7 +1,8 @@
 #ifndef INCLUDES_HPP
 # define INCLUDES_HPP
 
-#include <iostream> 
+#include <iostream>
+#include <sys/stat.h>
 #include <cstring>
 #include <sys/poll.h>
 #include <netinet/in.h>
@@ -45,6 +46,7 @@ class Autoindex;
 class CgiPass;
 
 class Request;
+class Response;
 
 enum	DirectiveType {
 	HTTP,
@@ -71,6 +73,10 @@ bool			checkLine(const std::string& line);
 bool			semicolonFound(const std::string& line);
 std::string 	int_to_string(int value);
 std::string 	to_string(char value);
+std::string		getCurrentDir();
+bool			isADirectory(const std::string& urlPath, const std::string& root);
+bool			locationMatches(const std::string& urlPath, const std::string& locationPath);
+void			setAllValues(Response* res, Http* http, const std::string& serverName, const std::string& locationName, bool locationExists);
 
 // parsing
 void						startParsing(const std::string& file, std::stringstream& fileStream);
