@@ -14,4 +14,6 @@ class Webserv {
 		void run();
 };
 
+void	getErrorPage(std::string& response, Response* res);
+
 #endif

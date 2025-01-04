@@ -14,6 +14,7 @@ class Response {
 		std::string 				_errorPage4xx;
 		std::string 				_errorPage5xx;
 		std::string 				_pathForHtml;
+		std::string 				_pathForCgiScript;
 		std::vector<std::string>	_cgiPass;
 		std::vector<std::string>	_serverNames;
 		std::vector<int>			_statusCodes;
@@ -30,6 +31,7 @@ class Response {
 		void setCgiPass(const std::vector<std::string>& cgiPass);
 		void setLocationPath(const std::string& locationPath);
 		void setPathForHtml(const std::string& pathForHtml);
+		void setPathForCgiScript(const std::string& pathForHtml);
 		void setResponse(const std::string& response);
 		void setRoot(const std::string& root);
 		void setAutoindex(bool autoindex);
@@ -44,6 +46,7 @@ class Response {
 		const std::vector<std::string>	getCgiPass() const;
 		const std::string&				getLocationPath() const;
 		const std::string&				getPathForHtml() const;
+		const std::string&				getPathForCgiScript() const;
 		const std::string&				getResponse() const;
 		const std::string&				getRoot() const;
 		const std::string&				getIndex() const;

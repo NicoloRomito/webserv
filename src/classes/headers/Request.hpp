@@ -16,6 +16,7 @@ class Request {
 		std::string host;
 		std::string query;
 		std::string _cgiOutput;
+		int	_clientId;
 
 	public:
 		Request();
@@ -26,9 +27,11 @@ class Request {
 
 		// SETTERS
 		void setCgiOutput(const std::string);
+		void setClientId(const int);
 
 		// GETTERS
 		std::string 		getUri() const;
+		const int&			getClientId() const;
 		const std::string&	getUrlPath() const;
 		const std::string&	getBody(const std::string& key) const;
 		const std::string&	getHeader(const std::string& key) const;

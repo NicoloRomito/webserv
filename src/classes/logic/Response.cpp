@@ -38,6 +38,10 @@ void	Response::setPathForHtml(const std::string& pathForHtml) {
 	_pathForHtml = pathForHtml;
 }
 
+void	Response::setPathForCgiScript(const std::string& pathForCgiScript) {
+	_pathForCgiScript = pathForCgiScript;
+}
+
 void Response::setResponse(const std::string& response) {
 	_response = response;
 }
@@ -76,6 +80,10 @@ const std::string& Response::getLocationPath() const {
 
 const std::string& Response::getPathForHtml() const {
 	return _pathForHtml;
+}
+
+const std::string& Response::getPathForCgiScript() const {
+	return _pathForCgiScript;
 }
 
 const std::string& Response::getResponse() const {

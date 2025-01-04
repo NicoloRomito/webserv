@@ -16,7 +16,7 @@ PARSING_FILES = config.cpp parsing.cpp
 DIRECTIVES_FILES = Autoindex.cpp ErrorPage.cpp Index.cpp CgiPass.cpp \
 					Location.cpp ClientMaxBodySize.cpp Root.cpp Server.cpp \
 					Http.cpp Listen.cpp ServerName.cpp 
-CGI_FILES = Cgi.cpp
+CGI_FILES = Cgi.cpp CgiUtils.cpp
 
 
 SRC = $(addprefix $(SRC_DIR), $(FILES))

@@ -65,17 +65,15 @@ void	getErrorPage(std::string& response, Response* res) {
 void	readHtml(std::string &response, Request* req, Response* res) {
 	std::ifstream	file;
 	std::string		line;
-	Cgi* cgi;
 
 	std::cout << "\nURL PATH: " << req->getUrlPath() << std::endl;
 	std::cout << "\nPATH FOR HTML FILE: " << res->getPathForHtml() << std::endl;
 
-	if (req->getUrlPath().substr(0, 8) == "/cgi-bin")
+	if (req->getUrlPath().substr(0, 9) == "/cgi-bin/" && req->getUrlPath() != "/cgi-bin/")
 	{
-		cgi = new Cgi(*req);
-		cgi->executeCgi(req);
+		if (cgiHandler(req, STATUS_CODE, response, res) == 404)
+			return;
 		file.open(req->getCgiOutput().c_str());
-		delete cgi;
 	}
 	else 
 		file.open(res->getPathForHtml().c_str());
@@ -83,7 +81,6 @@ void	readHtml(std::string &response, Request* req, Response* res) {
 		STATUS_CODE = 404;
 		getErrorPage(response, res);
 		return;
-		// std::cerr << "Html file not found\n";
 	}
 	while (getline(file, line, '\0')) {
 		line.insert(line.size() - 2, "\r");
@@ -293,6 +290,7 @@ void	clientHandler(int clientSocket, Http* http) {
 	request->parseRequest(buffer);
 
 	// Optionally, send a response back to the client
+	request->setClientId(clientSocket);
 	lookForStatusCode(request, http, res);
 	delete request;
 
@@ -304,6 +302,7 @@ void	clientHandler(int clientSocket, Http* http) {
 void sigHandler(int signal) {
 	if (signal == SIGINT) {
 		std::cout << std::endl;
+		unlinkCgi();
 		QUIT = 1;
 	}
 }

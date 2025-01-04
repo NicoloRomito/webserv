@@ -27,6 +27,13 @@ class Cgi{
 		char** getArgv();
 };
 
+
+//Utils is file CgiUtils.cpp
 void unlinkCgi();
+char* getScriptAbsPath(std::string path);
+std::string buildCgiOutputPath(int idx);
+int countCharInstances(const std::string query, char delim);
+char* getValueFromQuery(std::string query);
+int cgiHandler(Request* req, int& statusCode, std::string& response, Response* res);
 
 #endif

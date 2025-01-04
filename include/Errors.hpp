@@ -82,6 +82,8 @@ class	Errors {
 			public:
 				InvalidPathException(const std::string& message, int line, const char* file)
 					: BaseException(message, line, file) {};
+		};
+
 		class	MemoryFailException : public BaseException {
 			public:
 				MemoryFailException(const std::string& message, const char* file)

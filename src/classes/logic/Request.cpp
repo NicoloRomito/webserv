@@ -130,10 +130,17 @@ void Request::parseRequest(std::string buffer) {
 	this->body = setMap(buffer);
 }
 
+//	SETTERS
 void	Request::setCgiOutput(const std::string toSet) {
 	this->_cgiOutput = toSet;
 }
 
+void Request::setClientId(const int clientId) {
+	this->_clientId = clientId;
+}
+
+
+//	GETTERS
 const std::string& Request::getMethod() const {
 	return this->method;
 }
@@ -172,4 +179,8 @@ const std::string& Request::getHost() const {
 
 const std::string& Request::getQuery() const {
 	return this->query;
+}
+
+const int&	Request::getClientId() const {
+	return this->_clientId;
 }
