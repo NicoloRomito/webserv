@@ -76,7 +76,6 @@ std::map<std::string, std::string> setMap(std::string &buffer) {
 		word.clear();
 		key.clear();
 		value.clear();
-		// std::cout << '<' << buffer << '>' << '\n';
 		j = 0;
 	}
 	return map;
@@ -123,11 +122,11 @@ void Request::parseRequest(std::string buffer) {
 	this->header = setMap(buffer);
 	this->host = getHeader("Host");
 	std::cout << "get map: " << getHeader("Accept-Encoding") << '\n';
-	// printMap(this->header);
 	if (buffer.empty())
 		return ;
 	buffer.erase(0, 3);
 	this->body = setMap(buffer);
+	// printMap(this->body);
 }
 
 //	SETTERS

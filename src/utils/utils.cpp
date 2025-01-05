@@ -1,5 +1,6 @@
 #include "../../include/includes.hpp"
 #include "../../include/includeClasses.hpp"
+#include <algorithm>
 #include <cctype>
 #include <cstddef>
 #include <iostream>
@@ -75,8 +76,15 @@ bool	semicolonFound(const std::string& line) {
 }
 
 bool	isADirectory(const std::string& urlPath, const std::string& root) {
-	std::string requestPath = urlPath;
-	(void)root;
+	std::string newRoot;
+	std::string requestPath;
+	if (root.find(urlPath) != std::string::npos) {
+		// trasforma root nella nuova path per arrivare alla cartella desiderata
+		newRoot = root.substr(0, root.find(urlPath));
+		requestPath = getCurrentDir() + newRoot + urlPath;
+	} else 
+		requestPath = getCurrentDir() + root + urlPath;
+	std::cout << "REQUEST PATH: " << requestPath << std::endl;
 	struct stat pathStat;
 	if (stat(requestPath.c_str(), &pathStat) == 0) {
 		if (S_ISDIR(pathStat.st_mode))
@@ -88,18 +96,15 @@ bool	isADirectory(const std::string& urlPath, const std::string& root) {
 }
 
 bool	locationMatches(const std::string& urlPath, const std::string& locationPath) {
-	if (urlPath == locationPath) {
+	if (urlPath == locationPath)
 		return true;
-	}
 	return false;
 }
 
 std::string	getCurrentDir() {
 	char cwd[256];
-	if (getcwd(cwd, sizeof(cwd)) == NULL) {
-		// std::cerr << "Error with getcwd\n";
+	if (getcwd(cwd, sizeof(cwd)) == NULL)
 		return "";
-	}
 	return std::string(cwd);
 }
 

@@ -2,6 +2,7 @@
 
 #include "../../../include/includes.hpp" // IWYU pragma: keep
 #include <string>
+#include <set>
 #include <vector>
 
 class Response {
@@ -17,7 +18,7 @@ class Response {
 		std::string 				_pathForCgiScript;
 		std::vector<std::string>	_cgiPass;
 		std::vector<std::string>	_serverNames;
-		std::vector<int>			_statusCodes;
+		std::set<int>				_statusCodes;
 
 	public:
 		Response();
@@ -27,7 +28,7 @@ class Response {
 
 		// SETTERS
 		void setServerNames(const std::vector<std::string>& serverNames);
-		void setAvailableErrorCodes(const std::vector<int>& clientCodes, const std::vector<int>& serverCodes);
+		void setAvailableErrorCodes(const std::set<int>& clientCodes, const std::set<int>& serverCodes);
 		void setCgiPass(const std::vector<std::string>& cgiPass);
 		void setLocationPath(const std::string& locationPath);
 		void setPathForHtml(const std::string& pathForHtml);
@@ -41,7 +42,7 @@ class Response {
 
 		// GETTERS
 		bool							getAutoindex() const;
-		const std::vector<int>			getAvailableErrorCodes() const;
+		const std::set<int>				getAvailableErrorCodes() const;
 		const std::vector<std::string>	getServerNames() const;
 		const std::vector<std::string>	getCgiPass() const;
 		const std::string&				getLocationPath() const;

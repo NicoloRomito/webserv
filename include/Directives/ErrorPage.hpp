@@ -1,11 +1,11 @@
 #pragma once
 
 #include "config.hpp"
-#include <vector>
+#include <set>
 
 class	ErrorPage : public AConfig {
 	private:
-		std::vector<int>	_codes;
+		std::set<int>		_codes;
 		std::string			_path;
 
 	public:
@@ -14,7 +14,7 @@ class	ErrorPage : public AConfig {
 		~ErrorPage();
 
 		const std::string&	getPath() const;
-		const std::vector<int>&	getCodes() const;
+		const std::set<int>&	getCodes() const;
 
 		void				parseDirective(const std::vector<std::string>& args);
 		void				addErrorCode(const std::string& code);

@@ -73,9 +73,9 @@ bool	Server::parseErrorPage(const std::vector<std::string>& args, const std::str
 			_directives[errorPageName] = createDirective(directive, args);
 		return true;
 	} else if (alreadyExists(errorPageName) && args.begin()->size() == 3) {
-		std::vector<int>	existingCodes = this->getDirective<ErrorPage>(errorPageName)->getCodes();
+		std::set<int>	existingCodes = this->getDirective<ErrorPage>(errorPageName)->getCodes();
 		std::vector<std::string>::const_iterator argsIt = args.begin();
-		for (std::vector<int>::iterator it = existingCodes.begin(); it != existingCodes.end() && argsIt != args.end(); it++, argsIt++) {
+		for (std::set<int>::iterator it = existingCodes.begin(); it != existingCodes.end() && argsIt != args.end(); it++, argsIt++) {
 			if (argsIt->size() != 3) {
 				return false;
 			}

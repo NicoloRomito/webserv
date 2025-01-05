@@ -1,12 +1,11 @@
 #include "../headers/Response.hpp"
-#include <vector>
 
 Response::Response() : _response(""), _root(""), _locationPath(""), _autoindex(), _index(""), _errorPage4xx(""), _errorPage5xx(""), _pathForHtml("") {}
 
 Response::~Response() {}
 
 bool Response::isAvailableErrorCode(int code) const {
-	for (std::vector<int>::const_iterator it = _statusCodes.begin(); it != _statusCodes.end(); ++it) {
+	for (std::set<int>::const_iterator it = _statusCodes.begin(); it != _statusCodes.end(); ++it) {
 		if (*it == code)
 			return true;
 	}
@@ -17,9 +16,13 @@ bool Response::isAvailableErrorCode(int code) const {
 	// -------SETTERS------- //
 	// --------------------- //
 
-void	Response::setAvailableErrorCodes(const std::vector<int>& clientCodes, const std::vector<int>& serverCodes) {
-	_statusCodes.insert(_statusCodes.end(), clientCodes.begin(), clientCodes.end());
-	_statusCodes.insert(_statusCodes.end(), serverCodes.begin(), serverCodes.end());
+void	Response::setAvailableErrorCodes(const std::set<int>& clientCodes, const std::set<int>& serverCodes) {
+	for (std::set<int>::const_iterator it = clientCodes.begin(); it != clientCodes.end(); ++it) {
+		_statusCodes.insert(*it);
+	}
+	for (std::set<int>::const_iterator it = serverCodes.begin(); it != serverCodes.end(); ++it) {
+		_statusCodes.insert(*it);
+	}
 }
 
 void	Response::setCgiPass(const std::vector<std::string>& cgiPass) {
@@ -70,7 +73,7 @@ void Response::setErrorPage5xx(const std::string& error_page5xx) {
 	// -------GETTERS------- //
 	// --------------------- //
 
-const std::vector<int> Response::getAvailableErrorCodes() const {
+const std::set<int> Response::getAvailableErrorCodes() const {
 	return _statusCodes;
 }
 

@@ -9,15 +9,13 @@ ErrorPage::ErrorPage() {}
 
 ErrorPage::ErrorPage(int errorCode) {
 	if (errorCode == 500) {
-		this->_codes.push_back(500);
-		this->_codes.push_back(502);
+		this->_codes.insert(500);
+		this->_codes.insert(502);
 		_path = "/src/www/static/5xx.html";
 	} else if (errorCode == 400) {
-		this->_codes.push_back(400);
-		this->_codes.push_back(403);
-		this->_codes.push_back(404);
-		this->_codes.push_back(405);
-		this->_codes.push_back(408);
+		this->_codes.insert(400);
+		this->_codes.insert(403);
+		this->_codes.insert(404);
 		_path = "/src/www/static/4xx.html";
 	}
 }
@@ -31,7 +29,7 @@ const std::string& ErrorPage::getPath() const {
 	return _path;
 }
 
-const std::vector<int>& ErrorPage::getCodes() const {
+const std::set<int>& ErrorPage::getCodes() const {
 	return _codes;
 }
 
@@ -42,19 +40,13 @@ void ErrorPage::addErrorCode(const std::string& code) {
 	if (code[0] == '4') {
 		switch (errorCode) {
 			case 400:
-				_codes.push_back(400);
+				_codes.insert(400);
 				break;
 			case 403:
-				_codes.push_back(403);
+				_codes.insert(403);
 				break;
 			case 404:
-				_codes.push_back(404);
-				break;
-			case 405:
-				_codes.push_back(405);
-				break;
-			case 408:
-				_codes.push_back(408);
+				_codes.insert(404);
 				break;
 			default:
 				throw Errors::InvalidErrorCode("Invalid error code", ConfigLine, __FILE__);
@@ -62,10 +54,10 @@ void ErrorPage::addErrorCode(const std::string& code) {
 	} else if (code[0] == '5') {
 		switch (errorCode) {
 			case 500:
-				_codes.push_back(500);
+				_codes.insert(500);
 				break;
 			case 502:
-				_codes.push_back(502);
+				_codes.insert(502);
 				break;
 			default:
 				throw Errors::InvalidErrorCode("Invalid error code", ConfigLine, __FILE__);
