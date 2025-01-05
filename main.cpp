@@ -314,6 +314,14 @@ void sigHandler(int signal) {
 	}
 }
 
+int checkSocketAvailable(std::vector<pollfd> pollFds, int serverN) {
+	for (int i = 0; i < serverN; i++) {
+		if (pollFds[i].revents & POLLIN)
+			return i;
+	}
+	return -1;
+}
+
 int main(int ac, char **av) {
 	(void)ac;
 	std::stringstream fileStream;
@@ -327,62 +335,92 @@ int main(int ac, char **av) {
 		return 0;
 	}
 	// Create the server socket
-	int serverSocket = initSocket();
-	if (serverSocket == -1)
-		return 0;
+	//todo thow an error on init scoket
+	int serverN = 2;
+	std::vector<int> serverSocket = initSocket(serverN);
 
 	// Set socket option to allow reuse of address/port
-	if (socketOption(serverSocket, 1) == -1) 
-		return 0;
+	socketOption(serverSocket, serverN, 1);
 
 	// Specify the address
-	sockaddr_in serverAddress;
-	if (runSocket(serverAddress, serverSocket, http) == -1)
+	std::vector<sockaddr_in> serverAddress;
+	if (runSocket(serverAddress, serverSocket, http, serverN) == -1)
 		return 0;
 
-	std::cout << "Server listening on port " << ntohs(serverAddress.sin_port) << "..." << std::endl;
+	std::cout << "Server listening on port " << ntohs(serverAddress[0].sin_port) << "..." << std::endl;
 
 	// Prepare for polling
 	std::vector<pollfd> pollFds;
-	pollfd serverPollFd = {serverSocket, POLLIN, 0};
-	pollFds.push_back(serverPollFd);
-
+	for (int i = 0; i < serverN; i++) {
+		pollfd serverPollFd = {serverSocket[i], POLLIN, 0};
+		pollFds.push_back(serverPollFd);
+	}
+	int currSocket = -1;
 	signal(SIGINT, sigHandler);
-	while (true) {
-	// Use poll to wait for incoming connections or data
-	int pollResult = poll(pollFds.data(), pollFds.size(), 200); // -1 to block indefinitely
-	if (pollResult < 0) {
-		std::cerr << "Error with poll." << std::endl;
-		break;
-	}
-	// Check if the server socket is ready to accept a new connection
-	if (pollFds[0].revents & POLLIN) {
-		int clientSocket = accept(serverSocket, NULL, NULL);
-		if (clientSocket < 0) {
-			std::cerr << "Client connection failed." << std::endl;
-			continue;
-		}
-		std::cout << "Client connected." << std::endl;
-		if (setNonBlocking(clientSocket) == -1) {
-			close(clientSocket);
-			continue;
-		}
-		// Add the new client socket to the poll list
-		pollfd clientPollFd = {clientSocket, POLLIN, 0};
-		pollFds.push_back(clientPollFd);
-	}
+while (true && currSocket++ != -42) {
+    if (currSocket >= serverN)
+        currSocket = 0;
 
-	// Check each client socket for incoming data
-	for (size_t i = 1; i < pollFds.size(); i++) {
-		if (pollFds[i].revents & POLLIN || pollFds[i].revents & POLLOUT) {
-			clientHandler(pollFds[i].fd, http);
-			if (QUIT) break;
-			// Don't remove client socket from poll list; keep it for further communication
-			// No socket closing after receiving one message
-		}
-	}
-	if (QUIT) break;
-	}
+    // Use poll to wait for incoming connections or data
+    int pollResult = poll(pollFds.data(), pollFds.size(), 200); // Timeout of 200ms
+    if (pollResult < 0) {
+        std::cerr << "Error with poll: " << strerror(errno) << std::endl;
+        break;
+    }
+
+    // DEBUG: Log poll results
+
+    // Handle new connections on all server sockets
+    for (int i = 0; i < serverN; i++) {
+        if (pollFds[i].revents & POLLIN) { // Check if the server socket is ready
+            int acceptSocket = serverSocket[i];
+            int clientSocket = accept(acceptSocket, NULL, NULL);
+            if (clientSocket < 0) {
+                std::cerr << "Client connection failed on socket " << i 
+                          << " (errno: " << strerror(errno) << ")." << std::endl;
+                continue;
+            }
+            std::cout << "Client connected on port " << ntohs(serverAddress[i].sin_port) << "." << std::endl;
+
+            // Set the client socket to non-blocking mode
+            if (setNonBlocking(clientSocket) == -1) {
+                std::cerr << "Failed to set client socket to non-blocking. Closing socket." << std::endl;
+                close(clientSocket);
+                continue;
+            }
+
+            // Add the new client socket to the poll list
+            pollfd clientPollFd = {clientSocket, POLLIN, 0};
+            pollFds.push_back(clientPollFd);
+        }
+    }
+
+    // Handle data from connected clients
+    for (size_t i = serverN; i < pollFds.size(); i++) {
+        if (pollFds[i].revents & POLLIN || pollFds[i].revents & POLLOUT) {
+            // DEBUG: Log activity
+            std::cout << "Handling client socket: " << pollFds[i].fd << std::endl;
+
+            clientHandler(pollFds[i].fd, http);
+
+            // Optionally, handle disconnection or cleanup
+            if (QUIT) {
+                std::cout << "QUIT signal received. Exiting loop." << std::endl;
+                break;
+            }
+        }
+    }
+
+    // Exit outer loop on QUIT
+    if (QUIT) break;
+}
+
+// Cleanup
+std::cout << "pollfds = " << pollFds.size() << std::endl;
+for (size_t i = 0; i < pollFds.size(); i++) {
+    close(pollFds[i].fd);
+}
+
 	std::cout << "pollfds = " << pollFds.size() << std::endl;
 	for (size_t i = 0; i < pollFds.size(); i++) {
 		close(pollFds[i].fd);

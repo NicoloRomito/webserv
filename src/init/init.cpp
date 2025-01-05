@@ -3,6 +3,7 @@
 #include "../../include/Directives/Http.hpp"
 #include "../../include/Directives/Listen.hpp"
 #include <netinet/in.h>
+#include <sstream>
 #include <string>
 #include <cstdlib>
 #include <fcntl.h>
@@ -20,47 +21,62 @@ int    setNonBlocking(int socket) {
     return socket;
 }
 
-int initSocket() {
-	int serverSocket = socket(AF_INET, SOCK_STREAM, 0);
-    if (serverSocket < 0) {
-        error("Failed to create socket");
-        return -1;
+std::vector<int> initSocket(int serverN) {
+    std::vector<int> serverSockets;
+    int serverSocket;
+    for (int i = 0; i < serverN; i++) {
+
+        serverSocket = socket(AF_INET, SOCK_STREAM, 0);
+        if (serverSocket < 0) {
+            error("Failed to create socket");
+            return serverSockets;
+        }
+        if (setNonBlocking(serverSocket) == -1) {
+            return serverSockets;
+        }
+        serverSocket = setNonBlocking(serverSocket);
+        serverSockets.push_back(serverSocket);
     }
-    if (setNonBlocking(serverSocket) == -1) {
-        return -1;
+	return serverSockets;
+}
+void socketOption(std::vector<int> serverSocket, int serverN, int option) {
+    for (int i = 0; i < serverN; i++) {
+
+        if (setsockopt(serverSocket[i], SOL_SOCKET, SO_REUSEADDR, &option, sizeof(option)) < 0) {
+            error("Failed to set server socket");
+            close(serverSocket[i]);
+        }
     }
-    serverSocket = setNonBlocking(serverSocket);
-	return serverSocket;
 }
 
-int socketOption(int serverSocket, int option) {
-	if (setsockopt(serverSocket, SOL_SOCKET, SO_REUSEADDR, &option, sizeof(option)) < 0) {
-        error("Failed to set server socket");
-        close(serverSocket);
-        return -1;
+int runSocket(std::vector<sockaddr_in> &serverAddress, std::vector<int> serverSocket, Http* http, int serverN) {
+    int port;
+    sockaddr_in curr;
+    std::stringstream ss;
+
+    for (int i = 0; i < serverN; i++) {
+        ss << i + 1;
+        std::cout << ss.str() << '\n';
+        port = atoi(http->getDirective<Server>("server1")->getDirective<Listen>("listen" + ss.str())->getPort().c_str());
+        ss.str("");
+        curr.sin_family = AF_INET;
+        curr.sin_port = htons(port);
+        curr.sin_addr.s_addr = htonl(INADDR_ANY);  // Bind to any address
+
+        // binding the socket to the address
+        if (bind(serverSocket[i], (struct sockaddr*)&curr, sizeof(curr)) < 0) {
+            error("Binding Failed");
+            close(serverSocket[i]);
+            return -1;
+        }
+
+        // listening to the assigned socket
+        if (listen(serverSocket[i], 5) < 0) {
+            error("Listen Failed");
+            close(serverSocket[i]);
+            return -1;
+        }
+        serverAddress.push_back(curr);
     }
-	return 1;
-}
-
-int runSocket(sockaddr_in &serverAddress, int serverSocket, Http* http) {
-    int port = atoi(http->getDirective<Server>("server1")->getDirective<Listen>("listen1")->getPort().c_str());
-
-	serverAddress.sin_family = AF_INET;
-    serverAddress.sin_port = htons(port);
-    serverAddress.sin_addr.s_addr = htonl(INADDR_ANY);  // Bind to any address
-
-    // binding the socket to the address
-    if (bind(serverSocket, (struct sockaddr*)&serverAddress, sizeof(serverAddress)) < 0) {
-        error("Binding Failed");
-        close(serverSocket);
-        return -1;
-    }
-
-    // listening to the assigned socket
-    if (listen(serverSocket, 5) < 0) {
-		error("Listen Failed");
-		close(serverSocket);
-		return -1;
-	}
-	return 1;
+    return 1;
 }

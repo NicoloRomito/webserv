@@ -85,9 +85,9 @@ DirectiveType				getDirectiveType(const std::string& dir);
 std::vector<std::string>	returnLine(const std::string& line);
 
 //init socket
-int		initSocket();
+std::vector<int>		initSocket(int serverN);
 int		setNonBlocking(int socket);
-int		socketOption(int serverSocket, int opt = 1);
-int		runSocket(sockaddr_in &serverAddress, int serverSocket, Http* http);
+void	socketOption(std::vector<int> serverSocket, int serverN, int opt = 1);
+int		runSocket(std::vector<sockaddr_in> &serverAddress, std::vector<int> serverSocket, Http* http, int serverN);
 
 #endif
