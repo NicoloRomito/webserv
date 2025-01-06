@@ -79,7 +79,6 @@ bool	isADirectory(const std::string& urlPath, const std::string& root) {
 	std::string newRoot;
 	std::string requestPath;
 	if (root.find(urlPath) != std::string::npos) {
-		// trasforma root nella nuova path per arrivare alla cartella desiderata
 		newRoot = root.substr(0, root.find(urlPath));
 		requestPath = getCurrentDir() + newRoot + urlPath;
 	} else 

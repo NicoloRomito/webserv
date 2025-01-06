@@ -96,7 +96,15 @@ void	readHtml(std::string &response, Request* req, Response* res) {
 }
 
 std::string	generateDirectoryListing(std::string urlPath, std::string root) {
-	DIR *dir = opendir((root + urlPath).c_str());
+	std::string newRoot;
+	std::string requestPath;
+
+	if (root.find(urlPath) != std::string::npos) {
+		newRoot = root.substr(0, root.find(urlPath));
+		requestPath = getCurrentDir() + newRoot + urlPath;
+	} else 
+		requestPath = getCurrentDir() + root + urlPath;
+	DIR *dir = opendir(requestPath.c_str());
 	if (!dir) {
 		std::ostringstream response;
         response << "HTTP/1.1 403 Forbidden\r\n";
@@ -137,6 +145,7 @@ std::string	generateDirectoryListing(std::string urlPath, std::string root) {
 	response << "Content-Length: " << htmlResponse.str().size() << "\r\n\r\n";
 	response << htmlResponse.str();
 
+	STATUS_CODE = 200;
 	return response.str();
 }
 
@@ -163,7 +172,6 @@ int handleGet(Request* req, Http* http, Response* res) {
 	// *  Directory exists
 
 	// TODO: double check if the function below works as expected;
-	// TODO: understand why segfaults;
 	if (isADirectory(req->getUrlPath(), res->getRoot())) {
 		// handle directory if location and index exist,
 		if (locationExists && locationMatches(req->getUrlPath(), res->getLocationPath()) && !res->getIndex().empty()) {
@@ -195,10 +203,12 @@ int handleGet(Request* req, Http* http, Response* res) {
 int handleRequest(Request* request, Http* http, Response* res) {
 	if (request->getMethod() == "GET") {
 		int ret = handleGet(request, http, res);
+		std::cout << "RETURN VALUE: " << ret << std::endl;
 		if (ret != 1)
 			return ret;
 		return 200;
 	} else if (request->getMethod() == "POST") {
+		// TODO: handle max body size check.
 		// if (!handlePost(request))
 			return 404;
 	} else if (request->getMethod() == "DELETE") {
@@ -263,7 +273,6 @@ std::string    generateResponse(Request* req, Response* res) {
 void	lookForStatusCode(Request* req, Http* http, Response* res) {
 	std::string response = "";
 	int returnCode = handleRequest(req, http, res);
-	std::cout << "STATUS CODE: " << STATUS_CODE << std::endl;
 
 
 	// ! NOW THAT YOU HAVE THE ERROR PAGES AND CODES, YOU CAN USE THEM TO GENERATE THE RESPONSE.
@@ -274,6 +283,7 @@ void	lookForStatusCode(Request* req, Http* http, Response* res) {
 		res->setResponse(generateDirectoryListing(req->getUrlPath(), res->getRoot()));
 	else
 		res->setResponse(generateResponse(req, res));
+	std::cout << "STATUS CODE: " << STATUS_CODE << std::endl;
 }
 
 void	clientHandler(int clientSocket, Http* http) {
