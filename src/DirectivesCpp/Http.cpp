@@ -100,3 +100,7 @@ std::string	Http::getLocationName(const std::string& path, const std::string& se
 	return "";
 }
 
+int	Http::getServerN() const {
+	return this->_serverN;
+}
+
