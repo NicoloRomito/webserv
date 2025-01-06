@@ -365,11 +365,8 @@ int main(int ac, char **av) {
 		pollfd serverPollFd = {serverSocket[i], POLLIN, 0};
 		pollFds.push_back(serverPollFd);
 	}
-	int currSocket = -1;
 	signal(SIGINT, sigHandler);
-while (true && currSocket++ != -42) {
-    if (currSocket >= serverN)
-        currSocket = 0;
+	while (true) {
 
     // Use poll to wait for incoming connections or data
     int pollResult = poll(pollFds.data(), pollFds.size(), 200); // Timeout of 200ms
