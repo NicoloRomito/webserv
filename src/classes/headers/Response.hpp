@@ -17,7 +17,7 @@ class Response {
 		std::string 				_pathForHtml;
 		std::string 				_pathForCgiScript;
 		std::vector<std::string>	_cgiPass;
-		std::vector<std::string>	_serverNames;
+		std::set<std::string>		_serverNames;
 		std::set<int>				_statusCodes;
 
 	public:
@@ -25,9 +25,10 @@ class Response {
 		~Response();
 
 		bool isAvailableErrorCode(int code) const;
+		void addServerNamesToHosts();
 
 		// SETTERS
-		void setServerNames(const std::vector<std::string>& serverNames);
+		void setServerNames(const std::set<std::string>& serverNames);
 		void setAvailableErrorCodes(const std::set<int>& clientCodes, const std::set<int>& serverCodes);
 		void setCgiPass(const std::vector<std::string>& cgiPass);
 		void setLocationPath(const std::string& locationPath);
@@ -43,7 +44,7 @@ class Response {
 		// GETTERS
 		bool							getAutoindex() const;
 		const std::set<int>				getAvailableErrorCodes() const;
-		const std::vector<std::string>	getServerNames() const;
+		const std::set<std::string>		getServerNames() const;
 		const std::vector<std::string>	getCgiPass() const;
 		const std::string&				getLocationPath() const;
 		const std::string&				getPathForHtml() const;

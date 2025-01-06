@@ -126,8 +126,7 @@ void	setAllValues(Response* res, Http* http, const std::string& serverName, cons
 			res->setCgiPass(server->getDirective<CgiPass>("cgi_pass")->getPath());
 		if (server->getDirective<ServerName>("server_name"))
 			res->setServerNames(server->getDirective<ServerName>("server_name")->getNames());
-	}
-	else {
+	} else {
 		Location *location = server->getDirective<Location>(locationName);
 		res->setLocationPath(location->getPath());
 		// DEFAULT VALUES FOR LOCATION
@@ -136,6 +135,8 @@ void	setAllValues(Response* res, Http* http, const std::string& serverName, cons
 		res->setRoot(location->getDirective<Root>("root")->getPath());
 		res->setCgiPass(location->getDirective<CgiPass>("cgi_pass")->getPath());
 		// TODO search for directives if they exist
+		if (location->getDirective<ServerName>("server_name"))
+			res->setServerNames(location->getDirective<ServerName>("server_name")->getNames());
 		if (location->getDirective<ErrorPage>(serverName + "error_page4xx"))
 			res->setErrorPage4xx(location->getDirective<ErrorPage>(serverName + "error_page4xx")->getPath());
 		if (location->getDirective<ErrorPage>(serverName + "error_page5xx"))
@@ -144,5 +145,6 @@ void	setAllValues(Response* res, Http* http, const std::string& serverName, cons
 			res->setAvailableErrorCodes(location->getDirective<ErrorPage>(serverName + "error_page4xx")->getCodes(),
 				location->getDirective<ErrorPage>(serverName + "error_page5xx")->getCodes());
 	}
-
+	if (!res->getServerNames().empty())
+		res->addServerNamesToHosts();
 }

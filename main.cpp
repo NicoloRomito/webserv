@@ -9,6 +9,8 @@
 #include <string>
 #include <dirent.h>
 
+std::string    generateResponse(Request* req, Response* res);
+
 // * NOTE: This is a list of the directives that need to be called with numbers
 // * at the end of the directive name. Here is the list:
 // * Server -> server1, server2, server3, ...
@@ -145,32 +147,18 @@ std::string	generateDirectoryListing(std::string urlPath, std::string root) {
 	response << "Content-Length: " << htmlResponse.str().size() << "\r\n\r\n";
 	response << htmlResponse.str();
 
-	STATUS_CODE = 200;
 	return response.str();
 }
 
-	// * RETURN VALUES: 0 -> error, 1 -> success, 2 -> directory listing, 4 -> error 4xx, 5 -> error 5xx //
-int handleGet(Request* req, Http* http, Response* res) {
-	bool	locationExists = true;
-	std::string	serverName = http->getServerName(req->getHost());
-	std::string	locationName = http->getLocationName(req->getUrlPath(), serverName);
-	if (serverName.empty())
-		return 0;
-	if (locationName.empty())
-		locationExists = false;
-
+void	handleGet(Request* req, Response* res, bool locationExists) {
 	std::string cwd = getCurrentDir();
 	if (cwd.empty()) {
 		STATUS_CODE = 500;
-		return 0;
+		res->setResponse(generateResponse(req, res));
+		return;
 	}
 
-	// * Check if location exists and set all the necessary values
-
-	setAllValues(res, http, serverName, locationName, locationExists);
-
-	// *  Directory exists
-
+	STATUS_CODE = 200;
 	// TODO: double check if the function below works as expected;
 	if (isADirectory(req->getUrlPath(), res->getRoot())) {
 		// handle directory if location and index exist,
@@ -178,44 +166,58 @@ int handleGet(Request* req, Http* http, Response* res) {
 			res->setPathForHtml(std::string(cwd) + res->getRoot() + "/" + res->getIndex());
 		} // handle directory if location and autoindex exist
 		else if (locationExists && locationMatches(req->getUrlPath(), res->getLocationPath()) && res->getAutoindex() == true) {
-			return 2;
+			res->setResponse(generateDirectoryListing(req->getUrlPath(), res->getRoot()));
+			return;
 		} else if (locationExists && locationMatches(req->getUrlPath(), res->getLocationPath()) && !res->getAutoindex()) {
 			STATUS_CODE = 403;
-			return 4;
+			res->setResponse(generateResponse(req, res));
+			return;
 		} else {
 			if (!res->getIndex().empty()) {
 				res->setPathForHtml(std::string(cwd) + res->getRoot() + "/" + res->getIndex());
 			} else if (res->getAutoindex() == true) {
-				return 2;
+				res->setResponse(generateDirectoryListing(req->getUrlPath(), res->getRoot()));
+				return;
 			} else {
 				STATUS_CODE = 403;
-				return 4;
+				res->setResponse(generateResponse(req, res));
+				return;
 			}
 		}
 	}
 	else // handle file
 		res->setPathForHtml(std::string(cwd) + res->getRoot() + req->getUrlPath());
 
-	STATUS_CODE = 200;
-	return 1;
+	res->setResponse(generateResponse(req, res));
 }
 
-int handleRequest(Request* request, Http* http, Response* res) {
+void	handleRequest(Request* request, Http* http, Response* res) {
+	bool	locationExists = true;
+	std::string	serverName = http->getServerName(request->getHost());
+	std::cout << "HOST: " << request->getHost() << std::endl;
+	std::string	locationName = http->getLocationName(request->getUrlPath(), serverName);
+	if (serverName.empty()) {
+		STATUS_CODE = 404;
+		res->setResponse(generateResponse(request, res));
+		return;
+	}
+	std::cout << "LOCATION NAME: " << locationName << std::endl;
+	if (locationName.empty())
+		locationExists = false;
+
+	setAllValues(res, http, serverName, locationName, locationExists);
+
 	if (request->getMethod() == "GET") {
-		int ret = handleGet(request, http, res);
-		std::cout << "RETURN VALUE: " << ret << std::endl;
-		if (ret != 1)
-			return ret;
-		return 200;
+		handleGet(request, res, locationExists);
 	} else if (request->getMethod() == "POST") {
 		// TODO: handle max body size check.
 		// if (!handlePost(request))
-			return 404;
+			STATUS_CODE = 404;
 	} else if (request->getMethod() == "DELETE") {
 		// if (!handleDelete(request))
-			return 404;
+			STATUS_CODE = 404;
 	} else {
-		return 405;
+		STATUS_CODE = 405;
 	}
 }
 
@@ -270,22 +272,6 @@ std::string    generateResponse(Request* req, Response* res) {
 	return response;
 }
 
-void	lookForStatusCode(Request* req, Http* http, Response* res) {
-	std::string response = "";
-	int returnCode = handleRequest(req, http, res);
-
-
-	// ! NOW THAT YOU HAVE THE ERROR PAGES AND CODES, YOU CAN USE THEM TO GENERATE THE RESPONSE.
-	// ! YOU CAN USE THE STATUS_CODE VARIABLE TO CHECK THE STATUS CODE OF THE RESPONSE.
-	// * STATUS_CODE = 200 -> OK
-
-	if (returnCode == 2)
-		res->setResponse(generateDirectoryListing(req->getUrlPath(), res->getRoot()));
-	else
-		res->setResponse(generateResponse(req, res));
-	std::cout << "STATUS CODE: " << STATUS_CODE << std::endl;
-}
-
 void	clientHandler(int clientSocket, Http* http) {
 	char buffer[1024] = {0};
 	Request *request = new Request();
@@ -308,7 +294,7 @@ void	clientHandler(int clientSocket, Http* http) {
 
 	// Optionally, send a response back to the client
 	request->setClientId(clientSocket);
-	lookForStatusCode(request, http, res);
+	handleRequest(request, http, res);
 	delete request;
 
 	// Send the response to the client
@@ -346,11 +332,11 @@ int main(int ac, char **av) {
 	}
 	// Create the server socket
 	//todo thow an error on init scoket
-	int serverN = 2;
+	// int serverN = 2;
 	std::vector<int> serverSocket = initSocket(serverN);
 
 	// Set socket option to allow reuse of address/port
-	socketOption(serverSocket, serverN, 1);
+	socketOption(serverSocket, http->getServerN(), 1);
 
 	// Specify the address
 	std::vector<sockaddr_in> serverAddress;
@@ -361,7 +347,7 @@ int main(int ac, char **av) {
 
 	// Prepare for polling
 	std::vector<pollfd> pollFds;
-	for (int i = 0; i < serverN; i++) {
+	for (int i = 0; i < http->getServerN(); i++) {
 		pollfd serverPollFd = {serverSocket[i], POLLIN, 0};
 		pollFds.push_back(serverPollFd);
 	}
@@ -378,7 +364,7 @@ int main(int ac, char **av) {
     // DEBUG: Log poll results
 
     // Handle new connections on all server sockets
-    for (int i = 0; i < serverN; i++) {
+    for (int i = 0; i < http->getServerN(); i++) {
         if (pollFds[i].revents & POLLIN) { // Check if the server socket is ready
             int acceptSocket = serverSocket[i];
             int clientSocket = accept(acceptSocket, NULL, NULL);
@@ -403,7 +389,7 @@ int main(int ac, char **av) {
     }
 
     // Handle data from connected clients
-    for (size_t i = serverN; i < pollFds.size(); i++) {
+    for (size_t i = http->getServerN(); i < pollFds.size(); i++) {
         if (pollFds[i].revents & POLLIN || pollFds[i].revents & POLLOUT) {
             // DEBUG: Log activity
             std::cout << "Handling client socket: " << pollFds[i].fd << std::endl;

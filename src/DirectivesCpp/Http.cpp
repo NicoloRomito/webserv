@@ -78,11 +78,11 @@ void	Http::parse(std::stringstream& file) {
 
 std::string	Http::getServerName(const std::string& host) {
 	std::string port = host.substr(host.find(":") + 1, (host.size() - host.find(":")) - 1);
-	for (int i = 1; i < _serverN; i++) {
-		std::string serverName = "server" + int_to_string(i);
+	for (int i = 0; i < _serverN; i++) {
+		std::string serverName = "server" + int_to_string(i + 1);
 		int numberOfListen = this->getDirective<Server>(serverName)->getNumberOfListen();
-		for (int j = 1; j < numberOfListen; j++) {
-			std::string listenName = "listen" + int_to_string(j);
+		for (int j = 0; j < numberOfListen; j++) {
+			std::string listenName = "listen" + int_to_string(j + 1);
 			if (this->getDirective<Server>(serverName)->getDirective<Listen>(listenName)->getPort() == port)
 				return "server" + int_to_string(i);
 		}
@@ -92,8 +92,9 @@ std::string	Http::getServerName(const std::string& host) {
 
 std::string	Http::getLocationName(const std::string& path, const std::string& serverNumber) {
 	int numberOfLocation = this->getDirective<Server>(serverNumber)->getNumberOfLocation();
-	for (int j = 1; j < numberOfLocation; j++) {
-		std::string locationName = serverNumber + "location" + int_to_string(j);
+	
+	for (int j = 0; j < numberOfLocation; j++) {
+		std::string locationName = serverNumber + "location" + int_to_string(j + 1);
 		if (this->getDirective<Server>(serverNumber)->getDirective<Location>(locationName)->getPath() == path)
 			return locationName;
 	}

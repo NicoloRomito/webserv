@@ -4,7 +4,7 @@
 #include "../../include/Directives/ServerName.hpp"
 
 ServerName::ServerName() {
-	this->_names.push_back("localhost");
+	this->_names.insert("localhost");
 }
 
 ServerName::~ServerName() {
@@ -12,7 +12,7 @@ ServerName::~ServerName() {
 }
 
 	// already checked if the args are empty //
-const std::vector<std::string>&	ServerName::getNames() const {
+const std::set<std::string>&	ServerName::getNames() const {
 	return this->_names;
 }
 
@@ -21,6 +21,6 @@ void	ServerName::parseDirective(const std::vector<std::string>& args) {
 		throw Errors::TooFewArgsException("Wrong number of args", ConfigLine, __FILE__);
 	}
 	for (std::vector<std::string>::const_iterator it = args.begin(); it != args.end(); it++) {
-		this->_names.push_back(std::string(it->begin(), it->end() - 1));
+		this->_names.insert(std::string(it->begin(), it->end() - 1));
 	}
 }

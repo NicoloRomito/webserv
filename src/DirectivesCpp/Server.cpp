@@ -100,5 +100,5 @@ int	Server::getNumberOfListen() const {
 }
 
 int	Server::getNumberOfLocation() const {
-	return _locationN;
+	return this->_locationN;
 }

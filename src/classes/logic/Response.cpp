@@ -1,4 +1,7 @@
 #include "../headers/Response.hpp"
+#include <cstddef>
+#include <fstream>
+#include <string>
 
 Response::Response() : _response(""), _root(""), _locationPath(""), _autoindex(), _index(""), _errorPage4xx(""), _errorPage5xx(""), _pathForHtml("") {}
 
@@ -10,6 +13,21 @@ bool Response::isAvailableErrorCode(int code) const {
 			return true;
 	}
 	return false;
+}
+
+void Response::addServerNamesToHosts() {
+	std::ofstream	file;
+	std::string		line;
+
+	file.open("/etc/hosts", std::ios::app);
+	if (!file.is_open()) {
+		std::cerr << "Error opening /etc/hosts\n";
+		return;
+	}
+
+	for (std::set<std::string>::iterator it = _serverNames.begin(); it != _serverNames.end(); ++it)
+		file << "127.0.0.1 " << *it << "\n";
+	file.close();
 }
 
 	// --------------------- //
@@ -29,7 +47,7 @@ void	Response::setCgiPass(const std::vector<std::string>& cgiPass) {
 	_cgiPass = cgiPass;
 }
 
-void	Response::setServerNames(const std::vector<std::string>& serverNames) {
+void	Response::setServerNames(const std::set<std::string>& serverNames) {
 	_serverNames = serverNames;
 }
 
@@ -117,6 +135,6 @@ const std::vector<std::string> Response::getCgiPass() const {
 	return _cgiPass;
 }
 
-const std::vector<std::string> Response::getServerNames() const {
+const std::set<std::string> Response::getServerNames() const {
 	return _serverNames;
 }
