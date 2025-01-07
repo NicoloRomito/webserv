@@ -37,6 +37,7 @@ void	getErrorPage(std::string& response, Response* res) {
 	std::string		errorPage = getCurrentDir() + res->getErrorPage4xx();
 
 	std::cout << "ERROR PAGE: " << errorPage << std::endl;
+	std::cout << "STATUS CODE: " << STATUS_CODE << std::endl;
 
 	if (res->getAvailableErrorCodes().count(STATUS_CODE) > 0) {
 		file.open(errorPage.c_str());
@@ -71,6 +72,29 @@ void	readHtml(std::string &response, Request* req, Response* res) {
 	std::cout << "\nURL PATH: " << req->getUrlPath() << std::endl;
 	std::cout << "\nPATH FOR HTML FILE: " << res->getPathForHtml() << std::endl;
 
+    if (req->getUrlPath() == "/favicon.ico") {
+        // Open file in binary mode
+        file.open(res->getPathForHtml().c_str(), std::ios::binary);
+        if (!file.is_open()) {
+            STATUS_CODE = 404;
+            getErrorPage(response, res);
+            return;
+        }
+        
+        // Get file size
+        file.seekg(0, std::ios::end);
+        std::streampos size = file.tellg();
+        file.seekg(0, std::ios::beg);
+
+        // Read the binary file
+        char* buffer = new char[size];
+        file.read(buffer, size);
+        response.assign(buffer, size);
+        delete[] buffer;
+        
+        return;
+    }
+
 	if (req->getUrlPath().substr(0, 9) == "/cgi-bin/" && req->getUrlPath() != "/cgi-bin/")
 	{
 		if (cgiHandler(req, STATUS_CODE, response, res) == 404) {
@@ -97,25 +121,22 @@ void	readHtml(std::string &response, Request* req, Response* res) {
 	}
 }
 
-std::string	generateDirectoryListing(std::string urlPath, std::string root) {
+std::string	generateDirectoryListing(std::string urlPath, std::string root, Response* res) {
 	std::string newRoot;
 	std::string requestPath;
 
 	if (root.find(urlPath) != std::string::npos) {
 		newRoot = root.substr(0, root.find(urlPath));
 		requestPath = getCurrentDir() + newRoot + urlPath;
-	} else 
+	} else
 		requestPath = getCurrentDir() + root + urlPath;
+
 	DIR *dir = opendir(requestPath.c_str());
 	if (!dir) {
-		std::ostringstream response;
-        response << "HTTP/1.1 403 Forbidden\r\n";
-        response << "Content-Type: text/html\r\n";
-        std::string body = "<html><head><title>403 Forbidden</title></head>"
-                           "<body><h1>403 Forbidden</h1></body></html>";
-        response << "Content-Length: " << body.size() << "\r\n\r\n";
-        response << body;
-        return response.str();
+		std::string response;
+		STATUS_CODE = 403;
+		getErrorPage(response, res);
+		return response;
 	}
 
 	std::ostringstream htmlResponse;
@@ -159,14 +180,21 @@ void	handleGet(Request* req, Response* res, bool locationExists) {
 	}
 
 	STATUS_CODE = 200;
+
+    if (req->getUrlPath() == "/favicon.ico") {
+        res->setPathForHtml(cwd + res->getRoot() + req->getUrlPath());
+        res->setResponse(generateResponse(req, res));
+        return;
+    }
+
 	// TODO: double check if the function below works as expected;
 	if (isADirectory(req->getUrlPath(), res->getRoot())) {
 		// handle directory if location and index exist,
 		if (locationExists && locationMatches(req->getUrlPath(), res->getLocationPath()) && !res->getIndex().empty()) {
-			res->setPathForHtml(std::string(cwd) + res->getRoot() + "/" + res->getIndex());
+			res->setPathForHtml(cwd + res->getRoot() + "/" + res->getIndex());
 		} // handle directory if location and autoindex exist
 		else if (locationExists && locationMatches(req->getUrlPath(), res->getLocationPath()) && res->getAutoindex() == true) {
-			res->setResponse(generateDirectoryListing(req->getUrlPath(), res->getRoot()));
+			res->setResponse(generateDirectoryListing(req->getUrlPath(), res->getRoot(), res));
 			return;
 		} else if (locationExists && locationMatches(req->getUrlPath(), res->getLocationPath()) && !res->getAutoindex()) {
 			STATUS_CODE = 403;
@@ -174,9 +202,9 @@ void	handleGet(Request* req, Response* res, bool locationExists) {
 			return;
 		} else {
 			if (!res->getIndex().empty()) {
-				res->setPathForHtml(std::string(cwd) + res->getRoot() + "/" + res->getIndex());
+				res->setPathForHtml(cwd + res->getRoot() + "/" + res->getIndex());
 			} else if (res->getAutoindex() == true) {
-				res->setResponse(generateDirectoryListing(req->getUrlPath(), res->getRoot()));
+				res->setResponse(generateDirectoryListing(req->getUrlPath(), res->getRoot(), res));
 				return;
 			} else {
 				STATUS_CODE = 403;
@@ -192,6 +220,7 @@ void	handleGet(Request* req, Response* res, bool locationExists) {
 }
 
 void	handleRequest(Request* request, Http* http, Response* res, bool locationExists) {
+	(void)http;
 	if (request->getMethod() == "GET") {
 		handleGet(request, res, locationExists);
 	} else if (request->getMethod() == "POST") {
@@ -211,35 +240,40 @@ std::string    generateResponse(Request* req, Response* res) {
 	std::ostringstream oss;
 	std::string index;
 
+    std::string contentType = "text/html";
+    if (req->getUrlPath() == "/favicon.ico") {
+        contentType = "image/x-icon";
+    }
+
 	switch (STATUS_CODE) {
 		case 200:
 			response = 
 				"HTTP/1.1 200 OK\r\n"
-				"Content-Type: text/html\r\n"
+				"Content-Type: " + contentType + "\r\n"
 				"Content-Length: ";
 			break;
 		case 404:
 			response = 
 				"HTTP/1.1 404 Not Found\r\n"
-				"Content-Type: text/html\r\n"
+				"Content-Type: " + contentType + "\r\n"
 				"Content-Length: ";
 			break;
 		case 403:
 			response = 
 				"HTTP/1.1 403 Forbidden\r\n"
-				"Content-Type: text/html\r\n"
+				"Content-Type: " + contentType + "\r\n"
 				"Content-Length: ";
 			break;
 		case 405:
 			response = 
 				"HTTP/1.1 405 Method Not Allowed\r\n"
-				"Content-Type: text/html\r\n"
+				"Content-Type: " + contentType + "\r\n"
 				"Content-Length: ";
 			break;
 		case 500:
 			response = 
 				"HTTP/1.1 500 Internal Server Error\r\n"
-				"Content-Type: text/html\r\n"
+				"Content-Type: " + contentType + "\r\n"
 				"Content-Length: ";
 			break;
 		default:
