@@ -191,22 +191,7 @@ void	handleGet(Request* req, Response* res, bool locationExists) {
 	res->setResponse(generateResponse(req, res));
 }
 
-void	handleRequest(Request* request, Http* http, Response* res) {
-	bool	locationExists = true;
-	std::string	serverName = http->getServerName(request->getHost());
-	std::cout << "HOST: " << request->getHost() << std::endl;
-	std::string	locationName = http->getLocationName(request->getUrlPath(), serverName);
-	if (serverName.empty()) {
-		STATUS_CODE = 404;
-		res->setResponse(generateResponse(request, res));
-		return;
-	}
-	std::cout << "LOCATION NAME: " << locationName << std::endl;
-	if (locationName.empty())
-		locationExists = false;
-
-	setAllValues(res, http, serverName, locationName, locationExists);
-
+void	handleRequest(Request* request, Http* http, Response* res, bool locationExists) {
 	if (request->getMethod() == "GET") {
 		handleGet(request, res, locationExists);
 	} else if (request->getMethod() == "POST") {
@@ -272,11 +257,28 @@ std::string    generateResponse(Request* req, Response* res) {
 	return response;
 }
 
+void	lookForRequestType(Request* req, Http* http, Response* res, bool& locationExists) {
+	std::string	serverName = http->getServerName(req->getHost());
+	std::cout << "HOST: " << req->getHost() << std::endl;
+	std::string	locationName = http->getLocationName(req->getUrlPath(), serverName);
+	if (serverName.empty()) {
+		STATUS_CODE = 404;
+		res->setResponse(generateResponse(req, res));
+		return;
+	}
+	std::cout << "LOCATION NAME: " << locationName << std::endl;
+	if (locationName.empty())
+		locationExists = false;
+
+	setAllValues(res, http, serverName, locationName, locationExists);
+}
+
 void	clientHandler(int clientSocket, Http* http) {
-	char buffer[1024] = {0};
-	Request *request = new Request();
-	Response *res = new Response();
-	std::string response;
+	bool		locationExists = true;
+	char		buffer[1024] = {0};
+	Request		*request = new Request();
+	Response	*res = new Response();
+	std::string	response;
 
 	// Receive data from the client
 	int bytesReceived = recv(clientSocket, buffer, sizeof(buffer), 0);
@@ -294,7 +296,8 @@ void	clientHandler(int clientSocket, Http* http) {
 
 	// Optionally, send a response back to the client
 	request->setClientId(clientSocket);
-	handleRequest(request, http, res);
+	lookForRequestType(request, http, res, locationExists);
+	handleRequest(request, http, res, locationExists);
 	delete request;
 
 	// Send the response to the client

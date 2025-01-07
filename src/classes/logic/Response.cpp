@@ -1,4 +1,5 @@
 #include "../headers/Response.hpp"
+#include <algorithm>
 #include <cstddef>
 #include <fstream>
 #include <string>
@@ -19,7 +20,7 @@ void Response::addServerNamesToHosts() {
 	std::ofstream	file;
 	std::string		line;
 
-	file.open("/etc/hosts", std::ios::app);
+	file.open("/etc/hosts", std::ofstream::app);
 	if (!file.is_open()) {
 		std::cerr << "Error opening /etc/hosts\n";
 		return;
