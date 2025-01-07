@@ -57,11 +57,15 @@ std::map<std::string, std::string> setMap(std::string &buffer) {
 			return map;
 		found = buffer.find('\n');
 		word.insert(0, buffer, 0, found);
+		buffer.erase(0, word.length() + 1);
 		if (word[0] == '\r') {
-			buffer.erase(0, buffer.length() -1);
+			if (!buffer[0])
+			{
+				buffer.erase(0, buffer.length() -1);
+				buffer.erase(0, 3);
+			}
 			return map;
 		}
-		buffer.erase(0, word.length() + 1);
 		trimString(word);
 		while (word[j] != ':') {
 			key.append(1, word[j]);
@@ -98,10 +102,11 @@ void Request::parseRequest(std::string buffer) {
 
 	std::string temp;
 
+
 	temp.insert(0, buffer, 0, buffer.find('\n'));
 	splitReq = getBasicInfo(temp, 32);
 
-	printVec(splitReq);
+	// printVec(splitReq);
 	if (splitReq.size() < 3) {
 		error("client error");
 	}
@@ -121,12 +126,13 @@ void Request::parseRequest(std::string buffer) {
 		return ;
 	this->header = setMap(buffer);
 	this->host = getHeader("Host");
-	std::cout << "get map: " << getHeader("Accept-Encoding") << '\n';
+	// std::cout << "get map: " << getHeader("Accept-Encoding") << '\n';
+	// printMap(this->header);
+	// buffer.erase(0, 3);
 	if (buffer.empty())
 		return ;
-	buffer.erase(0, 3);
-	this->body = setMap(buffer);
-	// printMap(this->body);
+	this->query = buffer;
+	// this->body = std::string(buffer);
 }
 
 //	SETTERS
