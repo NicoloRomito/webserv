@@ -332,11 +332,11 @@ int main(int ac, char **av) {
 	}
 	// Create the server socket
 	//todo thow an error on init scoket
-	// int serverN = 2;
+	int serverN = 2;
 	std::vector<int> serverSocket = initSocket(serverN);
 
 	// Set socket option to allow reuse of address/port
-	socketOption(serverSocket, http->getServerN(), 1);
+	socketOption(serverSocket, serverN, 1);
 
 	// Specify the address
 	std::vector<sockaddr_in> serverAddress;
@@ -347,7 +347,7 @@ int main(int ac, char **av) {
 
 	// Prepare for polling
 	std::vector<pollfd> pollFds;
-	for (int i = 0; i < http->getServerN(); i++) {
+	for (int i = 0; i < serverN; i++) {
 		pollfd serverPollFd = {serverSocket[i], POLLIN, 0};
 		pollFds.push_back(serverPollFd);
 	}
@@ -364,7 +364,7 @@ int main(int ac, char **av) {
     // DEBUG: Log poll results
 
     // Handle new connections on all server sockets
-    for (int i = 0; i < http->getServerN(); i++) {
+    for (int i = 0; i < serverN; i++) {
         if (pollFds[i].revents & POLLIN) { // Check if the server socket is ready
             int acceptSocket = serverSocket[i];
             int clientSocket = accept(acceptSocket, NULL, NULL);
@@ -389,7 +389,7 @@ int main(int ac, char **av) {
     }
 
     // Handle data from connected clients
-    for (size_t i = http->getServerN(); i < pollFds.size(); i++) {
+    for (size_t i = serverN; i < pollFds.size(); i++) {
         if (pollFds[i].revents & POLLIN || pollFds[i].revents & POLLOUT) {
             // DEBUG: Log activity
             std::cout << "Handling client socket: " << pollFds[i].fd << std::endl;

@@ -84,7 +84,7 @@ std::string	Http::getServerName(const std::string& host) {
 		for (int j = 0; j < numberOfListen; j++) {
 			std::string listenName = "listen" + int_to_string(j + 1);
 			if (this->getDirective<Server>(serverName)->getDirective<Listen>(listenName)->getPort() == port)
-				return "server" + int_to_string(i);
+				return "server" + int_to_string(i + 1);
 		}
 	}
 	return "";
