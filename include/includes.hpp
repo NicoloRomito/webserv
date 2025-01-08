@@ -88,6 +88,6 @@ std::vector<std::string>	returnLine(const std::string& line);
 std::vector<int>		initSocket(int serverN);
 int		setNonBlocking(int socket);
 void	socketOption(std::vector<int> serverSocket, int serverN, int opt = 1);
-int		runSocket(std::vector<sockaddr_in> &serverAddress, std::vector<int> serverSocket, Http* http, int serverN);
+int		runSocket(std::vector<sockaddr_in> &serverAddress, std::vector<int> serverSocket, Http* http);
 
 #endif

@@ -27,6 +27,8 @@ std::string    generateResponse(Request* req, Response* res);
 
 // ! NOTE: getDirective returns NULL if the directive does not exist
 
+// TODO page error 404 shows even if not set in the config file
+
 int QUIT = 0;
 int	STATUS_CODE;
 
@@ -380,14 +382,14 @@ int main(int ac, char **av) {
 
 	// Specify the address
 	std::vector<sockaddr_in> serverAddress;
-	if (runSocket(serverAddress, serverSocket, http, serverN) == -1)
+	if (runSocket(serverAddress, serverSocket, http) == -1)
 		return 0;
 
 	std::cout << "Server listening on port " << ntohs(serverAddress[0].sin_port) << "..." << std::endl;
 
 	// Prepare for polling
 	std::vector<pollfd> pollFds;
-	for (int i = 0; i < serverN; i++) {
+	for (int i = 0; i < 3; i++) {
 		pollfd serverPollFd = {serverSocket[i], POLLIN, 0};
 		pollFds.push_back(serverPollFd);
 	}
@@ -404,7 +406,7 @@ int main(int ac, char **av) {
     // DEBUG: Log poll results
 
     // Handle new connections on all server sockets
-    for (int i = 0; i < serverN; i++) {
+    for (int i = 0; i < 3; i++) {
         if (pollFds[i].revents & POLLIN) { // Check if the server socket is ready
             int acceptSocket = serverSocket[i];
             int clientSocket = accept(acceptSocket, NULL, NULL);
@@ -429,7 +431,7 @@ int main(int ac, char **av) {
     }
 
     // Handle data from connected clients
-    for (size_t i = serverN; i < pollFds.size(); i++) {
+    for (size_t i = 3; i < pollFds.size(); i++) {
         if (pollFds[i].revents & POLLIN || pollFds[i].revents & POLLOUT) {
             // DEBUG: Log activity
             std::cout << "Handling client socket: " << pollFds[i].fd << std::endl;
