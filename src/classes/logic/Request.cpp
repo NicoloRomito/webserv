@@ -121,7 +121,7 @@ void Request::parseRequest(std::string buffer) {
 		return ;
 	this->header = setMap(buffer);
 	this->host = getHeader("Host");
-	std::cout << "get map: " << getHeader("Accept-Encoding") << '\n';
+	// std::cout << "get map: " << getHeader("Accept-Encoding") << '\n';
 	if (buffer.empty())
 		return ;
 	buffer.erase(0, 3);

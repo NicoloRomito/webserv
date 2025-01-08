@@ -28,7 +28,7 @@ std::string    generateResponse(Request* req, Response* res);
 // ! NOTE: getDirective returns NULL if the directive does not exist
 
 int QUIT = 0;
-int	STATUS_CODE = 0;
+int	STATUS_CODE;
 
 void	getErrorPage(std::string& response, Response* res) {
 	bool			inSection = false;
@@ -97,10 +97,8 @@ void	readHtml(std::string &response, Request* req, Response* res) {
 
 	if (req->getUrlPath().substr(0, 9) == "/cgi-bin/" && req->getUrlPath() != "/cgi-bin/")
 	{
-		if (cgiHandler(req, STATUS_CODE, response, res) == 404) {
-			getErrorPage(response, res);
+		if (cgiHandler(req, STATUS_CODE, response, res))
 			return;
-		}
 		file.open(req->getCgiOutput().c_str());
 		if (!file.is_open()) {
 			STATUS_CODE = 404;
@@ -187,7 +185,6 @@ void	handleGet(Request* req, Response* res, bool locationExists) {
         return;
     }
 
-	// TODO: double check if the function below works as expected;
 	if (isADirectory(req->getUrlPath(), res->getRoot())) {
 		// handle directory if location and index exist,
 		if (locationExists && locationMatches(req->getUrlPath(), res->getLocationPath()) && !res->getIndex().empty()) {
@@ -219,6 +216,17 @@ void	handleGet(Request* req, Response* res, bool locationExists) {
 	res->setResponse(generateResponse(req, res));
 }
 
+void	handleDelete(Request* req, Response* res) {
+	std::string path = getCurrentDir() + res->getRoot() + req->getUrlPath();
+	if (remove(path.c_str()) != 0) {
+		STATUS_CODE = 404;
+		res->setResponse(generateResponse(req, res));
+	} else {
+		STATUS_CODE = 204;
+		res->setResponse(generateResponse(req, res));
+	}
+}
+
 void	handleRequest(Request* request, Http* http, Response* res, bool locationExists) {
 	(void)http;
 	if (request->getMethod() == "GET") {
@@ -226,61 +234,55 @@ void	handleRequest(Request* request, Http* http, Response* res, bool locationExi
 	} else if (request->getMethod() == "POST") {
 		// TODO: handle max body size check.
 		// if (!handlePost(request))
-			STATUS_CODE = 404;
 	} else if (request->getMethod() == "DELETE") {
-		// if (!handleDelete(request))
-			STATUS_CODE = 404;
+		handleDelete(request, res);
 	} else {
 		STATUS_CODE = 405;
 	}
 }
 
 std::string    generateResponse(Request* req, Response* res) {
-	std::string response;
+	std::string response, index, message, statusCode, contentType;
 	std::ostringstream oss;
-	std::string index;
 
-    std::string contentType = "text/html";
+    contentType = "text/html";
+	statusCode = int_to_string(STATUS_CODE);
     if (req->getUrlPath() == "/favicon.ico") {
         contentType = "image/x-icon";
     }
 
+
 	switch (STATUS_CODE) {
 		case 200:
-			response = 
-				"HTTP/1.1 200 OK\r\n"
-				"Content-Type: " + contentType + "\r\n"
-				"Content-Length: ";
+			message = "OK";
+			break;
+		case 204:
+			message = "No Content";
 			break;
 		case 404:
-			response = 
-				"HTTP/1.1 404 Not Found\r\n"
-				"Content-Type: " + contentType + "\r\n"
-				"Content-Length: ";
+			message = "Not Found";
 			break;
 		case 403:
-			response = 
-				"HTTP/1.1 403 Forbidden\r\n"
-				"Content-Type: " + contentType + "\r\n"
-				"Content-Length: ";
+			message = "Forbidden";
 			break;
 		case 405:
-			response = 
-				"HTTP/1.1 405 Method Not Allowed\r\n"
-				"Content-Type: " + contentType + "\r\n"
-				"Content-Length: ";
+			message = "Method Not Allowed";
 			break;
 		case 500:
-			response = 
-				"HTTP/1.1 500 Internal Server Error\r\n"
-				"Content-Type: " + contentType + "\r\n"
-				"Content-Length: ";
+			message = "Internal Server Error";
 			break;
 		default:
 			break;
 	}
+	response = 
+		"HTTP/1.1 " + statusCode + " " + message + "\r\n"
+		"Content-Type: " + contentType + "\r\n"
+		"Content-Length: ";
+
 	if (STATUS_CODE == 200)
 		readHtml(index, req, res);
+	else if (STATUS_CODE == 204)
+		index = "";
 	else
 		getErrorPage(index, res);
 	oss << index.length();
@@ -353,6 +355,7 @@ int checkSocketAvailable(std::vector<pollfd> pollFds, int serverN) {
 }
 
 int main(int ac, char **av) {
+	STATUS_CODE = 200;
 	if (ac != 2) {
 		std::cerr << "Usage: ./webserv <config_file>" << std::endl;
 		return 0;
