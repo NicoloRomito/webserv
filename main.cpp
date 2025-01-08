@@ -293,14 +293,12 @@ std::string    generateResponse(Request* req, Response* res) {
 
 void	lookForRequestType(Request* req, Http* http, Response* res, bool& locationExists) {
 	std::string	serverName = http->getServerName(req->getHost());
-	std::cout << "HOST: " << req->getHost() << std::endl;
 	std::string	locationName = http->getLocationName(req->getUrlPath(), serverName);
 	if (serverName.empty()) {
 		STATUS_CODE = 404;
 		res->setResponse(generateResponse(req, res));
 		return;
 	}
-	std::cout << "LOCATION NAME: " << locationName << std::endl;
 	if (locationName.empty())
 		locationExists = false;
 
@@ -317,11 +315,10 @@ void	clientHandler(int clientSocket, Http* http) {
 	// Receive data from the client
 	int bytesReceived = recv(clientSocket, buffer, sizeof(buffer), 0);
 	if (bytesReceived <= 0) {
-		if (bytesReceived == 0) {
+		if (bytesReceived == 0)
 			std::cout << "Client disconnected." << std::endl;
-		} else {
+		else
 			std::cerr << "Error receiving data." << std::endl;
-		}
 		close(clientSocket); // Close the socket on error or disconnect
 		return;
 	}
@@ -356,7 +353,10 @@ int checkSocketAvailable(std::vector<pollfd> pollFds, int serverN) {
 }
 
 int main(int ac, char **av) {
-	(void)ac;
+	if (ac != 2) {
+		std::cerr << "Usage: ./webserv <config_file>" << std::endl;
+		return 0;
+	}
 	std::stringstream fileStream;
 	Http *http = new Http();
 
