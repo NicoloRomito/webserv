@@ -41,6 +41,7 @@ std::vector<int> initSocket(int serverN) {
     }
 	return serverSockets;
 }
+
 void socketOption(std::vector<int> serverSocket, int serverN, int option) {
     (void)serverN;
     for (int i = 0; i < 3; i++) {

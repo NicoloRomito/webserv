@@ -1,4 +1,6 @@
 #include "Cgi.hpp"
+#include "../../include/includes.hpp"
+#include "../../include/includeClasses.hpp"
 #include "../classes/headers/Webserv.hpp"
 
 std::string buildCgiOutputPath(int idx) {
@@ -49,7 +51,7 @@ int cgiHandler(Request* req, int& statusCode, std::string& response, Response* r
 	if (access(scriptPath, F_OK) == -1)
 	{
 		statusCode = 404;
-		getErrorPage(response, res);
+		getErrorPage(response, res, statusCode);
 		free(scriptPath);
 		return statusCode;
 	}

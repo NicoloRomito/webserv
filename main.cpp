@@ -1,15 +1,5 @@
 #include "include/includes.hpp"
 #include "include/includeClasses.hpp"
-#include "src/classes/headers/Request.hpp"
-#include "src/classes/headers/Response.hpp"
-#include <algorithm>
-#include <fstream>
-#include <iostream>
-#include <sstream>
-#include <string>
-#include <dirent.h>
-
-std::string    generateResponse(Request* req, Response* res);
 
 // * NOTE: This is a list of the directives that need to be called with numbers
 // * at the end of the directive name. Here is the list:
@@ -27,318 +17,7 @@ std::string    generateResponse(Request* req, Response* res);
 
 // ! NOTE: getDirective returns NULL if the directive does not exist
 
-// TODO page error 404 shows even if not set in the config file
-
 int QUIT = 0;
-int	STATUS_CODE;
-
-void	getErrorPage(std::string& response, Response* res) {
-	bool			inSection = false;
-	std::ifstream	file;
-	std::string		line;
-	std::string		errorPage = getCurrentDir() + res->getErrorPage4xx();
-
-	std::cout << "ERROR PAGE: " << errorPage << std::endl;
-	std::cout << "STATUS CODE: " << STATUS_CODE << std::endl;
-
-	if (res->getAvailableErrorCodes().count(STATUS_CODE) > 0) {
-		file.open(errorPage.c_str());
-		if (!file.is_open()) {
-			std::cerr << "Error page not found\n";
-		}
-		while (getline(file, line)) {
-        // Check for the start of the relevant section
-			if (line.find("<!-- START " + int_to_string(STATUS_CODE) + " -->") != std::string::npos) {
-				inSection = true;
-				continue;
-			}
-			// Check for the end of the relevant section
-			if (line.find("<!-- END " + int_to_string(STATUS_CODE) + " -->") != std::string::npos) {
-				inSection = false;
-				break;
-			}
-			// Add lines within the relevant section to the response
-			if (inSection)
-				response += line + "\n";
-		}
-	}
-
-	if (response.empty())
-		response = "<h1>Error Page Not Found</h1>";
-}
-
-void	readHtml(std::string &response, Request* req, Response* res) {
-	std::ifstream	file;
-	std::string		line;
-
-	std::cout << "\nURL PATH: " << req->getUrlPath() << std::endl;
-	std::cout << "\nPATH FOR HTML FILE: " << res->getPathForHtml() << std::endl;
-
-    if (req->getUrlPath() == "/favicon.ico") {
-        // Open file in binary mode
-        file.open(res->getPathForHtml().c_str(), std::ios::binary);
-        if (!file.is_open()) {
-            STATUS_CODE = 404;
-            getErrorPage(response, res);
-            return;
-        }
-        
-        // Get file size
-        file.seekg(0, std::ios::end);
-        std::streampos size = file.tellg();
-        file.seekg(0, std::ios::beg);
-
-        // Read the binary file
-        char* buffer = new char[size];
-        file.read(buffer, size);
-        response.assign(buffer, size);
-        delete[] buffer;
-        
-        return;
-    }
-
-	if (req->getUrlPath().substr(0, 9) == "/cgi-bin/" && req->getUrlPath() != "/cgi-bin/")
-	{
-		if (cgiHandler(req, STATUS_CODE, response, res))
-			return;
-		file.open(req->getCgiOutput().c_str());
-		if (!file.is_open()) {
-			STATUS_CODE = 404;
-			getErrorPage(response, res);
-			return;
-		}
-	}
-	else 
-		file.open(res->getPathForHtml().c_str());
-	if (!file.is_open()) {
-		STATUS_CODE = 404;
-		getErrorPage(response, res);
-		return;
-	}
-	while (getline(file, line, '\0')) {
-		line.insert(line.size() - 2, "\r");
-		response += line;
-	}
-}
-
-std::string	generateDirectoryListing(std::string urlPath, std::string root, Response* res) {
-	std::string newRoot;
-	std::string requestPath;
-
-	if (root.find(urlPath) != std::string::npos) {
-		newRoot = root.substr(0, root.find(urlPath));
-		requestPath = getCurrentDir() + newRoot + urlPath;
-	} else
-		requestPath = getCurrentDir() + root + urlPath;
-
-	DIR *dir = opendir(requestPath.c_str());
-	if (!dir) {
-		std::string response;
-		STATUS_CODE = 403;
-		getErrorPage(response, res);
-		return response;
-	}
-
-	std::ostringstream htmlResponse;
-	htmlResponse << "<html><head><title>Index of " << urlPath << "</title></head><body>";
-	htmlResponse << "<h1>Index of " << urlPath << "</h1><ul>";
-
-	struct dirent *entry;
-	while ((entry = readdir(dir)) != NULL) {
-		std::string name = entry->d_name;
-
-		if (name == "." || name == "..")
-			continue;
-
-		struct stat entryStat;
-		std::string fullPath = root + urlPath + "/" + name;
-		if (stat(fullPath.c_str(), &entryStat) == 0 && S_ISDIR(entryStat.st_mode))
-			name += "/";
-
-		htmlResponse << "<li><a href=\"" << name << "\">" << name << "</a></li>";
-	}
-
-	closedir(dir);
-
-	htmlResponse << "</ul></body></html>";
-
-	std::ostringstream response;
-	response << "HTTP/1.1 200 OK\r\n";
-	response << "Content-Type: text/html\r\n";
-	response << "Content-Length: " << htmlResponse.str().size() << "\r\n\r\n";
-	response << htmlResponse.str();
-
-	return response.str();
-}
-
-void	handleGet(Request* req, Response* res, bool locationExists) {
-	std::string cwd = getCurrentDir();
-	if (cwd.empty()) {
-		STATUS_CODE = 500;
-		res->setResponse(generateResponse(req, res));
-		return;
-	}
-
-	STATUS_CODE = 200;
-
-    if (req->getUrlPath() == "/favicon.ico") {
-        res->setPathForHtml(cwd + res->getRoot() + req->getUrlPath());
-        res->setResponse(generateResponse(req, res));
-        return;
-    }
-
-	if (isADirectory(req->getUrlPath(), res->getRoot())) {
-		// handle directory if location and index exist,
-		if (locationExists && locationMatches(req->getUrlPath(), res->getLocationPath()) && !res->getIndex().empty()) {
-			res->setPathForHtml(cwd + res->getRoot() + "/" + res->getIndex());
-		} // handle directory if location and autoindex exist
-		else if (locationExists && locationMatches(req->getUrlPath(), res->getLocationPath()) && res->getAutoindex() == true) {
-			res->setResponse(generateDirectoryListing(req->getUrlPath(), res->getRoot(), res));
-			return;
-		} else if (locationExists && locationMatches(req->getUrlPath(), res->getLocationPath()) && !res->getAutoindex()) {
-			STATUS_CODE = 403;
-			res->setResponse(generateResponse(req, res));
-			return;
-		} else {
-			if (!res->getIndex().empty()) {
-				res->setPathForHtml(cwd + res->getRoot() + "/" + res->getIndex());
-			} else if (res->getAutoindex() == true) {
-				res->setResponse(generateDirectoryListing(req->getUrlPath(), res->getRoot(), res));
-				return;
-			} else {
-				STATUS_CODE = 403;
-				res->setResponse(generateResponse(req, res));
-				return;
-			}
-		}
-	}
-	else // handle file
-		res->setPathForHtml(std::string(cwd) + res->getRoot() + req->getUrlPath());
-
-	res->setResponse(generateResponse(req, res));
-}
-
-void	handleDelete(Request* req, Response* res) {
-	std::string path = getCurrentDir() + res->getRoot() + req->getUrlPath();
-	if (remove(path.c_str()) != 0) {
-		STATUS_CODE = 404;
-		res->setResponse(generateResponse(req, res));
-	} else {
-		STATUS_CODE = 204;
-		res->setResponse(generateResponse(req, res));
-	}
-}
-
-void	handleRequest(Request* request, Http* http, Response* res, bool locationExists) {
-	(void)http;
-	if (request->getMethod() == "GET") {
-		handleGet(request, res, locationExists);
-	} else if (request->getMethod() == "POST") {
-		// TODO: handle max body size check.
-		// if (!handlePost(request))
-	} else if (request->getMethod() == "DELETE") {
-		handleDelete(request, res);
-	} else {
-		STATUS_CODE = 405;
-	}
-}
-
-std::string    generateResponse(Request* req, Response* res) {
-	std::string response, index, message, statusCode, contentType;
-	std::ostringstream oss;
-
-    contentType = "text/html";
-	statusCode = int_to_string(STATUS_CODE);
-    if (req->getUrlPath() == "/favicon.ico") {
-        contentType = "image/x-icon";
-    }
-
-
-	switch (STATUS_CODE) {
-		case 200:
-			message = "OK";
-			break;
-		case 204:
-			message = "No Content";
-			break;
-		case 404:
-			message = "Not Found";
-			break;
-		case 403:
-			message = "Forbidden";
-			break;
-		case 405:
-			message = "Method Not Allowed";
-			break;
-		case 500:
-			message = "Internal Server Error";
-			break;
-		default:
-			break;
-	}
-	response = 
-		"HTTP/1.1 " + statusCode + " " + message + "\r\n"
-		"Content-Type: " + contentType + "\r\n"
-		"Content-Length: ";
-
-	if (STATUS_CODE == 200)
-		readHtml(index, req, res);
-	else if (STATUS_CODE == 204)
-		index = "";
-	else
-		getErrorPage(index, res);
-	oss << index.length();
-	response += oss.str();
-	response += "\r\n\r\n";
-	response += index;
-
-	return response;
-}
-
-void	lookForRequestType(Request* req, Http* http, Response* res, bool& locationExists) {
-	std::string	serverName = http->getServerName(req->getHost());
-	std::string	locationName = http->getLocationName(req->getUrlPath(), serverName);
-	if (serverName.empty()) {
-		STATUS_CODE = 404;
-		res->setResponse(generateResponse(req, res));
-		return;
-	}
-	if (locationName.empty())
-		locationExists = false;
-
-	setAllValues(res, http, serverName, locationName, locationExists);
-}
-
-void	clientHandler(int clientSocket, Http* http) {
-	bool		locationExists = true;
-	char		buffer[1024] = {0};
-	Request		*request = new Request();
-	Response	*res = new Response();
-	std::string	response;
-
-	// Receive data from the client
-	int bytesReceived = recv(clientSocket, buffer, sizeof(buffer), 0);
-	if (bytesReceived <= 0) {
-		if (bytesReceived == 0)
-			std::cout << "Client disconnected." << std::endl;
-		else
-			std::cerr << "Error receiving data." << std::endl;
-		close(clientSocket); // Close the socket on error or disconnect
-		return;
-	}
-	// Print the received message
-	request->parseRequest(buffer);
-
-	// Optionally, send a response back to the client
-	request->setClientId(clientSocket);
-	lookForRequestType(request, http, res, locationExists);
-	handleRequest(request, http, res, locationExists);
-	delete request;
-
-	// Send the response to the client
-	send(clientSocket, res->getResponse().c_str(), res->getResponse().size(), MSG_CONFIRM); // needs a check with throw error
-	delete res;
-}
 
 void sigHandler(int signal) {
 	if (signal == SIGINT) {
@@ -357,7 +36,6 @@ int checkSocketAvailable(std::vector<pollfd> pollFds, int serverN) {
 }
 
 int main(int ac, char **av) {
-	STATUS_CODE = 200;
 	if (ac != 2) {
 		std::cerr << "Usage: ./webserv <config_file>" << std::endl;
 		return 0;
@@ -395,66 +73,61 @@ int main(int ac, char **av) {
 	}
 	signal(SIGINT, sigHandler);
 	while (true) {
-
     // Use poll to wait for incoming connections or data
-    int pollResult = poll(pollFds.data(), pollFds.size(), 200); // Timeout of 200ms
-    if (pollResult < 0) {
-        std::cerr << "Error with poll: " << strerror(errno) << std::endl;
-        break;
-    }
+		int pollResult = poll(pollFds.data(), pollFds.size(), 200); // Timeout of 200ms
+		if (pollResult < 0) {
+			std::cerr << "Error with poll: " << strerror(errno) << std::endl;
+			break;
+		}
+		// DEBUG: Log poll results
+		// Handle new connections on all server sockets
+		for (int i = 0; i < 3; i++) {
+			if (pollFds[i].revents & POLLIN) { // Check if the server socket is ready
+				int acceptSocket = serverSocket[i];
+				int clientSocket = accept(acceptSocket, NULL, NULL);
+				if (clientSocket < 0) {
+					std::cerr << "Client connection failed on socket " << i 
+							<< " (errno: " << strerror(errno) << ")." << std::endl;
+					continue;
+				}
+				std::cout << "Client connected on port " << ntohs(serverAddress[i].sin_port) << "." << std::endl;
 
-    // DEBUG: Log poll results
+				// Set the client socket to non-blocking mode
+				if (setNonBlocking(clientSocket) == -1) {
+					std::cerr << "Failed to set client socket to non-blocking. Closing socket." << std::endl;
+					close(clientSocket);
+					continue;
+				}
+				// Add the new client socket to the poll list
+				pollfd clientPollFd = {clientSocket, POLLIN, 0};
+				pollFds.push_back(clientPollFd);
+			}
+		}
 
-    // Handle new connections on all server sockets
-    for (int i = 0; i < 3; i++) {
-        if (pollFds[i].revents & POLLIN) { // Check if the server socket is ready
-            int acceptSocket = serverSocket[i];
-            int clientSocket = accept(acceptSocket, NULL, NULL);
-            if (clientSocket < 0) {
-                std::cerr << "Client connection failed on socket " << i 
-                          << " (errno: " << strerror(errno) << ")." << std::endl;
-                continue;
-            }
-            std::cout << "Client connected on port " << ntohs(serverAddress[i].sin_port) << "." << std::endl;
+		// Handle data from connected clients
+		for (size_t i = 3; i < pollFds.size(); i++) {
+			if (pollFds[i].revents & POLLIN || pollFds[i].revents & POLLOUT) {
+				// DEBUG: Log activity
+				std::cout << "Handling client socket: " << pollFds[i].fd << std::endl;
 
-            // Set the client socket to non-blocking mode
-            if (setNonBlocking(clientSocket) == -1) {
-                std::cerr << "Failed to set client socket to non-blocking. Closing socket." << std::endl;
-                close(clientSocket);
-                continue;
-            }
+				clientHandler(pollFds[i].fd, http);
 
-            // Add the new client socket to the poll list
-            pollfd clientPollFd = {clientSocket, POLLIN, 0};
-            pollFds.push_back(clientPollFd);
-        }
-    }
+				// Optionally, handle disconnection or cleanup
+				if (QUIT) {
+					std::cout << "QUIT signal received. Exiting loop." << std::endl;
+					break;
+				}
+			}
+		}
+		// Exit outer loop on QUIT
+		if (QUIT) break;
+	}
 
-    // Handle data from connected clients
-    for (size_t i = 3; i < pollFds.size(); i++) {
-        if (pollFds[i].revents & POLLIN || pollFds[i].revents & POLLOUT) {
-            // DEBUG: Log activity
-            std::cout << "Handling client socket: " << pollFds[i].fd << std::endl;
-
-            clientHandler(pollFds[i].fd, http);
-
-            // Optionally, handle disconnection or cleanup
-            if (QUIT) {
-                std::cout << "QUIT signal received. Exiting loop." << std::endl;
-                break;
-            }
-        }
-    }
-
-    // Exit outer loop on QUIT
-    if (QUIT) break;
-}
-
-// Cleanup
-std::cout << "pollfds = " << pollFds.size() << std::endl;
-for (size_t i = 0; i < pollFds.size(); i++) {
-    close(pollFds[i].fd);
-}
+	// Cleanup
+	std::cout << "pollfds = " << pollFds.size() << std::endl;
+	for (size_t i = 0; i < pollFds.size(); i++) {
+		close(pollFds[i].fd);
+	}
 
 	std::cout << "pollfds = " << pollFds.size() << std::endl;
 	for (size_t i = 0; i < pollFds.size(); i++) {
