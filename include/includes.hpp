@@ -77,6 +77,7 @@ std::string		getCurrentDir();
 bool			isADirectory(const std::string& urlPath, const std::string& root);
 bool			locationMatches(const std::string& urlPath, const std::string& locationPath);
 void			setAllValues(Response* res, Http* http, const std::string& serverName, const std::string& locationName, bool locationExists);
+void			printDebug(char symbol = '-', std::string content = "", std::string what = "", bool bottomLine = true);
 
 // parsing
 void						startParsing(const std::string& file, std::stringstream& fileStream);

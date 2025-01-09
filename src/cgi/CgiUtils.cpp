@@ -1,5 +1,6 @@
 #include "Cgi.hpp"
 #include "../classes/headers/Webserv.hpp"
+#include "../../include/includes.hpp"
 
 std::string buildCgiOutputPath(int idx) {
 	std::string ret = ("./src/tmp/tmp_" + to_string(idx + 48) + ".html"); 
@@ -28,7 +29,7 @@ int countCharInstances(const std::string query, char delim)
 }
 
 void unlinkCgi() {
-	for (int i = 4; access(buildCgiOutputPath(i).c_str(), F_OK) != -1; i++)
+	for (int i = 0; i < 16000; i++)
 		unlink(buildCgiOutputPath(i).c_str());
 }
 
@@ -58,4 +59,19 @@ int cgiHandler(Request* req, int& statusCode, std::string& response, Response* r
 	cgi->executeCgi(req);
 	delete cgi;
 	return statusCode;
+}
+
+void printDebug(char symbol, std::string content, std::string what, bool bottomLine)  
+{
+	std::cout << "\n";
+	for (int i = 0; i < 5; i++)
+		std::cout << symbol;
+	std::cout << what;
+	for (int i = 0; i < 5; i++)
+		std::cout << symbol;
+	std::cout << "\n" + content + "\n";
+	if (bottomLine)
+		for (size_t i = 0; i < 10 + what.length(); i++)
+			std::cout << symbol;
+	std::cout << "\n\n";
 }

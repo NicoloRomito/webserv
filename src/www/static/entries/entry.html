@@ -38,10 +38,6 @@
             font-size: 1.1rem;
         }
 
-        input[type="file"] {
-            display: none;
-        }
-
         label {
             display: inline-block;
             background: #ffcc00;
@@ -78,50 +74,52 @@
         button:hover {
             background: #45a049;
         }
+
+		form {
+			display: flex;
+			flex-direction: column;
+			gap: 1rem;
+		}
+
+		#body {
+			padding-bottom: 8rem;
+		}
+
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Webserver</h1>
-        <p>Upload your file below:</p>
-        <form action="/" method="POST" id="form">
-            <label for="file-upload">Choose a file</label>
-            <input id="file-upload" type="file" name="file" onchange="previewFile()"/>
-            <input id="test" type="text" placeholder="Test" name="textbox" value=""/>
-            <img id="blah" src="#" alt="your image"/>
-            <div class="upload-info" id="file-name">No file chosen</div>
-            <button type="submit">Upload</button>
+        <p>Create or modify an entry</p>
+        <form action="/entries/entry.html" method="POST" id="form">
+            <input id="title" type="text" placeholder="File title" name="filename" value=""/>
+			<input id="body" type="text" value="" placeholder="File content" name="filebody"></input>
+            <button type="submit" onsubmit="submitevent()">Upload (x-www-form-urlencoded)</button>
         </form>
-        <span> PROVA </span>
+        <button onclick="makeRequest()">Upload (json)</button>
     </div>
     <script>
         // Show the selected file name
-        const fileInput = document.getElementById('file-upload');
-        const fileNameDisplay = document.getElementById('file-name');
-        
+        const fileTitle = document.getElementById('title');
+        const fileBody = document.getElementById('body');
+        const form = getElementById('form');
 
-        fileInput.addEventListener('change', () => {
-            const fileName = fileInput.files[0]?.name || 'No file chosen';
-            fileNameDisplay.textContent = fileName;
-        });
 
-		function previewFile() {
-  		const preview = document.querySelector("#blah");
-  		const file = document.querySelector("input[type=file]").files[0];
-  		const reader = new FileReader();
+        async function makeRequest() {
+            const request = new Request("/entries/entry.html", {
+            method: "POST",
+            headers: {"Content-Type": "application/json",},
+            body: JSON.stringify({ 
+                filename: fileTitle.value, 
+                filebody: fileBody.value
+             }),
+            });
 
-  		reader.addEventListener(
-  		  "load",
-  		  () => {
-            preview.src = reader.result;
-  		  },
-  		  false,
-  		);
-	  
-  		if (file) {
-  		  reader.readAsDataURL(file);
-  		}
-	}
+            const response = await fetch(request);
+            response.json().then((data) => {
+                console.log(data);
+            });
+        }
     </script>
 </body>
 </html>

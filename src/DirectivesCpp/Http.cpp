@@ -87,11 +87,14 @@ std::string	Http::getServerName(const std::string& host) {
 				return "server" + int_to_string(i + 1);
 		}
 	}
-	return "";
+	return ""; //ho provato a mettere server1 come ritorno e telnet funzionava -Bard
 }
 
 std::string	Http::getLocationName(const std::string& path, const std::string& serverNumber) {
-	int numberOfLocation = this->getDirective<Server>(serverNumber)->getNumberOfLocation();
+
+	int numberOfLocation = 0;
+	if (this->getDirective<Server>(serverNumber))
+		numberOfLocation = this->getDirective<Server>(serverNumber)->getNumberOfLocation();
 	
 	for (int j = 0; j < numberOfLocation; j++) {
 		std::string locationName = serverNumber + "location" + int_to_string(j + 1);

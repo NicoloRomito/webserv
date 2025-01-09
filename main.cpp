@@ -72,7 +72,7 @@ void	readHtml(std::string &response, Request* req, Response* res) {
 	std::cout << "\nURL PATH: " << req->getUrlPath() << std::endl;
 	std::cout << "\nPATH FOR HTML FILE: " << res->getPathForHtml() << std::endl;
 
-    if (req->getUrlPath() == "/favicon.ico") {
+    if (req->getUrlPath().find("/favicon.ico") != std::string::npos) {
         // Open file in binary mode
         file.open(res->getPathForHtml().c_str(), std::ios::binary);
         if (!file.is_open()) {
@@ -181,8 +181,8 @@ void	handleGet(Request* req, Response* res, bool locationExists) {
 
 	STATUS_CODE = 200;
 
-    if (req->getUrlPath() == "/favicon.ico") {
-        res->setPathForHtml(cwd + res->getRoot() + req->getUrlPath());
+    if (req->getUrlPath().find("/favicon.ico") != std::string::npos) {
+        res->setPathForHtml(cwd + res->getRoot() + "/favicon.ico");
         res->setResponse(generateResponse(req, res));
         return;
     }
@@ -224,9 +224,7 @@ void	handleRequest(Request* request, Http* http, Response* res, bool locationExi
 	if (request->getMethod() == "GET") {
 		handleGet(request, res, locationExists);
 	} else if (request->getMethod() == "POST") {
-		// TODO: handle max body size check.
-		// if (!handlePost(request))
-			STATUS_CODE = 404;
+		handlePost(request, res, STATUS_CODE);
 	} else if (request->getMethod() == "DELETE") {
 		// if (!handleDelete(request))
 			STATUS_CODE = 404;
@@ -241,14 +239,22 @@ std::string    generateResponse(Request* req, Response* res) {
 	std::string index;
 
     std::string contentType = "text/html";
-    if (req->getUrlPath() == "/favicon.ico") {
+    if (req->getUrlPath().find("/favicon.ico") != std::string::npos) {
         contentType = "image/x-icon";
     }
+	if (req->getMethod() == "POST")
+		contentType = "application/json";
 
 	switch (STATUS_CODE) {
 		case 200:
 			response = 
 				"HTTP/1.1 200 OK\r\n"
+				"Content-Type: " + contentType + "\r\n"
+				"Content-Length: ";
+			break;
+		case 201:
+			response = 
+				"HTTP/1.1 201 Creation Success\r\n"
 				"Content-Type: " + contentType + "\r\n"
 				"Content-Length: ";
 			break;
@@ -279,8 +285,10 @@ std::string    generateResponse(Request* req, Response* res) {
 		default:
 			break;
 	}
-	if (STATUS_CODE == 200)
+	if (STATUS_CODE == 200 && req->getMethod() != "POST")
 		readHtml(index, req, res);
+	else if ((STATUS_CODE == 200 || STATUS_CODE == 201) && req->getMethod() == "POST")
+		index = res->bodyToJson();
 	else
 		getErrorPage(index, res);
 	oss << index.length();
@@ -320,7 +328,7 @@ void	clientHandler(int clientSocket, Http* http) {
 		if (bytesReceived == 0) {
 			std::cout << "Client disconnected." << std::endl;
 		} else {
-			std::cerr << "Error receiving data." << std::endl;
+			std::cerr << "Error receiving data."  << std::endl;
 		}
 		close(clientSocket); // Close the socket on error or disconnect
 		return;
