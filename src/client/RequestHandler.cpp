@@ -1,5 +1,6 @@
 #include "../../include/includes.hpp"
 #include "../../include/includeClasses.hpp"
+#include <unistd.h>
 
 void	handleRequest(Request* request, Http* http, Response* res, bool locationExists, int& statusCode) {
 	(void)http;
@@ -59,6 +60,11 @@ void	handleGet(Request* req, Response* res, bool locationExists, int& statusCode
 	else // handle file
 		res->setPathForHtml(std::string(cwd) + res->getRoot() + req->getUrlPath());
 
+	if (access(res->getPathForHtml().c_str(), F_OK) == -1) {
+		statusCode = 404;
+		res->setResponse(generateResponse(req, res));
+		return;
+	}
 	res->setResponse(generateResponse(req, res));
 }
 

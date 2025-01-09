@@ -98,6 +98,7 @@ int main(int ac, char **av) {
 					close(clientSocket);
 					continue;
 				}
+
 				// Add the new client socket to the poll list
 				pollfd clientPollFd = {clientSocket, POLLIN, 0};
 				pollFds.push_back(clientPollFd);

@@ -119,9 +119,9 @@ void	lookForRequestType(Request* req, Http* http, Response* res, bool& locationE
 }
 
 void	clientHandler(int clientSocket, Http* http) {
-	STATUS_CODE = 200;
+	// STATUS_CODE = 200;
 	bool		locationExists = true;
-	char		buffer[1024] = {0};
+	char		buffer[8192] = {0};
 	Request		*request = new Request();
 	Response	*res = new Response();
 	std::string	response;
@@ -132,8 +132,12 @@ void	clientHandler(int clientSocket, Http* http) {
 		if (bytesReceived == 0)
 			std::cout << "Client disconnected." << std::endl;
 		else
-			std::cerr << "Error receiving data." << std::endl;
+			std::cerr << "Error receiving data: " << strerror(errno) << std::endl;
+
 		close(clientSocket); // Close the socket on error or disconnect
+		clientSocket = -1;
+		delete res;
+		delete request;
 		return;
 	}
 	request->parseRequest(buffer);
@@ -141,6 +145,7 @@ void	clientHandler(int clientSocket, Http* http) {
 	request->setClientId(clientSocket);
 	lookForRequestType(request, http, res, locationExists);
 	handleRequest(request, http, res, locationExists, STATUS_CODE);
+	std::cout << "STATUS CODE AFTER HANDLE REQUEST: " << STATUS_CODE << std::endl;
 	delete request;
 
 	// Send the response to the client
