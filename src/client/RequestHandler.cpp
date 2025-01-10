@@ -7,8 +7,7 @@ void	handleRequest(Request* request, Http* http, Response* res, bool locationExi
 	if (request->getMethod() == "GET") {
 		handleGet(request, res, locationExists, statusCode);
 	} else if (request->getMethod() == "POST") {
-		// TODO: handle max body size check.
-		// if (!handlePost(request))
+		handlePost(request, res, statusCode);
 	} else if (request->getMethod() == "DELETE") {
 		handleDelete(request, res, statusCode);
 	} else {

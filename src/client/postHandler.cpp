@@ -1,8 +1,8 @@
-#include "../include/includes.hpp"
-#include "../include/includeClasses.hpp"
-#include "../src/classes/headers/Request.hpp"
-#include "../src/classes/headers/Response.hpp"
-#include "../src/classes/headers/PostFile.hpp"
+#include "../../include/includes.hpp"
+#include "../../include/includeClasses.hpp"
+#include "../classes/headers/Request.hpp"
+#include "../classes/headers/Response.hpp"
+#include "../classes/headers/PostFile.hpp"
 #include <algorithm>
 #include <fstream>
 #include <iostream>

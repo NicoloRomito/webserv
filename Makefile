@@ -9,8 +9,8 @@ PARSING_DIR = src/parsing/configParsing/
 DIRECTIVES_DIR = src/DirectivesCpp/
 CGI_DIR = src/cgi/
 
-CLIENT_FILES = ClientHandling.cpp ReadFiles.cpp RequestHandler.cpp
-FILES = init/init.cpp utils/errorMsg.cpp classes/logic/Request.cpp classes/logic/Response.cpp requestsHandlers.cpp classes/logic/PostFile.cpp
+CLIENT_FILES = ClientHandling.cpp ReadFiles.cpp RequestHandler.cpp postHandler.cpp
+FILES = init/init.cpp utils/errorMsg.cpp classes/logic/Request.cpp classes/logic/Response.cpp classes/logic/PostFile.cpp
 MAIN = main.cpp
 UTILS_FILES = utils.cpp
 ERRORS_FILES = Errors.cpp
