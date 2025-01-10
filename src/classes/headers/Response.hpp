@@ -1,12 +1,14 @@
 #pragma once
 
 #include "../../../include/includes.hpp" // IWYU pragma: keep
+#include <cstddef>
 #include <string>
 #include <set>
 #include <vector>
 
 class Response {
 	private:
+		size_t								_clientMaxBodySize;
 		std::string							_response;
 		std::string 						_root;
 		std::string							_locationPath;	
@@ -30,6 +32,7 @@ class Response {
 		std::string bodyToJson();
 
 		// SETTERS
+		void setClientMaxBodySize(size_t clientMaxBodySize);
 		void setServerNames(const std::set<std::string>& serverNames);
 		void setAvailableErrorCodes(const std::set<int>& clientCodes, const std::set<int>& serverCodes);
 		void setCgiPass(const std::vector<std::string>& cgiPass);
@@ -45,6 +48,7 @@ class Response {
 		void setBody(const std::map<std::string, std::string> body);
 
 		// GETTERS
+		size_t										getClientMaxBodySize() const;
 		bool										getAutoindex() const;
 		const std::set<int>							getAvailableErrorCodes() const;
 		const std::set<std::string>					getServerNames() const;

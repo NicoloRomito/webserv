@@ -3,11 +3,13 @@ NAME = webserver
 CONFIG_FILE = config/webserv.conf
 
 SRC_DIR = src/
+CLIENT_DIR = src/client/
 ERRORS_DIR = src/utils/
 PARSING_DIR = src/parsing/configParsing/
 DIRECTIVES_DIR = src/DirectivesCpp/
 CGI_DIR = src/cgi/
 
+CLIENT_FILES = ClientHandling.cpp ReadFiles.cpp RequestHandler.cpp
 FILES = init/init.cpp utils/errorMsg.cpp classes/logic/Request.cpp classes/logic/Response.cpp requestsHandlers.cpp classes/logic/PostFile.cpp
 MAIN = main.cpp
 UTILS_FILES = utils.cpp
@@ -20,6 +22,7 @@ CGI_FILES = Cgi.cpp CgiUtils.cpp
 
 
 SRC = $(addprefix $(SRC_DIR), $(FILES))
+CLIENT = $(addprefix $(CLIENT_DIR), $(CLIENT_FILES))
 UTILS = $(addprefix $(ERRORS_DIR), $(UTILS_FILES))
 ERRORS = $(addprefix $(ERRORS_DIR), $(ERRORS_FILES))
 PARSING = $(addprefix $(PARSING_DIR), $(PARSING_FILES))
@@ -36,8 +39,8 @@ C98 = -std=c++98
 
 all: $(NAME)
 
-$(NAME): $(MAIN) $(SRC) $(UTILS) $(ERRORS) $(PARSING) $(DIRECTIVES) $(CGI)
-	$(CPP) $(CFLAGS) $(C98) $(MAIN) $(SRC) $(UTILS) $(ERRORS) $(PARSING) $(DIRECTIVES) $(CGI) -o $(NAME)
+$(NAME): $(MAIN) $(SRC) $(CLIENT) $(UTILS) $(ERRORS) $(PARSING) $(DIRECTIVES) $(CGI)
+	$(CPP) $(CFLAGS) $(C98) $(MAIN) $(SRC) $(CLIENT) $(UTILS) $(ERRORS) $(PARSING) $(DIRECTIVES) $(CGI) -o $(NAME)
 	@clear
 	@echo "Compilation complete."
 
@@ -54,7 +57,7 @@ run: all
 	@./$(NAME) $(CONFIG_FILE)
 
 val: all
-	@valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes ./$(NAME) $(CONFIG_FILE)
+	@valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --track-fds=yes ./$(NAME) $(CONFIG_FILE)
 
 debug: all
 	@gdb --args ./webserver config/webserv.conf

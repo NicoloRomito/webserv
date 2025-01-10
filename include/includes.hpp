@@ -1,6 +1,7 @@
 #ifndef INCLUDES_HPP
 # define INCLUDES_HPP
 
+#include <algorithm>
 #include <iostream>
 #include <sys/stat.h>
 #include <cstring>
@@ -19,6 +20,7 @@
 #include <vector>
 #include <poll.h>
 #include <sys/wait.h>
+#include <dirent.h>
 
 # define RED "\033[1;31m"
 # define GREEN "\033[1;32m"
@@ -63,6 +65,22 @@ enum	DirectiveType {
 	UNKNOWN
 };
 
+// ReadFIles
+void	getErrorPage(std::string& response, Response* res, int statusCode);
+void	readHtml(std::string &response, Request* req, Response* res, int& statusCode);
+
+// ClientHandling
+void			clientHandler(int& clientSocket, Http* http);
+void			lookForRequestType(Request* req, Http* http, Response* res, bool& locationExists);
+std::string		generateResponse(Request* req, Response* res);
+std::string		generateDirectoryListing(const std::string& urlPath, const std::string& root, Response* res);
+
+// RequestHandler
+void	handleRequest(Request* request, Http* http, Response* res, bool locationExists, int& statusCode);
+void	handleGet(Request* req, Response* res, bool locationExists, int& statusCode);
+void	handleDelete(Request* req, Response* res, int& statusCode);
+
+
 // errors
 void 	error(std::string msg);
 
@@ -89,6 +107,6 @@ std::vector<std::string>	returnLine(const std::string& line);
 std::vector<int>		initSocket(int serverN);
 int		setNonBlocking(int socket);
 void	socketOption(std::vector<int> serverSocket, int serverN, int opt = 1);
-int		runSocket(std::vector<sockaddr_in> &serverAddress, std::vector<int> serverSocket, Http* http, int serverN);
+int		runSocket(std::vector<sockaddr_in> &serverAddress, std::vector<int> serverSocket, Http* http);
 
 #endif
