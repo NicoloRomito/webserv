@@ -3,7 +3,7 @@
 curl -X POST localhost:8080/entries/entry.html -H "Content-Type: application/json" -d '{"productId": 123456, "quantity": 100}'
 
 //CORRECT JSON
-curl -X POST localhost:8080/entries/entry.html -H "Content-Type: application/json" -d '{"filename": 123456, "filebody": 100}'
+curl -X POST localhost:8080/entries/entry.html -H "Content-Type: application/json" -d '{"filename": "123456", "filebody": "100"}'
 
 //WRONG BODY FORM
 curl -X POST localhost:8080/entries/entry.html -H "Content-Type: application/x-www-form-urlencoded" -d 'filenames=ciao&filebodys=ti+odio'
