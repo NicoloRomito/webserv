@@ -70,7 +70,7 @@ void	getErrorPage(std::string& response, Response* res, int statusCode);
 void	readHtml(std::string &response, Request* req, Response* res, int& statusCode);
 
 // ClientHandling
-void			clientHandler(int clientSocket, Http* http);
+void			clientHandler(int& clientSocket, Http* http);
 void			lookForRequestType(Request* req, Http* http, Response* res, bool& locationExists);
 std::string		generateResponse(Request* req, Response* res);
 std::string		generateDirectoryListing(const std::string& urlPath, const std::string& root, Response* res);

@@ -1,5 +1,8 @@
 #include "../../include/includes.hpp"
 #include "../../include/includeClasses.hpp"
+#include <cerrno>
+#include <cstring>
+#include <unistd.h>
 
 int STATUS_CODE;
 
@@ -63,6 +66,7 @@ std::string    generateResponse(Request* req, Response* res) {
         contentType = "image/x-icon";
     }
 
+	// TODO: Add status code for redirect
 	switch (STATUS_CODE) {
 		case 200:
 			message = "OK";
@@ -118,7 +122,7 @@ void	lookForRequestType(Request* req, Http* http, Response* res, bool& locationE
 	setAllValues(res, http, serverName, locationName, locationExists);
 }
 
-void	clientHandler(int clientSocket, Http* http) {
+void	clientHandler(int& clientSocket, Http* http) {
 	// STATUS_CODE = 200;
 	bool		locationExists = true;
 	char		buffer[8192] = {0};
@@ -131,13 +135,14 @@ void	clientHandler(int clientSocket, Http* http) {
 	if (bytesReceived <= 0) {
 		if (bytesReceived == 0)
 			std::cout << "Client disconnected." << std::endl;
-		else
+		else 
 			std::cerr << "Error receiving data: " << strerror(errno) << std::endl;
 
 		close(clientSocket); // Close the socket on error or disconnect
 		clientSocket = -1;
 		delete res;
 		delete request;
+		usleep(40000);
 		return;
 	}
 	request->parseRequest(buffer);
@@ -149,6 +154,14 @@ void	clientHandler(int clientSocket, Http* http) {
 	delete request;
 
 	// Send the response to the client
-	send(clientSocket, res->getResponse().c_str(), res->getResponse().size(), MSG_CONFIRM); // needs a check with throw error
+	if (send(clientSocket, res->getResponse().c_str(), res->getResponse().size(), MSG_CONFIRM) <= 0) // needs a check with throw error
+	{
+		if (bytesReceived == 0)
+			std::cout << "Error: " << strerror(errno) << std::endl;
+		else
+			std::cerr << "Error sending data: " << strerror(errno) << std::endl;
+		close(clientSocket);
+		clientSocket = -1;
+	}
 	delete res;
 }

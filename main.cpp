@@ -48,6 +48,7 @@ int main(int ac, char **av) {
 		http->parse(fileStream);
 	} catch (std::exception& e) {
 		std::cerr << e.what();
+		delete http;
 		return 0;
 	}
 	// Create the server socket
@@ -112,6 +113,10 @@ int main(int ac, char **av) {
 				std::cout << "Handling client socket: " << pollFds[i].fd << std::endl;
 
 				clientHandler(pollFds[i].fd, http);
+				if (pollFds[i].fd == -1) {
+					pollFds.erase(pollFds.begin() + i);
+					i--;
+				}
 
 				// Optionally, handle disconnection or cleanup
 				if (QUIT) {
@@ -125,15 +130,17 @@ int main(int ac, char **av) {
 	}
 
 	// Cleanup
+	// ? why two loops to close the sockets?
 	std::cout << "pollfds = " << pollFds.size() << std::endl;
 	for (size_t i = 0; i < pollFds.size(); i++) {
-		close(pollFds[i].fd);
+		if (pollFds[i].fd != -1)
+			close(pollFds[i].fd);
 	}
 
-	std::cout << "pollfds = " << pollFds.size() << std::endl;
-	for (size_t i = 0; i < pollFds.size(); i++) {
-		close(pollFds[i].fd);
-	}
+	// std::cout << "pollfds = " << pollFds.size() << std::endl;
+	// for (size_t i = 0; i < pollFds.size(); i++) {
+	// 	close(pollFds[i].fd);
+	// }
 	delete http;
 	return 0;
 }

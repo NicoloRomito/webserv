@@ -6,6 +6,7 @@
 #include "../../include/Errors.hpp"
 #include <cstddef>
 #include <iostream>
+#include <set>
 #include <sstream>
 #include <string>
 
@@ -18,26 +19,16 @@ Http::~Http() {
 }
 
 void	Http::compareServerPorts() {
-	if (this->_serverN == 1)
-		return;
-	for (int i = 1; i < this->_serverN; i++) {
-
-		std::string nextServer = "server" + int_to_string(i + 1);
-		Server* serverToCheck = getDirective<Server>("server" + int_to_string(i));
-		int serverNListen = serverToCheck->getNumberOfListen();
-		int numberOfListenToCheck = getDirective<Server>(nextServer)->getNumberOfListen();
-
-		if (serverNListen == 0 || numberOfListenToCheck == 0)
-			continue;
-		for (int j = 1; j <= serverNListen && serverNListen > 0; j++) {
-
-			Listen* listenToCheck = serverToCheck->getDirective<Listen>("listen" + int_to_string(j));
-			for (int k = 1; k <= numberOfListenToCheck; k++) {
-
-				if (listenToCheck->getPort() == getDirective<Server>(nextServer)->getDirective<Listen>("listen" + int_to_string(k))->getPort()) {
-					throw Errors::SameListenException("Error: Two servers cannot have the same port", ConfigLine, __FILE__);
-				}
-			}
+	std::set<std::string>	ports;
+	for (int i = 0; i < this->_serverN; i++) {
+		std::string serverName = "server" + int_to_string(i + 1);
+		int numberOfListen = this->getDirective<Server>(serverName)->getNumberOfListen();
+		for (int j = 0; j < numberOfListen; j++) {
+			std::string listenName = "listen" + int_to_string(j + 1);
+			std::string port = this->getDirective<Server>(serverName)->getDirective<Listen>(listenName)->getPort();
+			if (ports.find(port) != ports.end())
+				throw Errors::SameListenException("Duplicate port not allowed", ConfigLine, __FILE__);
+			ports.insert(port);
 		}
 	}
 }

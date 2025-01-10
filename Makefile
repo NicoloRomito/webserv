@@ -57,7 +57,7 @@ run: all
 	@./$(NAME) $(CONFIG_FILE)
 
 val: all
-	@valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes ./$(NAME) $(CONFIG_FILE)
+	@valgrind --leak-check=full --show-leak-kinds=all --track-origins=yes --track-fds=yes ./$(NAME) $(CONFIG_FILE)
 
 debug: all
 	@gdb --args ./webserver config/webserv.conf
