@@ -43,7 +43,7 @@ void	readHtml(std::string &response, Request* req, Response* res, int& statusCod
 	std::cout << "\nURL PATH: " << req->getUrlPath() << std::endl;
 	std::cout << "\nPATH FOR HTML FILE: " << res->getPathForHtml() << std::endl;
 
-    if (req->getUrlPath() == "/favicon.ico") {
+    if (req->getUrlPath().find("/favicon.ico") != std::string::npos) {
         // Open file in binary mode
         file.open(res->getPathForHtml().c_str(), std::ios::binary);
         if (!file.is_open()) {

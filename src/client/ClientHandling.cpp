@@ -65,14 +65,22 @@ std::string    generateResponse(Request* req, Response* res) {
     if (req->getUrlPath() == "/favicon.ico") {
         contentType = "image/x-icon";
     }
+	if (req->getMethod() == "POST")
+		contentType = "application/json";
 
 	// TODO: Add status code for redirect
 	switch (STATUS_CODE) {
 		case 200:
 			message = "OK";
 			break;
+		case 201:
+			message = "Created";
+			break;
 		case 204:
 			message = "No Content";
+			break;
+		case 400:
+			message = "Bad Request";
 			break;
 		case 404:
 			message = "Not Found";
@@ -94,8 +102,10 @@ std::string    generateResponse(Request* req, Response* res) {
 		"Content-Type: " + contentType + "\r\n"
 		"Content-Length: ";
 
-	if (STATUS_CODE == 200)
+	if (STATUS_CODE == 200 && req->getMethod() != "POST")
 		readHtml(index, req, res, STATUS_CODE);
+	else if ((STATUS_CODE == 200 || STATUS_CODE == 201) && req->getMethod() == "POST")
+		index = res->bodyToJson();
 	else if (STATUS_CODE == 204)
 		index = "";
 	else

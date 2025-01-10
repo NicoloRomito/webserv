@@ -63,6 +63,3 @@ class Response {
 		const std::string&							getErrorPage5xx() const;
 		const std::map<std::string, std::string>	getBody() const;
 };
-
-std::string    	generateResponse(Request* req, Response* res);
-std::string		generateDirectoryListing(std::string urlPath, std::string root, Response* res);

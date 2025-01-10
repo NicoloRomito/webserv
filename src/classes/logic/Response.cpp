@@ -101,10 +101,6 @@ void	Response::setErrorPage4xx(const std::string& error_page4xx) {
 	_errorPage4xx = error_page4xx;
 }
 
-void Response::setBody(const std::map<std::string, std::string> body) {
-	this->_body = body;
-}
-
 void 	Response::setBody(const std::map<std::string, std::string> body) {
 	this->_body = body;
 }

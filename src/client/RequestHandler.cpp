@@ -26,7 +26,7 @@ void	handleGet(Request* req, Response* res, bool locationExists, int& statusCode
 
 	statusCode = 200;
 
-    if (req->getUrlPath() == "/favicon.ico") {
+    if (req->getUrlPath().find("/favicon.ico") != std::string::npos) {
         res->setPathForHtml(cwd + res->getRoot() + req->getUrlPath());
         res->setResponse(generateResponse(req, res));
         return;
