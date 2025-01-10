@@ -258,6 +258,12 @@ std::string    generateResponse(Request* req, Response* res) {
 				"Content-Type: " + contentType + "\r\n"
 				"Content-Length: ";
 			break;
+		case 400:
+			response = 
+				"HTTP/1.1 400 Bad Request\r\n"
+				"Content-Type: " + contentType + "\r\n"
+				"Content-Length: ";
+			break;
 		case 404:
 			response = 
 				"HTTP/1.1 404 Not Found\r\n"

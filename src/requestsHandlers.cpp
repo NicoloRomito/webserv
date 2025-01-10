@@ -33,7 +33,7 @@ std::string trimQuotes(std::string target) {
 std::string trimSpaces(std::string target) {
 
 	std::string newString;
-	int start = 0, end = target.length() - 1; 
+	int start = 0, end = target.length(); 
 
 	while (	(target[start] == ' ' ||
 			target[start] == '\n' ||
@@ -58,7 +58,7 @@ std::string trimSpaces(std::string target) {
 void setResponseBodyForEntries(Request* req, Response* res, int &statusCode)
 {
 	std::map<std::string, std::string> resBody;
-	std::string title = trimQuotes(req->getBody().at("\"filename\"")) + ".txt";
+	std::string title = trimQuotes(req->getBody().at("filename")) + ".txt";
 	title = "\"" + title + "\"";
 	std::string operation;
 
@@ -73,9 +73,8 @@ void setResponseBodyForEntries(Request* req, Response* res, int &statusCode)
 		"status", "true"
 	));
 	resBody.insert(std::pair<std::string, std::string>(
-		"newEntry", "\"" + trimQuotes(req->getBody().at("\"filebody\"")) + "\""
+		"newEntry", req->getBody().at("filebody")
 	));
-
 	res->setBody(resBody);
 }
 
@@ -91,16 +90,22 @@ void setRequestBody(Request* req, int & statusCode) {
 
 	if (req->getHeader("Content-Type") == " application/json")
 	{
+		query = query + "\0";
 		if (req->getQuery()[0] != '{' || req->getQuery()[req->getQuery().length() - 1] != '}' || req->getQuery().find(",") == std::string::npos)
 			return formatError(statusCode, "json");
-		holder = query.substr(query.find("\""), std::string::npos) + "\0";
+		holder = query.substr(query.find("\""), std::string::npos);
+		if (holder == "")
+			return formatError(statusCode, "json");
 		while (holder != "")
 		{
-			tempKey = holder.substr(0, holder.find("\"", 1) + 1);
-			if (holder[holder.find(tempKey) + tempKey.length()] != ':')
+			tempKey = holder.substr(0, holder.find("\"", 1) + 1);			if (holder[holder.find(tempKey) + tempKey.length() ] != ':')
 				return formatError(statusCode, "json");
 			holder = holder.substr(holder.find(tempKey) + tempKey.length(), std::string::npos);
-			tempValue = holder.substr(1, holder.find(","));
+			tempKey = trimQuotes(tempKey);
+			if (holder.find(",") == std::string::npos)
+				tempValue = holder.substr(1, holder.find("}") - 1);
+			else
+				tempValue = holder.substr(1, holder.find(",") - 1);
 			tempValue = trimSpaces(tempValue);
 			holder = holder.substr(holder.find(tempValue) + tempValue.length() + 1, std::string::npos);
 			holder = trimSpaces(holder);
@@ -112,13 +117,24 @@ void setRequestBody(Request* req, int & statusCode) {
 		holder = query + "\0";
 		while (holder != "")
 		{
+			if (holder.find("=") == std::string::npos)
+				return (formatError(statusCode, "form"));
 			tempKey = holder.substr(0, holder.find("="));
+			printDebug('-', tempKey, "KEY");
+			if (tempKey[0] == '&')
+				tempKey = &tempKey[1];
 			holder = holder.substr(holder.find(tempKey) + tempKey.length(), std::string::npos);
+			printDebug('-', holder, "HOLDER_POST_KEY");
 			if (holder[0] != '=' && holder[0] != '\0')
 				return formatError(statusCode, "form");
-			tempKey = "\"" + tempKey + "\"";
+			tempKey = tempKey;
 			tempValue = holder.substr(1, holder.find("&") -1);
-			holder = holder.substr(holder.find(tempValue) + tempValue.length() - 1, std::string::npos);
+			printDebug('-', tempValue, "VALUE");
+			holder = holder.substr(holder.find(tempValue) + tempValue.length(), std::string::npos);
+			tempValue="\"" + tempValue + "\"";
+			printDebug('-', holder, "HOLDER_POST_VALUE");
+			while (tempValue.find("+") != std::string::npos)
+				tempValue[tempValue.find("+")] = ' ';
 			bodyMap.insert(std::pair<std::string, std::string>(tempKey, tempValue));
 		}
 	}
@@ -163,11 +179,18 @@ void	handlePost(Request* req, Response* res, int & statusCode) {
 
 	setRequestBody(req, statusCode);
 	if (statusCode != 200)
+	{
+		res->setResponse(generateResponse(req, res));
+		printDebug('+', res->getResponse(), "RESPONSE");
 		return;
+	}
+
 	if (req->getUrlPath().substr(0, 9) == "/entries/")
 	{
-		if (!req->isKeyInMap("\"filename\"", req->getBody()) ||
-			!req->isKeyInMap("\"filebody\"", req->getBody()))
+		if (!req->isKeyInMap("filename", req->getBody()) ||
+			!req->isKeyInMap("filebody", req->getBody()) ||
+			req->getBody().at("filename")[0] != '"'	||
+			req->getBody().at("filebody")[0] != '"' )
 		{
 			statusCode = 405;
 			res->setResponse(generateResponse(req, res));
@@ -175,24 +198,24 @@ void	handlePost(Request* req, Response* res, int & statusCode) {
 			return ;
 		}
 
-		filePath = getCurrentDir() + "/src/www/static/entries/files/" + trimQuotes(req->getBody().at("\"filename\"")) + ".txt";
+		filePath = getCurrentDir() + "/src/www/static/entries/files/" + trimQuotes(req->getBody().at("filename")) + ".txt";
 		if (access(filePath.c_str(), W_OK) != -1)
 		{
 			setResponseBodyForEntries(req, res, statusCode);
-			PostFile(filePath, trimQuotes(req->getBody().at("\"filebody\"")));
+			PostFile(filePath, trimQuotes(req->getBody().at("filebody")));
 		} else if (access(filePath.c_str(), F_OK) == -1) {
 			statusCode = 201;
 			setResponseBodyForEntries(req, res, statusCode);
-			PostFile(filePath, trimQuotes(req->getBody().at("\"filebody\"")));
+			PostFile(filePath, trimQuotes(req->getBody().at("filebody")));
 		} else if (access(filePath.c_str(), F_OK) != -1) {
 			std::cout << "\nPermission denied\n";
 			statusCode = 500;
 			res->setResponse(generateResponse(req, res));
 			return;
 		}
+	} else {
+		statusCode = 403;
 	}
 
-	res->setResponse(generateResponse(req, res));
-	printDebug('+', res->getResponse(), "RESPONSE");
-	
+	res->setResponse(generateResponse(req, res));	
 }
