@@ -31,6 +31,12 @@ void	handleGet(Request* req, Response* res, bool locationExists, int& statusCode
         return;
     }
 
+	if (req->getUrlPath() == "/redirect") {
+		statusCode = 307;
+		res->setResponse(generateResponse(req, res));
+		return ;
+	}
+
 	if (isADirectory(req->getUrlPath(), res->getRoot())) {
 		// handle directory if location and index exist,
 		if (locationExists && locationMatches(req->getUrlPath(), res->getLocationPath()) && !res->getIndex().empty()) {

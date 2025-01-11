@@ -56,6 +56,11 @@ std::string	generateDirectoryListing(const std::string& urlPath, const std::stri
 	return response.str();
 }
 
+void redirectingUrl(std::string index) {
+	index += "";
+	// index += "location: http://localhost:8080/redirect.html";
+}
+
 std::string    generateResponse(Request* req, Response* res) {
 	std::string response, index, message, statusCode, contentType;
 	std::ostringstream oss;
@@ -94,15 +99,20 @@ std::string    generateResponse(Request* req, Response* res) {
 		case 500:
 			message = "Internal Server Error";
 			break;
+		case 307:
+			message = "Temporary redirect";
+			break;
 		default:
 			break;
 	}
 	response = 
-		"HTTP/1.1 " + statusCode + " " + message + "\r\n"
-		"Content-Type: " + contentType + "\r\n"
-		"Content-Length: ";
+		"HTTP/1.1 " + statusCode + " " + message + "\r\n";
 
-	if (STATUS_CODE == 200 && req->getMethod() != "POST")
+	if (STATUS_CODE == 307){
+		response += "Location: http://localhost:8080/saluto.html\r\n";
+		redirectingUrl(index);
+	}
+	else if (STATUS_CODE == 200 && req->getMethod() != "POST")
 		readHtml(index, req, res, STATUS_CODE);
 	else if ((STATUS_CODE == 200 || STATUS_CODE == 201) && req->getMethod() == "POST")
 		index = res->bodyToJson();
@@ -110,6 +120,9 @@ std::string    generateResponse(Request* req, Response* res) {
 		index = "";
 	else
 		getErrorPage(index, res, STATUS_CODE);
+
+	response += "Content-Type: " + contentType + "\r\n"
+		"Content-Length: ";
 	oss << index.length();
 	response += oss.str();
 	response += "\r\n\r\n";
