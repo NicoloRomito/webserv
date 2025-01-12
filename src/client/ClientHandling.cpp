@@ -84,14 +84,17 @@ std::string    generateResponse(Request* req, Response* res) {
 		case 204:
 			message = "No Content";
 			break;
+		case 307:
+			message = "Temporary redirect";
+			break;
 		case 400:
 			message = "Bad Request";
 			break;
-		case 404:
-			message = "Not Found";
-			break;
 		case 403:
 			message = "Forbidden";
+			break;
+		case 404:
+			message = "Not Found";
 			break;
 		case 405:
 			message = "Method Not Allowed";
@@ -99,20 +102,19 @@ std::string    generateResponse(Request* req, Response* res) {
 		case 500:
 			message = "Internal Server Error";
 			break;
-		case 307:
-			message = "Temporary redirect";
+		case 501:
+			message = "Not Implemented";
 			break;
 		default:
 			break;
 	}
-	response = 
-		"HTTP/1.1 " + statusCode + " " + message + "\r\n";
 
-	if (STATUS_CODE == 307){
+	response = "HTTP/1.1 " + statusCode + " " + message + "\r\n";
+
+	if (STATUS_CODE == 307) {
 		response += "Location: http://localhost:8080/saluto.html\r\n";
 		redirectingUrl(index);
-	}
-	else if (STATUS_CODE == 200 && req->getMethod() != "POST")
+	} else if (STATUS_CODE == 200 && req->getMethod() != "POST")
 		readHtml(index, req, res, STATUS_CODE);
 	else if ((STATUS_CODE == 200 || STATUS_CODE == 201) && req->getMethod() == "POST")
 		index = res->bodyToJson();
@@ -146,7 +148,6 @@ void	lookForRequestType(Request* req, Http* http, Response* res, bool& locationE
 }
 
 void	clientHandler(int& clientSocket, Http* http) {
-	// STATUS_CODE = 200;
 	bool		locationExists = true;
 	char		buffer[8192] = {0};
 	Request		*request = new Request();
@@ -165,7 +166,7 @@ void	clientHandler(int& clientSocket, Http* http) {
 		clientSocket = -1;
 		delete res;
 		delete request;
-		usleep(40000);
+		usleep(3);
 		return;
 	}
 	request->parseRequest(buffer);

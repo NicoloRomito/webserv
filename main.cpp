@@ -129,18 +129,13 @@ int main(int ac, char **av) {
 		if (QUIT) break;
 	}
 
-	// Cleanup
-	// ? why two loops to close the sockets?
+	// * Cleanup
 	std::cout << "pollfds = " << pollFds.size() << std::endl;
 	for (size_t i = 0; i < pollFds.size(); i++) {
 		if (pollFds[i].fd != -1)
 			close(pollFds[i].fd);
 	}
 
-	// std::cout << "pollfds = " << pollFds.size() << std::endl;
-	// for (size_t i = 0; i < pollFds.size(); i++) {
-	// 	close(pollFds[i].fd);
-	// }
 	delete http;
 	return 0;
 }
