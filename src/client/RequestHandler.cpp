@@ -25,11 +25,16 @@ void	handleGet(Request* req, Response* res, bool locationExists, int& statusCode
 
 	statusCode = 200;
 
-    if (req->getUrlPath().find("/favicon.ico") != std::string::npos) {
-        res->setPathForHtml(cwd + res->getRoot() + req->getUrlPath());
-        res->setResponse(generateResponse(req, res));
-        return;
-    }
+	if (req->getUrlPath().find("/favicon.ico") != std::string::npos) {
+		std::string path;
+		if (req->getUrlPath() == "/favicon.ico")
+			std::string path = cwd + res->getRoot() + "/icons" + req->getUrlPath();
+		else
+			path =cwd + res->getRoot() + req->getUrlPath();
+		res->setPathForHtml(path);
+		res->setResponse(generateResponse(req, res));
+		return;
+	}
 
 	if (req->getUrlPath() == "/redirect") {
 		statusCode = 307;
@@ -77,7 +82,19 @@ void	handleGet(Request* req, Response* res, bool locationExists, int& statusCode
 }
 
 void	handleDelete(Request* req, Response* res, int& statusCode) {
-	std::string path = getCurrentDir() + res->getRoot() + req->getUrlPath();
+	std::string cwd = getCurrentDir();
+	if (cwd.empty()) {
+		statusCode = 500;
+		res->setResponse(generateResponse(req, res));
+		return;
+	}
+	std::string path = cwd + res->getRoot() + req->getUrlPath();
+
+	if (isADirectory(req->getUrlPath(), res->getRoot())) {
+		statusCode = 403;
+		res->setResponse(generateResponse(req, res));
+		return;
+	}
 	if (remove(path.c_str()) != 0) {
 		statusCode = 404;
 		res->setResponse(generateResponse(req, res));

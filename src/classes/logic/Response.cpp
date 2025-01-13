@@ -2,7 +2,9 @@
 #include <algorithm>
 #include <cstddef>
 #include <fstream>
+#include <sstream>
 #include <string>
+#include <vector>
 
 Response::Response() : _clientMaxBodySize(0), _response(""), _root(""), _locationPath(""), _autoindex(), _index(""), _errorPage4xx(""), _errorPage5xx(""), _pathForHtml("") {}
 
@@ -17,18 +19,46 @@ bool Response::isAvailableErrorCode(int code) const {
 }
 
 void Response::addServerNamesToHosts() {
-	std::ofstream	file;
-	std::string		line;
-
-	file.open("/etc/hosts", std::ofstream::app);
-	if (!file.is_open()) {
-		std::cerr << "Error opening /etc/hosts\n";
+	std::ifstream	fileIn("/etc/hosts");
+	if (!fileIn.is_open()) {
+		std::cerr << "Error opening /etc/hosts for reading\n";
 		return;
 	}
 
-	for (std::set<std::string>::iterator it = _serverNames.begin(); it != _serverNames.end(); ++it)
-		file << "127.0.0.1 " << *it << "\n";
-	file.close();
+	std::vector<std::string>	fileLines;
+	std::string					line;
+	while (std::getline(fileIn, line)) {
+		fileLines.push_back(line);
+	}
+	fileIn.close();
+
+
+	// WORK IN PROGRESS
+	std::vector<std::string>::iterator it = std::find(fileLines.begin(), fileLines.end(), "localhost");
+	if (it != fileLines.end()) {
+		std::cout << "CIAO\n";
+		for (std::set<std::string>::iterator Serverit = _serverNames.begin(); Serverit != _serverNames.end(); ++Serverit) {
+			if (std::find(fileLines.begin(), fileLines.end(), *Serverit) == fileLines.end()) {
+				*it += *Serverit;
+				std::cout << "Added " << *Serverit << " to /etc/hosts\n";
+				std::cout << "It is now: " << *it << std::endl;
+			}
+		}
+		*it += "\n";
+	}
+
+	std::ofstream	fileOut;
+	fileOut.open("/etc/hosts", std::ofstream::app);
+	if (!fileOut.is_open()) {
+		std::cerr << "Error opening /etc/hosts for writing\n";
+		return;
+	}
+
+	for (std::vector<std::string>::iterator it = fileLines.begin(); it != fileLines.end(); ++it) {
+		fileOut << *it << std::endl;
+	}
+
+	fileOut.close();
 }
 
 typedef std::map<std::string, std::string>::iterator mapIt;
