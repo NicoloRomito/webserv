@@ -3,9 +3,7 @@
 #include <vector>
 #include "../../include/Directives/ServerName.hpp"
 
-ServerName::ServerName() {
-	this->_names.insert("localhost");
-}
+ServerName::ServerName() {}
 
 ServerName::~ServerName() {
 	this->_names.clear();
