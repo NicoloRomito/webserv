@@ -98,7 +98,8 @@ void setRequestBody(Request* req, int & statusCode) {
 			return formatError(statusCode, "json");
 		while (holder != "")
 		{
-			tempKey = holder.substr(0, holder.find("\"", 1) + 1);			if (holder[holder.find(tempKey) + tempKey.length() ] != ':')
+			tempKey = holder.substr(0, holder.find("\"", 1) + 1);
+			if (holder[holder.find(tempKey) + tempKey.length() ] != ':')
 				return formatError(statusCode, "json");
 			holder = holder.substr(holder.find(tempKey) + tempKey.length(), std::string::npos);
 			tempKey = trimQuotes(tempKey);
@@ -150,7 +151,7 @@ void	handlePost(Request* req, Response* res, int & statusCode) {
 	if (!req->isKeyInMap("Content-Type", req->getHeader()) ||
 		(req->getHeader("Content-Type") != " application/json" &&req->getHeader("Content-Type") != " application/x-www-form-urlencoded"))
 	{
-		statusCode = 500;
+		statusCode = 501;
 		res->setResponse(generateResponse(req, res));
 		return;
 	}
@@ -170,12 +171,6 @@ void	handlePost(Request* req, Response* res, int & statusCode) {
 	}
 
 	statusCode = 200;
-
-    if (req->getUrlPath().find("/favicon.ico") != std::string::npos) {
-        res->setPathForHtml(cwd + res->getRoot() + "/favicon.ico");
-        res->setResponse(generateResponse(req, res));
-        return;
-    }
 
 	setRequestBody(req, statusCode);
 	if (statusCode != 200)
@@ -209,12 +204,12 @@ void	handlePost(Request* req, Response* res, int & statusCode) {
 			PostFile(filePath, trimQuotes(req->getBody().at("filebody")));
 		} else if (access(filePath.c_str(), F_OK) != -1) {
 			std::cout << "\nPermission denied\n";
-			statusCode = 500;
+			statusCode = 403;
 			res->setResponse(generateResponse(req, res));
 			return;
 		}
 	} else {
-		statusCode = 403;
+		statusCode = 404;
 	}
 
 	res->setResponse(generateResponse(req, res));	

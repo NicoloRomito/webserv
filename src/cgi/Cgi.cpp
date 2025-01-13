@@ -15,7 +15,7 @@ char** Cgi::getArgv() {
 Cgi::~Cgi() {
 }
 
-char**	Cgi::_createArgv(Request &req) {
+char**	Cgi::_createArgv(Request &req, Response *res) {
 	
 	char** argv;
 	std::string query;
@@ -31,7 +31,7 @@ char**	Cgi::_createArgv(Request &req) {
 		argv = (char **)malloc(sizeof(char*) * (n + 2));
 		if (!argv)
 			throw Errors::MemoryFailException("Failed to allocate Memory in _createArgv(Request &req) (1)", "Cgi.cpp");
-		argv[0] = getScriptAbsPath(req.getPath());
+		argv[0] = getScriptAbsPath(req.getPath(), res->getRoot());
 		argv[n + 1] = 0;
 		for (int i = 1; i < n + 1; i++)
 		{
@@ -46,7 +46,7 @@ char**	Cgi::_createArgv(Request &req) {
 			error("failed malloc for argvp");
 			throw;
 		}
-		argv[0] = getScriptAbsPath(req.getPath());
+		argv[0] = getScriptAbsPath(req.getPath(), res->getRoot());
 		argv[1] = getValueFromQuery(query.c_str());
 		argv[2] = 0;
 	} else {
@@ -56,15 +56,16 @@ char**	Cgi::_createArgv(Request &req) {
 			error("failed malloc for argvp");
 			throw;
 		}
-		argv[0] = getScriptAbsPath(req.getPath());
+		argv[0] = getScriptAbsPath(req.getPath(), res->getRoot());
 		argv[1] = 0;
 	}
 
 	return argv;
 }
 
-Cgi::Cgi(Request & request) {
+Cgi::Cgi(Request & request, Response *res) {
 	std::string absFilePath;
+
 
 	this->_env["AUTH_TYPE"] = "";
 	this->_env["SERVER_SOFTWARE"] = "WEBSERV";
@@ -80,10 +81,11 @@ Cgi::Cgi(Request & request) {
 	// this->_env["CONTENT_LENGTH"] = request.getHeader("Content-Length");
 	this->_env["QUERY_STRING"] = "";
 	this->_env["REMOTE_USER"] = "";
-	this->_env["PWD"] = "/www/cgi-bin";
+
+	this->_env["PWD"] = getCurrentDir() + res->getRoot() + "/cgi-bin/";
 	try
 	{
-		this->_argv = this->_createArgv(request);
+		this->_argv = this->_createArgv(request, res);
 	}
 	catch(const std::exception& e)
 	{
@@ -115,33 +117,34 @@ char**	Cgi::createEnvp()
 	return (env_matrix);
 }
 
-void Cgi::executeCgi(Request *req) {
+void Cgi::executeCgi(Response *res, Request *req, int& statusCode) {
 
-	int pid = fork();
-	int oldStdOut = dup(STDOUT_FILENO);
+	pid_t 	pid = fork();
+	pid_t 	waitReturn;
+	int		returnCode; 
   	int cgiFd;
  	
-	
-	req->setCgiOutput("./src/tmp/tmp_" + to_string(req->getClientId() + 48) + ".html"); // template for our file.
+	res->setPathForHtml("." + res->getRoot() + "/tmp/tmp_" + to_string(req->getClientId() + 48) + ".html"); // template for our file.
 
-	cgiFd = open(req->getCgiOutput().c_str(),  O_CREAT | O_WRONLY, 0777);
+
+	cgiFd = open(res->getPathForHtml().c_str(),  O_CREAT | O_WRONLY | O_TRUNC, S_IRUSR | S_IWUSR);
 	if (cgiFd == -1)
 		return ;
-
 	if (pid == 0)
 	{
 		dup2(cgiFd, STDOUT_FILENO);
 		close(cgiFd);
-		close(STDIN_FILENO);
-		execve(this->_argv[0], this->_argv, createEnvp());
+		this->createEnvp();
+		execve(this->_argv[0], this->_argv, this->_envp);
+		exit(-1);
 	}
-	else {
-		wait(&cgiFd);
-		dup2(STDOUT_FILENO, oldStdOut);
-		close(oldStdOut);
-		close(cgiFd);
-		for (int i = 0; this->_argv[i]; i++)
-			free(this->_argv[i]);
-		free(this->_argv);
+	waitReturn = wait(&returnCode);
+	if (waitReturn >= 0 && WIFEXITED(returnCode))
+	{
+    	if (WEXITSTATUS(returnCode) != 0)
+			statusCode = 500;
 	}
+	for (int i = 0; this->_argv[i]; i++)
+		free(this->_argv[i]);
+	free(this->_argv);
 }

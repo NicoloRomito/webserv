@@ -21,6 +21,7 @@
 #include <poll.h>
 #include <sys/wait.h>
 #include <dirent.h>
+#include <iterator>
 
 # define RED "\033[1;31m"
 # define GREEN "\033[1;32m"

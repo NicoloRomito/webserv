@@ -108,7 +108,7 @@ std::string    generateResponse(Request* req, Response* res) {
 	response = 
 		"HTTP/1.1 " + statusCode + " " + message + "\r\n";
 
-	if (STATUS_CODE == 307){
+	if (STATUS_CODE == 307) {
 		response += "Location: http://localhost:8080/saluto.html\r\n";
 		redirectingUrl(index);
 	}
