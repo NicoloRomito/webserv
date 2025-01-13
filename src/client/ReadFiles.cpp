@@ -74,7 +74,6 @@ void	readHtml(std::string &response, Request* req, Response* res, int& statusCod
 			getErrorPage(response, res, statusCode);
 			return;
 		}
-		printDebug('.', res->getPathForHtml());
 		file.open(res->getPathForHtml().c_str());
 		if (!file.is_open()) {
 			statusCode = 404;

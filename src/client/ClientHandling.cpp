@@ -70,8 +70,7 @@ std::string    generateResponse(Request* req, Response* res) {
     if (req->getUrlPath() == "/favicon.ico") {
         contentType = "image/x-icon";
     }
-	if (req->getMethod() == "POST")
-		contentType = "application/json";
+		
 
 	// TODO: Add status code for redirect
 	switch (STATUS_CODE) {
@@ -99,6 +98,9 @@ std::string    generateResponse(Request* req, Response* res) {
 		case 405:
 			message = "Method Not Allowed";
 			break;
+		case 422:
+			message = "Unprocessable Content";
+			break;
 		case 500:
 			message = "Internal Server Error";
 			break;
@@ -116,8 +118,17 @@ std::string    generateResponse(Request* req, Response* res) {
 		redirectingUrl(index);
 	} else if (STATUS_CODE == 200 && req->getMethod() != "POST")
 		readHtml(index, req, res, STATUS_CODE);
-	else if ((STATUS_CODE == 200 || STATUS_CODE == 201) && req->getMethod() == "POST")
-		index = res->bodyToJson();
+	else if (isValidPostReq(STATUS_CODE, req))
+	{
+		if (req->getUrlPath().substr(0, 9) != "/cgi-bin/")
+		{
+			contentType = "application/json";
+			index = res->bodyToJson();
+		}
+		if (req->getUrlPath().substr(0, 9) == "/cgi-bin/" &&
+		 	req->getUrlPath() != "/cgi-bin/")
+			readHtml(index, req, res, STATUS_CODE);
+	}
 	else if (STATUS_CODE == 204)
 		index = "";
 	else
@@ -130,6 +141,7 @@ std::string    generateResponse(Request* req, Response* res) {
 	response += "\r\n\r\n";
 	response += index;
 
+	printDebug('+', response);
 	return response;
 }
 
