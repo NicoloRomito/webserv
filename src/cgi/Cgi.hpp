@@ -4,36 +4,36 @@
 #include "../../include/includes.hpp"
 #include "../../include/Directives/Server.hpp"
 #include "../classes/headers/Request.hpp"
+#include "../classes/headers/Response.hpp"
 #include "../../include/Errors.hpp"
 #include <string>
 
-class TRequest;
+class Cgi
+{
 
-class Cgi{
+private:
+	std::map<std::string, std::string> _env;
+	std::string _cgiPath;
+	char **_argv;
+	char **_envp;
+	char **_createArgvGet(Request &req, Response *res);
+	char **_createArgvPost(Request &req, Response *res);
 
-	private:
-		std::map<std::string, std::string> _env;
-		std::string _cgiPath;
-		char** _argv;
-		char** _envp;
-		char** _createArgv(Request &req);
-
-	public:
-		Cgi(Request & request);
-		~Cgi();
-		char** createEnvp();
-		void executeCgi(Request *req);
-		std::string	getCgiPath();
-		char** getArgv();
+public:
+	Cgi(Request &request, Response *res);
+	~Cgi();
+	char **createEnvp();
+	void executeCgi(Response *res, Request *req, int &statusCode);
+	std::string getCgiPath();
+	char **getArgv();
 };
 
-
-//Utils is file CgiUtils.cpp
+// Utils is file CgiUtils.cpp
 void unlinkCgi();
-char* getScriptAbsPath(std::string path);
+char *getScriptAbsPath(std::string path, std::string root);
 std::string buildCgiOutputPath(int idx);
 int countCharInstances(const std::string query, char delim);
-char* getValueFromQuery(std::string query);
-int cgiHandler(Request* req, int& statusCode, std::string& response, Response* res);
+char *getValueFromQuery(std::string query);
+int cgiHandler(Request *req, int &statusCode, std::string &response, Response *res);
 
 #endif

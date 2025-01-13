@@ -67,10 +67,13 @@ void	handleGet(Request* req, Response* res, bool locationExists, int& statusCode
 			}
 		}
 	}
-	else // handle file
+	else { // handle file
 		res->setPathForHtml(std::string(cwd) + res->getRoot() + req->getUrlPath());
+	}
 
-	if (access(res->getPathForHtml().c_str(), F_OK) == -1) {
+	if (access(res->getPathForHtml().c_str(), F_OK) == -1 &&
+		res->getPathForHtml().find("/cgi-bin/") == std::string::npos)
+	{
 		statusCode = 404;
 		res->setResponse(generateResponse(req, res));
 		return;

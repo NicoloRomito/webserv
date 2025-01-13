@@ -21,6 +21,7 @@
 #include <poll.h>
 #include <sys/wait.h>
 #include <dirent.h>
+#include <iterator>
 
 # define RED "\033[1;31m"
 # define GREEN "\033[1;32m"
@@ -79,6 +80,7 @@ std::string		generateDirectoryListing(const std::string& urlPath, const std::str
 void	handleRequest(Request* request, Http* http, Response* res, bool locationExists, int& statusCode);
 void	handleGet(Request* req, Response* res, bool locationExists, int& statusCode);
 void	handleDelete(Request* req, Response* res, int& statusCode);
+bool 	isValidPostReq(int statusCode, Request* req);
 
 
 // errors

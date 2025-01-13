@@ -5,18 +5,18 @@
 #include "../../include/includes.hpp"
 
 std::string buildCgiOutputPath(int idx) {
-	std::string ret = ("./src/tmp/tmp_" + to_string(idx + 48) + ".html"); 
+	std::string ret = ("./src/www/static/tmp/tmp_" + to_string(idx + 48) + ".html"); 
 	return (ret);
 }
 
-char* getScriptAbsPath(std::string path) 
+char* getScriptAbsPath(std::string path, std::string root) 
 {
 	std::string ret;
 	char cwd[100];
 
 	getcwd(cwd, 100);
 
-	ret  = std::string(cwd) + "/src/www" + path;
+	ret  = std::string(cwd) + root + path;
 	return (strdup(ret.c_str())); 
 }
 
@@ -47,7 +47,8 @@ int cgiHandler(Request* req, int& statusCode, std::string& response, Response* r
 	char* scriptPath;
 	Cgi* cgi;
 
-	scriptPath = getScriptAbsPath(req->getPath());
+	scriptPath = getScriptAbsPath(req->getPath(), res->getRoot());
+	statusCode = 200;
 
 	if (access(scriptPath, F_OK) == -1)
 	{
@@ -57,8 +58,8 @@ int cgiHandler(Request* req, int& statusCode, std::string& response, Response* r
 		return statusCode;
 	}
 	free(scriptPath);
-	cgi = new Cgi(*req);
-	cgi->executeCgi(req);
+	cgi = new Cgi(*req, res);
+	cgi->executeCgi(res, req, statusCode);
 	delete cgi;
 	return statusCode;
 }

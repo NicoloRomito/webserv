@@ -11,11 +11,98 @@
 #include <dirent.h>
 
 
+bool checkPostReqErrors(Request* req, Response* res, int& statusCode)
+{
+	//CONTENT-TYPE
+	if (!req->isKeyInMap("Content-Type", req->getHeader()) ||
+	(req->getHeader("Content-Type") != " application/json" && req->getHeader("Content-Type") != " application/x-www-form-urlencoded"))
+	{
+		statusCode = 501;
+		res->setResponse(generateResponse(req, res));
+		return true;
+	}
+
+	//EMPTY QUERY
+	if (req->getQuery() == "")
+	{
+		statusCode = 400;
+		res->setResponse(generateResponse(req, res));
+		return true;
+	}
+
+	//BODY EXCEEDS LIMIT
+	if (req->getQuery().length() > res->getClientMaxBodySize())
+	{
+		statusCode = 413;
+		res->setResponse(generateResponse(req, res));
+		return true;
+	}
+
+	//EMPTY CWD
+	std::string cwd = getCurrentDir();
+	if (cwd.empty()) {
+		statusCode = 500;
+		res->setResponse(generateResponse(req, res));
+		return true;
+	}
+
+	return false;
+}
+
+bool checkforPostEntryErrors(Request* req, Response* res, int& statusCode)
+{
+	char reqUrlLastChar;
+	
+
+	//ENTRIES ERRORS
+	reqUrlLastChar = req->getUrlPath()[8];
+	
+	if (reqUrlLastChar != '/' && reqUrlLastChar != 0)
+	{
+		statusCode = 404;
+		res->setResponse(generateResponse(req, res));
+		return true;
+	}
+	if (!req->isKeyInMap("filename", req->getBody()) ||
+		!req->isKeyInMap("filebody", req->getBody()) ||
+		req->getBody().at("filename")[0] != '"'	||
+		req->getBody().at("filebody")[0] != '"' )
+	{
+		statusCode = 422;
+		res->setResponse(generateResponse(req, res));
+		std::cout << "POST request body invalid format\n";
+		return true;
+	}
+	return false;
+}
+
+bool checkForCgiBodyErrors(Request* req, Response* res, int& statusCode)
+{
+	std::stringstream oss;
+	for (size_t i = 0; i < req->getBody().size(); i++)
+	{
+		oss << (i + 1);
+		if (!req->isKeyInMap("param" + oss.str(), req->getBody()))
+		{
+			statusCode = 422;
+			res->setResponse(generateResponse(req, res));
+			std::cout << "POST request body invalid format\n";
+			return true; 
+		}
+		oss.str(std::string());
+	}
+	return false;
+}
+
+
 void formatError(int &statusCode, std::string encoding) {
 	error((encoding == "json") ?  "Invalid JSON format" : "Invalid form-urlencoded format");
 	statusCode = 400;
 }
 
+bool isValidPostReq(int statusCode, Request* req) {
+	return ((statusCode == 200 || statusCode == 201) && req->getMethod() == "POST");
+}
 
 std::string trimQuotes(std::string target) {
 	
@@ -78,6 +165,8 @@ void setResponseBodyForEntries(Request* req, Response* res, int &statusCode)
 	res->setBody(resBody);
 }
 
+
+
 typedef std::map<std::string, std::string>::iterator mapIT;
 
 void setRequestBody(Request* req, int & statusCode) {
@@ -98,7 +187,8 @@ void setRequestBody(Request* req, int & statusCode) {
 			return formatError(statusCode, "json");
 		while (holder != "")
 		{
-			tempKey = holder.substr(0, holder.find("\"", 1) + 1);			if (holder[holder.find(tempKey) + tempKey.length() ] != ':')
+			tempKey = holder.substr(0, holder.find("\"", 1) + 1);
+			if (holder[holder.find(tempKey) + tempKey.length() ] != ':')
 				return formatError(statusCode, "json");
 			holder = holder.substr(holder.find(tempKey) + tempKey.length(), std::string::npos);
 			tempKey = trimQuotes(tempKey);
@@ -120,19 +210,15 @@ void setRequestBody(Request* req, int & statusCode) {
 			if (holder.find("=") == std::string::npos)
 				return (formatError(statusCode, "form"));
 			tempKey = holder.substr(0, holder.find("="));
-			printDebug('-', tempKey, "KEY");
 			if (tempKey[0] == '&')
 				tempKey = &tempKey[1];
 			holder = holder.substr(holder.find(tempKey) + tempKey.length(), std::string::npos);
-			printDebug('-', holder, "HOLDER_POST_KEY");
 			if (holder[0] != '=' && holder[0] != '\0')
 				return formatError(statusCode, "form");
 			tempKey = tempKey;
 			tempValue = holder.substr(1, holder.find("&") -1);
-			printDebug('-', tempValue, "VALUE");
 			holder = holder.substr(holder.find(tempValue) + tempValue.length(), std::string::npos);
 			tempValue="\"" + tempValue + "\"";
-			printDebug('-', holder, "HOLDER_POST_VALUE");
 			while (tempValue.find("+") != std::string::npos)
 				tempValue[tempValue.find("+")] = ' ';
 			bodyMap.insert(std::pair<std::string, std::string>(tempKey, tempValue));
@@ -145,60 +231,25 @@ void setRequestBody(Request* req, int & statusCode) {
 void	handlePost(Request* req, Response* res, int & statusCode) {
 
 	std::string filePath;
-	std::string title, body;
-
-	if (!req->isKeyInMap("Content-Type", req->getHeader()) ||
-		(req->getHeader("Content-Type") != " application/json" &&req->getHeader("Content-Type") != " application/x-www-form-urlencoded"))
-	{
-		statusCode = 500;
-		res->setResponse(generateResponse(req, res));
-		return;
-	}
-
-	if (req->getQuery() == "")
-	{
-		statusCode = 400;
-		res->setResponse(generateResponse(req, res));
-		return;
-	}
-
-	std::string cwd = getCurrentDir();
-	if (cwd.empty()) {
-		statusCode = 500;
-		res->setResponse(generateResponse(req, res));
-		return;
-	}
 
 	statusCode = 200;
 
-    if (req->getUrlPath().find("/favicon.ico") != std::string::npos) {
-        res->setPathForHtml(cwd + res->getRoot() + "/favicon.ico");
-        res->setResponse(generateResponse(req, res));
-        return;
-    }
+	if (checkPostReqErrors(req, res, statusCode))
+		return ;
 
 	setRequestBody(req, statusCode);
-	if (statusCode != 200)
-	{
-		res->setResponse(generateResponse(req, res));
-		printDebug('+', res->getResponse(), "RESPONSE");
-		return;
-	}
 
-	if (req->getUrlPath().substr(0, 9) == "/entries/")
+	if (statusCode != 200)
+		return ;
+
+	
+	if (req->getUrlPath().substr(0, 8) == "/entries")
 	{
-		if (!req->isKeyInMap("filename", req->getBody()) ||
-			!req->isKeyInMap("filebody", req->getBody()) ||
-			req->getBody().at("filename")[0] != '"'	||
-			req->getBody().at("filebody")[0] != '"' )
-		{
-			statusCode = 405;
-			res->setResponse(generateResponse(req, res));
-			std::cout << "POST request body invalid format\n";
-			return ;
-		}
+		if (checkforPostEntryErrors(req, res, statusCode))
+			return (res->setResponse(generateResponse(req, res)));
 
 		filePath = getCurrentDir() + "/src/www/static/entries/files/" + trimQuotes(req->getBody().at("filename")) + ".txt";
+
 		if (access(filePath.c_str(), W_OK) != -1)
 		{
 			setResponseBodyForEntries(req, res, statusCode);
@@ -209,13 +260,18 @@ void	handlePost(Request* req, Response* res, int & statusCode) {
 			PostFile(filePath, trimQuotes(req->getBody().at("filebody")));
 		} else if (access(filePath.c_str(), F_OK) != -1) {
 			std::cout << "\nPermission denied\n";
-			statusCode = 500;
+			statusCode = 403;
 			res->setResponse(generateResponse(req, res));
 			return;
 		}
+	} else if (	req->getUrlPath().substr(0, 9) == "/cgi-bin/" && 
+				req->getUrlPath() != "/cgi-bin/") 
+	{
+		if (checkForCgiBodyErrors(req, res, statusCode))
+			return ;
 	} else {
-		statusCode = 403;
+		statusCode = 404;
 	}
 
-	res->setResponse(generateResponse(req, res));	
+	res->setResponse(generateResponse(req, res));
 }

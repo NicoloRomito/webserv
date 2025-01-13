@@ -10,6 +10,7 @@ void	getErrorPage(std::string& response, Response* res, int statusCode) {
 	std::cout << "ERROR PAGE: " << errorPage << std::endl;
 	std::cout << "STATUS CODE: " << statusCode << std::endl;
 
+	
 	if (res->getAvailableErrorCodes().count(statusCode) > 0) {
 		file.open(errorPage.c_str());
 		if (!file.is_open()) {
@@ -68,9 +69,12 @@ void	readHtml(std::string &response, Request* req, Response* res, int& statusCod
 
 	if (req->getUrlPath().substr(0, 9) == "/cgi-bin/" && req->getUrlPath() != "/cgi-bin/")
 	{
-		if (cgiHandler(req, statusCode, response, res))
+		if (cgiHandler(req, statusCode, response, res) != 200)
+		{
+			getErrorPage(response, res, statusCode);
 			return;
-		file.open(req->getCgiOutput().c_str());
+		}
+		file.open(res->getPathForHtml().c_str());
 		if (!file.is_open()) {
 			statusCode = 404;
 			getErrorPage(response, res, statusCode);
