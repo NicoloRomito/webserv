@@ -1,3 +1,5 @@
+#include "include/Directives/Listen.hpp"
+#include "include/Directives/Server.hpp"
 #include "include/includes.hpp"
 #include "include/includeClasses.hpp"
 
@@ -62,7 +64,10 @@ int main(int ac, char **av) {
 	// Specify the address
 	std::vector<sockaddr_in> serverAddress;
 	if (runSocket(serverAddress, serverSocket, http) == -1)
+	{
+		delete http;
 		return 0;
+	}
 
 	std::cout << "Server listening on port " << ntohs(serverAddress[0].sin_port) << "..." << std::endl;
 

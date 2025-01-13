@@ -81,7 +81,7 @@ int runSocket(std::vector<sockaddr_in> &serverAddress, std::vector<int> serverSo
             std::cout << "port: " << port << std::endl;
 
             // listening to the assigned socket
-            if (listen(serverSocket[currSocket], 5) < 0) {
+            if (listen(serverSocket[currSocket], 1024) < 0) {
                 error("Listen Failed");
                 close(serverSocket[currSocket]);
                 return -1;

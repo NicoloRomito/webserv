@@ -102,10 +102,6 @@ void	AConfig::createDefaultDirectives(DirectiveType type) {
 		case SERVER:
 			if (this->_directives.find("listen") == this->_directives.end())
 				this->_directives["listen"] = new Listen();
-
-			// if (this->_directives.find("server_name") == this->_directives.end())
-			// 	this->_directives["server_name"] = new ServerName();
-
 			if (this->_directives.find(this->_dName + "error_page4xx") == this->_directives.end())
 				this->_directives[this->_dName + "error_page4xx"] = new ErrorPage(400);
 			if (this->_directives.find(this->_dName + "error_page5xx") == this->_directives.end())

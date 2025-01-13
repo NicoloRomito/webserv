@@ -8,7 +8,43 @@
 
 Response::Response() : _clientMaxBodySize(0), _response(""), _root(""), _locationPath(""), _autoindex(), _index(""), _errorPage4xx(""), _errorPage5xx(""), _pathForHtml("") {}
 
-Response::~Response() {}
+Response::~Response() {
+	removeServerNamesFromHosts();
+	_serverNames.clear();
+	_statusCodes.clear();
+	_cgiPass.clear();
+	_body.clear();
+}
+
+void	Response::removeServerNamesFromHosts() {
+	std::ifstream	fileIn("/etc/hosts");
+	if (!fileIn.is_open()) {
+		std::cerr << "Error opening /etc/hosts for reading\n";
+		return;
+	}
+
+	std::vector<std::string>	fileLines;
+	std::string					line;
+	while (std::getline(fileIn, line)) {
+		fileLines.push_back(line);
+	}
+	fileIn.close();
+
+	fileLines[0] = "127.0.0.1 localhost\n";
+
+	std::ofstream	fileOut;
+	fileOut.open("/etc/hosts");
+	if (!fileOut.is_open()) {
+		std::cerr << "Error opening /etc/hosts for writing\n";
+		return;
+	}
+
+	for (std::vector<std::string>::iterator it = fileLines.begin(); it != fileLines.end(); ++it) {
+		fileOut << *it << std::endl;
+	}
+
+	fileOut.close();
+}
 
 bool Response::isAvailableErrorCode(int code) const {
 	for (std::set<int>::const_iterator it = _statusCodes.begin(); it != _statusCodes.end(); ++it) {
@@ -32,23 +68,18 @@ void Response::addServerNamesToHosts() {
 	}
 	fileIn.close();
 
+	std::string cp = fileLines[0];
 
-	// WORK IN PROGRESS
-	std::vector<std::string>::iterator it = std::find(fileLines.begin(), fileLines.end(), "localhost");
-	if (it != fileLines.end()) {
-		std::cout << "CIAO\n";
+	if (cp.find("localhost") != std::string::npos) {
 		for (std::set<std::string>::iterator Serverit = _serverNames.begin(); Serverit != _serverNames.end(); ++Serverit) {
-			if (std::find(fileLines.begin(), fileLines.end(), *Serverit) == fileLines.end()) {
-				*it += *Serverit;
-				std::cout << "Added " << *Serverit << " to /etc/hosts\n";
-				std::cout << "It is now: " << *it << std::endl;
+			if (cp.find(*Serverit) == std::string::npos) {
+				fileLines[0] += " " + *Serverit;
 			}
 		}
-		*it += "\n";
 	}
 
 	std::ofstream	fileOut;
-	fileOut.open("/etc/hosts", std::ofstream::app);
+	fileOut.open("/etc/hosts");
 	if (!fileOut.is_open()) {
 		std::cerr << "Error opening /etc/hosts for writing\n";
 		return;

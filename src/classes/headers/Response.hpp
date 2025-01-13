@@ -27,9 +27,10 @@ class Response {
 		Response();
 		~Response();
 
-		bool 		isAvailableErrorCode(int code) const;
-		void 		addServerNamesToHosts();
 		std::string bodyToJson();
+		void 		addServerNamesToHosts();
+		void		removeServerNamesFromHosts();
+		bool 		isAvailableErrorCode(int code) const;
 
 		// SETTERS
 		void setClientMaxBodySize(size_t clientMaxBodySize);
