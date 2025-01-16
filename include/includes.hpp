@@ -30,6 +30,10 @@
 # define WHITE "\033[1;37m"
 # define RESET "\033[0m"
 
+//Size in Bytes
+#define MEGABY * 1000000
+#define GIGABY * 1000000000
+
 // GLOBAL VARIABLES
 extern int	ConfigLine;
 extern int	locationN;

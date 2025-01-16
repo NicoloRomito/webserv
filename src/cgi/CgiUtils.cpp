@@ -67,14 +67,14 @@ int cgiHandler(Request* req, int& statusCode, std::string& response, Response* r
 void printDebug(char symbol, std::string content, std::string what, bool bottomLine)  
 {
 	std::cout << "\n";
-	for (int i = 0; i < 5; i++)
+	for (int i = 0; i < 30; i++)
 		std::cout << symbol;
 	std::cout << what;
-	for (int i = 0; i < 5; i++)
+	for (int i = 0; i < 30; i++)
 		std::cout << symbol;
 	std::cout << "\n" + content + "\n";
 	if (bottomLine)
-		for (size_t i = 0; i < 10 + what.length(); i++)
+		for (size_t i = 0; i < 60 + what.length(); i++)
 			std::cout << symbol;
 	std::cout << "\n\n";
 }
