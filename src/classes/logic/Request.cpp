@@ -173,6 +173,11 @@ void Request::setClientId(const int clientId)
 	this->_clientId = clientId;
 }
 
+void Request::setQuery(const std::string _query)
+{
+	this->query = _query;
+}
+
 void Request::setBody(const std::map<std::string, std::string> _body)
 {
 	this->body = _body;

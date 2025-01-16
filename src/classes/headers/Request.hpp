@@ -30,6 +30,7 @@ public:
 	// SETTERS
 	void setCgiOutput(const std::string);
 	void setClientId(const int);
+	void setQuery(const std::string);
 	void setBody(const std::map<std::string, std::string> _body);
 
 	// GETTERS

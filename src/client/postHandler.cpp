@@ -33,6 +33,8 @@ bool checkPostReqErrors(Request* req, Response* res, int& statusCode)
 	//BODY EXCEEDS LIMIT
 	if (req->getQuery().length() > res->getClientMaxBodySize())
 	{
+		printDebug('-', int_to_string(req->getQuery().length()));
+		// std::cout << (res->getClientMaxBodySize());
 		statusCode = 413;
 		res->setResponse(generateResponse(req, res));
 		return true;
@@ -234,6 +236,7 @@ void	handlePost(Request* req, Response* res, int & statusCode) {
 
 	statusCode = 200;
 
+	printDebug();
 	if (checkPostReqErrors(req, res, statusCode))
 		return ;
 

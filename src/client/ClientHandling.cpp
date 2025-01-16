@@ -165,6 +165,7 @@ void parseMultiPartBody(std::vector<char> body, std::string header) {
     // Now parse the body for parts
 	boundary = "--" + boundary;
     std::string bodyStr(body.begin(), body.end());
+	std::string fileName, filePath, fileType; 
     size_t pos = 0;
     
     // Keep looping to extract each part
@@ -178,10 +179,13 @@ void parseMultiPartBody(std::vector<char> body, std::string header) {
 
         // Extract the part (from partStart to partEnd)
         std::string part = bodyStr.substr(partStart, partEnd - partStart);
+
+		fileName = part.substr(part.find("filename=\"") + 9, part.find("\"", part.find("filename=\"") + 9 - part.find("filename=\"") + 9));
+		fileType = part.substr(part.find("Content-Type: ") + 14, part.find("\r\n", part.find("Content-Type: ") + 14 - part.find("Content-Type: ") + 14));
+		printDebug('a', fileName + fileType);
+
 		std::string toSub = part.substr(0, part.find("\r\n\r\n", 4) + 4);
-		printDebug('x', toSub, "TO SUB");
 		part = part.substr(toSub.length(), part.length());
-		printDebug('@', part);
 
 
         // Here, you need to parse the part headers (e.g., Content-Disposition)
@@ -229,17 +233,15 @@ void	clientHandler(int& clientSocket, Http* http) {
 			return;
 		}
 	}
-	std::cout << "\n CIAO" << "\n";
-	printDebug('+', int_to_string(totalBytes) + "\n" + header);
 	request->parseRequest(header);
-	if (std::string(header).find("Content-Type: multipart/form-data;") != std::string::npos)
+	if (std::string(header).find("Content-Type: ") != std::string::npos)
 	{
-		size_t totReceived = 0;
-		size_t contentLength = atoi(request->getHeader("Content-Length").c_str());
+		int totReceived = 0;
+		int contentLength = atoi(request->getHeader("Content-Length").c_str());
 		std::vector<char> body(contentLength);
 		while (totReceived < contentLength) {
-        	size_t bytes_received = recv(clientSocket, body.data() + totReceived, contentLength - totReceived, 0);
-        	if (bytes_received <= 0) {
+        	int bytes_received = recv(clientSocket, body.data() + totReceived, contentLength - totReceived, 0);        	
+			if (bytes_received <= 0) {
 				if (bytes_received == 0)
 					std::cout << "Client disconnected." << std::endl;
 				else
@@ -252,8 +254,16 @@ void	clientHandler(int& clientSocket, Http* http) {
 				return;
         	}
         	totReceived += bytes_received;
+			// std::stringstream oss;
+			// oss << "\n" << totReceived << " <-> " << contentLength << "\n";
+			// printDebug('x', oss.str());
     	}
-		parseMultiPartBody(body, header);
+		if (std::string(header).find("multipart/form-data;") != std::string::npos)
+			parseMultiPartBody(body, header);
+		else {
+			std::string query = body.data(); 
+			request->setQuery(query.substr(0, contentLength));
+		}
 	}
 
 
