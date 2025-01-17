@@ -121,8 +121,8 @@ void Request::parseRequest(std::string buffer)
 	temp.insert(0, buffer, 0, buffer.find('\n'));
 	splitReq = getBasicInfo(temp, 32);
 
-	// printVec(splitReq);
-	// printDebug('+', buffer, "START");
+	printVec(splitReq);
+	printDebug('+', buffer, "START");
 	if (splitReq.size() < 3 || invalidMethod(splitReq[0]))
 	{
 		error("client error");
