@@ -84,6 +84,8 @@ std::string		generateDirectoryListing(const std::string& urlPath, const std::str
 void	handleRequest(Request* request, Http* http, Response* res, bool locationExists, int& statusCode);
 void	handleGet(Request* req, Response* res, bool locationExists, int& statusCode);
 void	handleDelete(Request* req, Response* res, int& statusCode);
+
+// postHandler
 bool 	isValidPostReq(int statusCode, Request* req);
 
 
@@ -98,7 +100,7 @@ bool			semicolonFound(const std::string& line);
 std::string 	int_to_string(int value);
 std::string 	to_string(char value);
 std::string		getCurrentDir();
-bool			isADirectory(const std::string& urlPath, const std::string& root);
+bool			isADirectory(const std::string urlPath, const std::string& root);
 bool			locationMatches(const std::string& urlPath, const std::string& locationPath);
 void			setAllValues(Response* res, Http* http, const std::string& serverName, const std::string& locationName, bool locationExists);
 void			printDebug(char symbol = '-', std::string content = "", std::string what = "", bool bottomLine = true);

@@ -54,7 +54,7 @@ int main(int ac, char **av) {
 		return 0;
 	}
 	// Create the server socket
-	//todo thow an error on init scoket
+	//TODO: thow an error on init scoket
 	int serverN = 2;
 	std::vector<int> serverSocket = initSocket(serverN);
 
@@ -63,8 +63,7 @@ int main(int ac, char **av) {
 
 	// Specify the address
 	std::vector<sockaddr_in> serverAddress;
-	if (runSocket(serverAddress, serverSocket, http) == -1)
-	{
+	if (runSocket(serverAddress, serverSocket, http) == -1) {
 		delete http;
 		return 0;
 	}
@@ -79,14 +78,12 @@ int main(int ac, char **av) {
 	}
 	signal(SIGINT, sigHandler);
 	while (true) {
-    // Use poll to wait for incoming connections or data
 		int pollResult = poll(pollFds.data(), pollFds.size(), 200); // Timeout of 200ms
 		if (pollResult < 0) {
 			std::cerr << "Error with poll: " << strerror(errno) << std::endl;
 			break;
 		}
-		// DEBUG: Log poll results
-		// Handle new connections on all server sockets
+		// TODO: handle more connections, not only 3!
 		for (int i = 0; i < 3; i++) {
 			if (pollFds[i].revents & POLLIN) { // Check if the server socket is ready
 				int acceptSocket = serverSocket[i];
@@ -96,11 +93,11 @@ int main(int ac, char **av) {
 							<< " (errno: " << strerror(errno) << ")." << std::endl;
 					continue;
 				}
-				std::cout << "Client connected on port " << ntohs(serverAddress[i].sin_port) << "." << std::endl;
+				std::cout << "Client connected on port " << ntohs(serverAddress[i].sin_port) << ".\n";
 
 				// Set the client socket to non-blocking mode
 				if (setNonBlocking(clientSocket) == -1) {
-					std::cerr << "Failed to set client socket to non-blocking. Closing socket." << std::endl;
+					std::cerr << "Failed to set client socket to non-blocking.\nClosing socket.\n";
 					close(clientSocket);
 					continue;
 				}
@@ -122,7 +119,6 @@ int main(int ac, char **av) {
 					pollFds.erase(pollFds.begin() + i);
 					i--;
 				}
-
 				// Optionally, handle disconnection or cleanup
 				if (QUIT) {
 					std::cout << "QUIT signal received. Exiting loop." << std::endl;
@@ -130,7 +126,6 @@ int main(int ac, char **av) {
 				}
 			}
 		}
-		// Exit outer loop on QUIT
 		if (QUIT) break;
 	}
 
@@ -142,5 +137,6 @@ int main(int ac, char **av) {
 	}
 
 	delete http;
+	std::cout << "[SERVER MESSAGE] -> SERVER IS NOW SHUT DOWN\n";
 	return 0;
 }

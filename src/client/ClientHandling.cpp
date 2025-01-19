@@ -65,6 +65,8 @@ std::string    generateResponse(Request* req, Response* res) {
 	std::string response, index, message, statusCode, contentType;
 	std::ostringstream oss;
 
+	std::cout << "STATUS CODE in GENERATE RESPONSE: " << STATUS_CODE << std::endl;
+
     contentType = "text/html";
 	statusCode = int_to_string(STATUS_CODE);
     if (req->getUrlPath() == "/favicon.ico") {
@@ -97,6 +99,9 @@ std::string    generateResponse(Request* req, Response* res) {
 			break;
 		case 405:
 			message = "Method Not Allowed";
+			break;
+		case 413:
+			message = "Content Too Large";
 			break;
 		case 422:
 			message = "Unprocessable Content";
@@ -182,7 +187,7 @@ void parseMultiPartBody(std::vector<char> body, std::string header) {
 
 		fileName = part.substr(part.find("filename=\"") + 9, part.find("\"", part.find("filename=\"") + 9 - part.find("filename=\"") + 9));
 		fileType = part.substr(part.find("Content-Type: ") + 14, part.find("\r\n", part.find("Content-Type: ") + 14 - part.find("Content-Type: ") + 14));
-		printDebug('a', fileName + fileType);
+		printDebug('a', fileName + " " + fileType);
 
 		std::string toSub = part.substr(0, part.find("\r\n\r\n", 4) + 4);
 		part = part.substr(toSub.length(), part.length());
@@ -191,7 +196,7 @@ void parseMultiPartBody(std::vector<char> body, std::string header) {
         // Here, you need to parse the part headers (e.g., Content-Disposition)
         // Extract filename and content here
         // For example, you can save the file:
-        std::ofstream ofs("maremmaMaiala.jpg", std::ios::binary);
+        std::ofstream ofs(fileName.c_str(), std::ios::binary);
         ofs.write(part.c_str(), part.size() - 2); // Write the file content
 		if (ofs.fail())
 			std::cout << "\n" << strerror(errno) << "\n";
@@ -203,50 +208,51 @@ void parseMultiPartBody(std::vector<char> body, std::string header) {
 }
 
 void	clientHandler(int& clientSocket, Http* http) {
-	bool		locationExists = true;
+	Request			*request = new Request();
+	Response		*res = new Response();
 	char			buffer[1];
 	std::string		header;
-	Request		*request = new Request();
-	Response	*res = new Response();
-	int			bytesReceived = 0;
+	int				bytesReceived = 0;
+	bool			locationExists = true;
 
-	// Receive data from the client
+	// Pick the header
 	int totalBytes = 0;
 	while (1) {
 		bytesReceived = recv(clientSocket, buffer, 1, 0);
-		totalBytes += bytesReceived; 
-		header += buffer[0];
-		if (header.find("\r\n\r\n") != std::string::npos &&
-			header.find("\r\n\r\n") != header.find_last_of("\r\n\r\n"))
-			break;
 		if (bytesReceived <= 0)
 		{
 			if (bytesReceived == 0)
 				std::cout << "Client disconnected." << std::endl;
 			else
 				std::cerr << "Error receiving data: " << strerror(errno) << std::endl;
-			close(clientSocket); // Close the socket on error or disconnect
+			close(clientSocket);
 			clientSocket = -1;
 			delete res;
 			delete request;
 			usleep(3);
 			return;
 		}
+		totalBytes += bytesReceived; 
+		header += buffer[0];
+		if (header.find("\r\n\r\n") != std::string::npos)
+			break;
 	}
 	request->parseRequest(header);
+	// Pick the body if it exists
 	if (std::string(header).find("Content-Type: ") != std::string::npos)
 	{
 		int totReceived = 0;
 		int contentLength = atoi(request->getHeader("Content-Length").c_str());
+		// if (contentLength > http->getDirective<Server>("server" + int_to_string(1)))
 		std::vector<char> body(contentLength);
 		while (totReceived < contentLength) {
         	int bytes_received = recv(clientSocket, body.data() + totReceived, contentLength - totReceived, 0);        	
 			if (bytes_received <= 0) {
 				if (bytes_received == 0)
 					std::cout << "Client disconnected." << std::endl;
-				else
-					std::cerr << "Error receiving data: " << strerror(errno) << std::endl;
-				close(clientSocket); // Close the socket on error or disconnect
+				// else
+				// 	std::cerr << "Error receiving data: " << strerror(errno) << std::endl;
+				close(clientSocket);
 				clientSocket = -1;
 				delete res;
 				delete request;
@@ -254,9 +260,6 @@ void	clientHandler(int& clientSocket, Http* http) {
 				return;
         	}
         	totReceived += bytes_received;
-			// std::stringstream oss;
-			// oss << "\n" << totReceived << " <-> " << contentLength << "\n";
-			// printDebug('x', oss.str());
     	}
 		if (std::string(header).find("multipart/form-data;") != std::string::npos)
 			parseMultiPartBody(body, header);
@@ -266,12 +269,9 @@ void	clientHandler(int& clientSocket, Http* http) {
 		}
 	}
 
-
 	request->setClientId(clientSocket);
 	lookForRequestType(request, http, res, locationExists);
 	handleRequest(request, http, res, locationExists, STATUS_CODE);
-	std::cout << "STATUS CODE AFTER HANDLE REQUEST: " << STATUS_CODE << std::endl;
-	delete request;
 
 	// Send the response to the client
 	if (send(clientSocket, res->getResponse().c_str(), res->getResponse().size(), MSG_CONFIRM) <= 0) // needs a check with throw error
@@ -282,6 +282,8 @@ void	clientHandler(int& clientSocket, Http* http) {
 			std::cerr << "Error sending data: " << strerror(errno) << std::endl;
 		close(clientSocket);
 		clientSocket = -1;
+		usleep(3);
 	}
+	delete request;
 	delete res;
 }

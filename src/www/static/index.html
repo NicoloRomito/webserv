@@ -4,12 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Webserver</title>
-    <link rel="icon" type="image/x-icon" href="icons/favicon.ico">
     <style>
         body {
             margin: 0;
             font-family: Arial, sans-serif;
-            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            background: #2a5298;
             color: #fff;
             display: flex;
             justify-content: center;
@@ -19,109 +18,72 @@
 
         .container {
             text-align: center;
-            background: rgba(0, 0, 0, 0.5);
-            padding: 30px;
-            border-radius: 15px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-            max-width: 400px;
-            width: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 20px;
+            border-radius: 10px;
+            width: 300px;
         }
 
         h1 {
-            margin: 0 0 20px;
-            font-size: 2.5rem;
+            font-size: 2rem;
             color: #ffcc00;
+            margin-bottom: 15px;
         }
 
-        p {
-            margin: 0 0 20px;
-            font-size: 1.1rem;
-        }
-
-        input[type="file"] {
-            display: none;
+        label, button {
+            display: block;
+            margin: 15px auto;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
         }
 
         label {
-            display: inline-block;
             background: #ffcc00;
             color: #000;
-            padding: 10px 20px;
-            font-size: 1rem;
-            border-radius: 5px;
-            cursor: pointer;
-            transition: background 0.3s;
         }
 
         label:hover {
             background: #ff9900;
         }
 
-        .upload-info {
-            margin-top: 15px;
-            font-size: 0.9rem;
-            color: #ccc;
-        }
-
         button {
-            margin-top: 20px;
             background: #4caf50;
             color: #fff;
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: background 0.3s;
         }
 
         button:hover {
             background: #45a049;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        #file-name {
+            font-size: 0.9rem;
+            color: #ccc;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Webserver</h1>
-        <p>Upload your file below:</p>
         <form action="/" method="POST" id="form">
             <label for="file-upload">Choose a file</label>
-            <input id="file-upload" type="file" name="file" onchange="previewFile()"/>
-            <input id="test" type="text" placeholder="Test" name="textbox" value=""/>
-            <img id="blah" src="#" alt="your image"/>
-            <div class="upload-info" id="file-name">No file chosen</div>
+            <input id="file-upload" type="file" name="file" onchange="updateFileName()">
+            <div id="file-name">No file chosen</div>
             <button type="submit">Upload</button>
         </form>
-        <span> PROVA </span>
     </div>
     <script>
-        // Show the selected file name
-        const fileInput = document.getElementById('file-upload');
-        const fileNameDisplay = document.getElementById('file-name');
-        
-
-        fileInput.addEventListener('change', () => {
-            const fileName = fileInput.files[0]?.name || 'No file chosen';
-            fileNameDisplay.textContent = fileName;
-        });
-
-		function previewFile() {
-  		const preview = document.querySelector("#blah");
-  		const file = document.querySelector("input[type=file]").files[0];
-  		const reader = new FileReader();
-
-  		reader.addEventListener(
-  		  "load",
-  		  () => {
-            preview.src = reader.result;
-  		  },
-  		  false,
-  		);
-	  
-  		if (file) {
-  		  reader.readAsDataURL(file);
-  		}
-	}
+        function updateFileName() {
+            const fileInput = document.getElementById('file-upload');
+            const fileName = fileInput.files[0] ? fileInput.files[0].name : "No file chosen";
+            document.getElementById('file-name').textContent = fileName;
+        }
     </script>
 </body>
 </html>

@@ -87,7 +87,6 @@ AConfig*	AConfig::createBlock(const std::string& directive, std::stringstream& f
 	} catch (std::exception& e) {
 		delete server;
 		delete location;
-
 		throw;
 	}
 	return NULL;

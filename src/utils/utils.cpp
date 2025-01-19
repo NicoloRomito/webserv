@@ -4,6 +4,8 @@
 #include <cctype>
 #include <cstddef>
 #include <iostream>
+#include <set>
+#include <string>
 
 bool	checkLine(const std::string& line) {
 	for (size_t i = 0; i < line.size(); i++) {
@@ -75,15 +77,22 @@ bool	semicolonFound(const std::string& line) {
 	return false;
 }
 
-bool	isADirectory(const std::string& urlPath, const std::string& root) {
+const std::string	normalizePath(const std::string& path) {
+    if (!path.empty() && path.at(path.size() - 1) == '/') {
+		return path.substr(0, path.size() - 1);
+	}
+	return path;
+}
+
+bool	isADirectory(const std::string urlPath, const std::string& root) {
 	std::string newRoot;
 	std::string requestPath;
-	if (root.find(urlPath) != std::string::npos) {
-		newRoot = root.substr(0, root.find(urlPath));
-		requestPath = getCurrentDir() + newRoot + urlPath;
+	std::string url = normalizePath(urlPath);
+	if (root.find(url) != std::string::npos) {
+		newRoot = root.substr(0, root.find(url));
+		requestPath = getCurrentDir() + newRoot + url;
 	} else 
-		requestPath = getCurrentDir() + root + urlPath;
-	std::cout << "REQUEST PATH: " << requestPath << std::endl;
+		requestPath = getCurrentDir() + root + url;
 	struct stat pathStat;
 	if (stat(requestPath.c_str(), &pathStat) == 0) {
 		if (S_ISDIR(pathStat.st_mode))
@@ -107,28 +116,54 @@ std::string	getCurrentDir() {
 	return std::string(cwd);
 }
 
-void	setAllValues(Response* res, Http* http, const std::string& serverName, const std::string& locationName, bool locationExists) {
-	Server *server = http->getDirective<Server>(serverName);
+void	setServerDirectives(Response* res, Server* server)
+{
+	if (server->getDirective<Index>("index"))
+		res->setIndex(server->getDirective<Index>("index")->getFile());
+	if (server->getDirective<Autoindex>("autoindex"))
+		res->setAutoindex(server->getDirective<Autoindex>("autoindex")->getAutoindex());
+	if (server->getDirective<Root>("root"))
+		res->setRoot(server->getDirective<Root>("root")->getPath());
+	if (server->getDirective<CgiPass>("cgi_pass"))
+		res->setCgiPass(server->getDirective<CgiPass>("cgi_pass")->getPath());
+	if (server->getDirective<ServerName>("server_name"))
+		res->setServerNames(server->getDirective<ServerName>("server_name")->getNames());
+	if (server->getDirective<ClientMaxBodySize>("client_max_body_size"))
+		res->setClientMaxBodySize(server->getDirective<ClientMaxBodySize>("client_max_body_size")->getSize());
+}
 
-	res->setClientMaxBodySize(http->getDirective<ClientMaxBodySize>("client_max_body_size")->getSize());
-	res->setErrorPage4xx(server->getDirective<ErrorPage>(serverName + "error_page4xx")->getPath());
-	res->setErrorPage5xx(server->getDirective<ErrorPage>(serverName + "error_page5xx")->getPath());
-	res->setAvailableErrorCodes(server->getDirective<ErrorPage>(serverName + "error_page4xx")->getCodes(),
-		server->getDirective<ErrorPage>(serverName + "error_page5xx")->getCodes());
+void	setLocationDirectives(Response* res, Location* location, const std::string serverName)
+{
+	if (location->getDirective<ClientMaxBodySize>("client_max_body_size"))
+		res->setClientMaxBodySize(location->getDirective<ClientMaxBodySize>("client_max_body_size")->getSize());
+	if (location->getDirective<ServerName>("server_name"))
+		res->setServerNames(location->getDirective<ServerName>("server_name")->getNames());
+	if (location->getDirective<ErrorPage>(serverName + "error_page4xx"))
+		res->setErrorPage4xx(location->getDirective<ErrorPage>(serverName + "error_page4xx")->getPath());
+	if (location->getDirective<ErrorPage>(serverName + "error_page5xx"))
+		res->setErrorPage5xx(location->getDirective<ErrorPage>(serverName + "error_page5xx")->getPath());
+	if (location->getDirective<ErrorPage>(serverName + "error_page4xx")
+		|| location->getDirective<ErrorPage>(serverName + "error_page5xx"))
+		res->setAvailableErrorCodes(location->getDirective<ErrorPage>(serverName + "error_page4xx")->getCodes(),
+			location->getDirective<ErrorPage>(serverName + "error_page5xx")->getCodes());
+}
+
+void	setAllValues(Response* res, Http* http, const std::string& serverName, const std::string& locationName, bool locationExists) {
+	Server			*server = http->getDirective<Server>(serverName);
+	size_t			clientMaxBodySize = http->getDirective<ClientMaxBodySize>("client_max_body_size")->getSize();
+	std::string		clientErrorPage = server->getDirective<ErrorPage>(serverName + "error_page4xx")->getPath();
+	std::string		serverErrorPage = server->getDirective<ErrorPage>(serverName + "error_page5xx")->getPath();
+	std::set<int>	clientErrors = server->getDirective<ErrorPage>(serverName + "error_page4xx")->getCodes();
+	std::set<int>	serverErrors = server->getDirective<ErrorPage>(serverName + "error_page5xx")->getCodes();
+
+	// DEFAULT VALUES FOR RESPONSE
+	res->setClientMaxBodySize(clientMaxBodySize);
+	res->setErrorPage4xx(clientErrorPage);
+	res->setErrorPage5xx(serverErrorPage);
+	res->setAvailableErrorCodes(clientErrors, serverErrors);
 
 	if (!locationExists) {
-		if (server->getDirective<Index>("index"))
-			res->setIndex(server->getDirective<Index>("index")->getFile());
-		if (server->getDirective<Autoindex>("autoindex"))
-			res->setAutoindex(server->getDirective<Autoindex>("autoindex")->getAutoindex());
-		if (server->getDirective<Root>("root"))
-			res->setRoot(server->getDirective<Root>("root")->getPath());
-		if (server->getDirective<CgiPass>("cgi_pass"))
-			res->setCgiPass(server->getDirective<CgiPass>("cgi_pass")->getPath());
-		if (server->getDirective<ServerName>("server_name"))
-			res->setServerNames(server->getDirective<ServerName>("server_name")->getNames());
-		if (server->getDirective<ClientMaxBodySize>("client_max_body_size"))
-			res->setClientMaxBodySize(server->getDirective<ClientMaxBodySize>("client_max_body_size")->getSize());
+		setServerDirectives(res, server);
 	} else {
 		Location *location = server->getDirective<Location>(locationName);
 		res->setLocationPath(location->getPath());
@@ -137,18 +172,8 @@ void	setAllValues(Response* res, Http* http, const std::string& serverName, cons
 		res->setAutoindex(location->getDirective<Autoindex>("autoindex")->getAutoindex());
 		res->setRoot(location->getDirective<Root>("root")->getPath());
 		res->setCgiPass(location->getDirective<CgiPass>("cgi_pass")->getPath());
-		// TODO search for directives if they exist
-		if (location->getDirective<ClientMaxBodySize>("client_max_body_size"))
-			res->setClientMaxBodySize(location->getDirective<ClientMaxBodySize>("client_max_body_size")->getSize());
-		if (location->getDirective<ServerName>("server_name"))
-			res->setServerNames(location->getDirective<ServerName>("server_name")->getNames());
-		if (location->getDirective<ErrorPage>(serverName + "error_page4xx"))
-			res->setErrorPage4xx(location->getDirective<ErrorPage>(serverName + "error_page4xx")->getPath());
-		if (location->getDirective<ErrorPage>(serverName + "error_page5xx"))
-			res->setErrorPage5xx(location->getDirective<ErrorPage>(serverName + "error_page5xx")->getPath());
-		if (location->getDirective<ErrorPage>(serverName + "error_page4xx") || location->getDirective<ErrorPage>(serverName + "error_page5xx"))
-			res->setAvailableErrorCodes(location->getDirective<ErrorPage>(serverName + "error_page4xx")->getCodes(),
-				location->getDirective<ErrorPage>(serverName + "error_page5xx")->getCodes());
+		// NON-DEFAULT VALUES FOR LOCATION
+		setLocationDirectives(res, location, serverName);
 	}
 	if (!res->getServerNames().empty())
 		res->addServerNamesToHosts();
