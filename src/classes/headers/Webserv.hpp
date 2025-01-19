@@ -2,6 +2,7 @@
 #define WEBSERV_HPP
 
 #include "../../../include/includes.hpp" // IWYU pragma: keep
+#include <netinet/in.h>
 
 class Client;
 

@@ -22,6 +22,7 @@
 #include <sys/wait.h>
 #include <dirent.h>
 #include <iterator>
+#include "parseUpload.hpp"
 
 # define RED "\033[1;31m"
 # define GREEN "\033[1;32m"
@@ -29,6 +30,10 @@
 # define BLUE "\033[1;34m"
 # define WHITE "\033[1;37m"
 # define RESET "\033[0m"
+
+//Size in Bytes
+#define MEGABY * 1000000
+#define GIGABY * 1000000000
 
 // GLOBAL VARIABLES
 extern int	ConfigLine;
@@ -81,6 +86,8 @@ std::string		generateDirectoryListing(const std::string& urlPath, const std::str
 void	handleRequest(Request* request, Http* http, Response* res, bool locationExists, int& statusCode);
 void	handleGet(Request* req, Response* res, bool locationExists, int& statusCode);
 void	handleDelete(Request* req, Response* res, int& statusCode);
+
+// postHandler
 bool 	isValidPostReq(int statusCode, Request* req);
 
 
@@ -95,7 +102,7 @@ bool			semicolonFound(const std::string& line);
 std::string 	int_to_string(int value);
 std::string 	to_string(char value);
 std::string		getCurrentDir();
-bool			isADirectory(const std::string& urlPath, const std::string& root);
+bool			isADirectory(const std::string urlPath, const std::string& root);
 bool			locationMatches(const std::string& urlPath, const std::string& locationPath);
 void			setAllValues(Response* res, Http* http, const std::string& serverName, const std::string& locationName, bool locationExists);
 void			printDebug(char symbol = '-', std::string content = "", std::string what = "", bool bottomLine = true);

@@ -9,9 +9,9 @@ CgiPass::~CgiPass() {}
 
 // TODO: set real paths when ready
 void	CgiPass::setDefaultCgiPaths() {
-	_cgiPaths.push_back("src/www/cgi-bin/php-cgi");
-	_cgiPaths.push_back("src/www/cgi-bin/python-cgi");
-	_cgiPaths.push_back("src/www/cgi-bin/bash-cgi");
+	_cgiPaths.push_back("src/www/static/cgi-bin/pcgi.py");
+	_cgiPaths.push_back("src/www/static/cgi-bin/echo.sh");
+	_cgiPaths.push_back("src/www/static/cgi-bin/echo_env.sh");
 }
 
 const std::vector<std::string>&	CgiPass::getPath() const {

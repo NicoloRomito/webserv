@@ -2,6 +2,7 @@
 #include <algorithm>
 #include <cstddef>
 #include <cstdio>
+#include <cstdlib>
 #include <cstring>
 #include <fcntl.h>
 #include <iterator>
@@ -43,7 +44,6 @@ char **Cgi::_createArgvPost(Request &req, Response *res)
 
 char **Cgi::_createArgvGet(Request &req, Response *res)
 {
-
 	char **argv;
 	std::string query;
 	query = req.getQuery();
@@ -96,30 +96,7 @@ char **Cgi::_createArgvGet(Request &req, Response *res)
 Cgi::Cgi(Request &request, Response *res)
 {
 	std::string absFilePath;
-
-	this->_env["AUTH_TYPE"] = "";
-	this->_env["SERVER_SOFTWARE"] = "WEBSERV";
-	this->_env["SERVER_NAME"] = "localhost";
-	this->_env["GATEWAY_INTERFACE"] = "CGI/1.1";
-	this->_env["SERVER_PROTOCOL"] = "http/1.1";
-	this->_env["SERVER_PORT"] = request.getHost().substr(request.getHost().find(':'), std::string::npos);
-	this->_env["REQUEST_METHOD"] = request.getMethod();
 	this->_cgiPath = request.getUrlPath();
-	this->_env["PATH_INFO"] = ""; // request.getPath();
-	this->_env["SCRIPT_NAME"] = request.getPath();
-	if (request.getMethod() == "POST")
-	{
-		if (request.isKeyInMap("Content-Type", request.getHeader()) &&
-			request.isKeyInMap("Content-Type", request.getHeader()))
-		{
-			this->_env["CONTENT_TYPE"] = request.getHeader("Content-Type");
-			this->_env["CONTENT_LENGTH"] = request.getHeader("Content-Length");
-		}
-	}
-	this->_env["QUERY_STRING"] = "";
-	this->_env["REMOTE_USER"] = "";
-
-	this->_env["PWD"] = getCurrentDir() + res->getRoot() + "/cgi-bin/";
 	try
 	{
 		if (request.getMethod() == "GET")
@@ -133,54 +110,57 @@ Cgi::Cgi(Request &request, Response *res)
 	}
 }
 
-std::string Cgi::getCgiPath() { return this->_cgiPath; }
-
-char **Cgi::createEnvp()
-{
-	std::vector<std::pair<std::string, std::string> > vect;
-	char **env_matrix = new char *[_env.size() + 1];
-	env_matrix[_env.size()] = 0;
-	std::string tmp;
-
-	std::copy(this->_env.begin(), this->_env.end(), std::back_inserter(vect));
-
-	for (size_t i = 0; i < _env.size(); i++)
-	{
-		tmp = (vect[i].first + "=" + vect[i].second);
-
-		env_matrix[i] = strdup(tmp.c_str());
-	}
-
-	this->_envp = env_matrix;
-
-	return (env_matrix);
+const std::string Cgi::getCgiPath() const {
+	return this->_cgiPath;
 }
 
 void Cgi::executeCgi(Response *res, Request *req, int &statusCode)
 {
-
-	pid_t pid = fork();
 	pid_t waitReturn;
-	int returnCode;
+	int returnCode = 0;
 	int cgiFd;
+        int status;
+        int timeout = 2; // Timeout in seconds
+        int elapsed = 0;
 
 	res->setPathForHtml("." + res->getRoot() + "/tmp/tmp_" + to_string(req->getClientId() + 48) + ".html");
-
 	cgiFd = open(res->getPathForHtml().c_str(), O_CREAT | O_WRONLY | O_TRUNC, S_IRUSR | S_IWUSR);
 	if (cgiFd == -1)
 		return;
-	if (pid == 0)
+	pid_t pid = fork();
+	if (pid == -1) {
+		close(cgiFd);
+		return;
+	} 
+	else if (pid == 0)
 	{
 		dup2(cgiFd, STDOUT_FILENO);
 		close(cgiFd);
-		this->createEnvp();
-		execve(this->_argv[0], this->_argv, this->_envp);
+		execve(this->_argv[0], this->_argv, __environ);
 		exit(-1);
+	} else {
+        while (elapsed < timeout) {
+            pid_t result = waitpid(pid, &status, WNOHANG);
+            if (result == 0) {
+                sleep(1);
+                elapsed++;
+            } else if (result > 0) {
+				WIFEXITED(status);
+				if (status)
+					statusCode = 500;
+                break;
+            } else {
+                perror("waitpid");
+                exit(EXIT_FAILURE);
+            }
+        }
 	}
-	waitReturn = wait(&returnCode);
-	if (waitReturn >= 0 && WIFEXITED(returnCode))
+
+	if (elapsed >= timeout)
 	{
-		if (WEXITSTATUS(returnCode) != 0)
+		kill(pid, SIGKILL);
+		waitReturn = waitpid(pid, &returnCode, 0);
+		if (waitReturn == -1)
 			statusCode = 500;
 	}
 	close(cgiFd);

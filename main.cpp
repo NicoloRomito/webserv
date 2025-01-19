@@ -150,5 +150,6 @@ int main(int ac, char **av) {
 	// }
 
 	delete http;
+	std::cout << "[SERVER MESSAGE] -> SERVER IS NOW SHUT DOWN\n";
 	return 0;
 }

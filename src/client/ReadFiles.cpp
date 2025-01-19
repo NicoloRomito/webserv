@@ -1,15 +1,23 @@
 #include "../../include/includes.hpp"
 #include "../../include/includeClasses.hpp"
+#include <string>
+
+std::string	assignErrorPage(Response *res, int statusCode) {
+	std::string code = int_to_string(statusCode);
+	if (code[0] == '4')
+		return getCurrentDir() + res->getErrorPage4xx();
+	else
+		return getCurrentDir() + res->getErrorPage5xx();
+}	
 
 void	getErrorPage(std::string& response, Response* res, int statusCode) {
 	bool			inSection = false;
 	std::ifstream	file;
 	std::string		line;
-	std::string		errorPage = getCurrentDir() + res->getErrorPage4xx();
+	std::string		errorPage = assignErrorPage(res, statusCode);
 
 	std::cout << "ERROR PAGE: " << errorPage << std::endl;
 	std::cout << "STATUS CODE: " << statusCode << std::endl;
-
 	
 	if (res->getAvailableErrorCodes().count(statusCode) > 0) {
 		file.open(errorPage.c_str());
