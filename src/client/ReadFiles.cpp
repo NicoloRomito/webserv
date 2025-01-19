@@ -25,17 +25,14 @@ void	getErrorPage(std::string& response, Response* res, int statusCode) {
 			std::cerr << "Error page not found\n";
 		}
 		while (getline(file, line)) {
-        // Check for the start of the relevant section
 			if (line.find("<!-- START " + int_to_string(statusCode) + " -->") != std::string::npos) {
 				inSection = true;
 				continue;
 			}
-			// Check for the end of the relevant section
 			if (line.find("<!-- END " + int_to_string(statusCode) + " -->") != std::string::npos) {
 				inSection = false;
 				break;
 			}
-			// Add lines within the relevant section to the response
 			if (inSection)
 				response += line + "\n";
 		}

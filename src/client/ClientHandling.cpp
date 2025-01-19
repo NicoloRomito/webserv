@@ -1,6 +1,7 @@
 #include "../../include/includes.hpp"
 #include "../../include/includeClasses.hpp"
 #include <cerrno>
+#include <cstddef>
 #include <cstring>
 #include <unistd.h>
 
@@ -72,9 +73,7 @@ std::string    generateResponse(Request* req, Response* res) {
     if (req->getUrlPath() == "/favicon.ico") {
         contentType = "image/x-icon";
     }
-		
 
-	// TODO: Add status code for redirect
 	switch (STATUS_CODE) {
 		case 200:
 			message = "OK";
@@ -112,6 +111,9 @@ std::string    generateResponse(Request* req, Response* res) {
 		case 501:
 			message = "Not Implemented";
 			break;
+		case 502:
+			message = "Bad Gateway";
+			break;
 		default:
 			break;
 	}
@@ -125,8 +127,7 @@ std::string    generateResponse(Request* req, Response* res) {
 		readHtml(index, req, res, STATUS_CODE);
 	else if (isValidPostReq(STATUS_CODE, req))
 	{
-		if (req->getUrlPath().substr(0, 9) != "/cgi-bin/")
-		{
+		if (req->getUrlPath().substr(0, 9) != "/cgi-bin/") {
 			contentType = "application/json";
 			index = res->bodyToJson();
 		}
@@ -165,6 +166,7 @@ void	lookForRequestType(Request* req, Http* http, Response* res, bool& locationE
 
 void parseMultiPartBody(std::vector<char> body, std::string header)
 {
+	// take the boundary from the header dinamically
 	int boundaryStart = header.find("boundary=") + 9;
 	int boundarySize = header.find("boundary=") + 38 - header.find("boundary=");
 	std::string boundary = "--" + header.substr(boundaryStart, boundarySize);
@@ -229,6 +231,8 @@ void	clientHandler(int& clientSocket, Http* http, std::string currServer) {
 	std::string		header;
 	int				bytesReceived = 0;
 	bool			locationExists = true;
+	// size_t			MaxBodySize = getCurrentMaxBodySize(http, currServer);
+
 
 	(void)currServer;
 	// Pick the header
@@ -259,7 +263,7 @@ void	clientHandler(int& clientSocket, Http* http, std::string currServer) {
 	{
 		int totReceived = 0;
 		int contentLength = atoi(request->getHeader("Content-Length").c_str());
-		// if (contentLength > http->getDirective<Server>("server" + int_to_string(1)))
+		if (contentLength > http->getDirective<Server>(currServer))
 		std::vector<char> body(contentLength);
 		while (totReceived < contentLength) {
         	int bytes_received = recv(clientSocket, body.data() + totReceived, contentLength - totReceived, 0);        	

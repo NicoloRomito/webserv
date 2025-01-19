@@ -48,6 +48,15 @@ void ErrorPage::addErrorCode(const std::string& code) {
 			case 404:
 				_codes.insert(404);
 				break;
+			case 405:
+				_codes.insert(405);
+				break;
+			case 413:
+				_codes.insert(413);
+				break;
+			case 422:
+				_codes.insert(422);
+				break;
 			default:
 				throw Errors::InvalidErrorCode("Invalid error code", ConfigLine, __FILE__);
 		}
@@ -55,6 +64,9 @@ void ErrorPage::addErrorCode(const std::string& code) {
 		switch (errorCode) {
 			case 500:
 				_codes.insert(500);
+				break;
+			case 501:
+				_codes.insert(501);
 				break;
 			case 502:
 				_codes.insert(502);
