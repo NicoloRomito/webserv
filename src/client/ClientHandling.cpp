@@ -159,13 +159,14 @@ void	lookForRequestType(Request* req, Http* http, Response* res, bool& locationE
 	setAllValues(res, http, serverName, locationName, locationExists);
 }
 
-void	clientHandler(int& clientSocket, Http* http) {
+void	clientHandler(int& clientSocket, Http* http, std::string currServer) {
 	bool		locationExists = true;
 	char		buffer[8192] = {0};
 	Request		*request = new Request();
 	Response	*res = new Response();
 	std::string	response;
 
+	std::cout << "serveeeeeeeeeer: " << currServer << '\n';
 	// Receive data from the client
 	int bytesReceived = recv(clientSocket, buffer, sizeof(buffer), 0);
 	if (bytesReceived <= 0) {

@@ -10,7 +10,8 @@ DIRECTIVES_DIR = src/DirectivesCpp/
 CGI_DIR = src/cgi/
 
 CLIENT_FILES = ClientHandling.cpp ReadFiles.cpp RequestHandler.cpp postHandler.cpp
-FILES = init/init.cpp utils/errorMsg.cpp classes/logic/Request.cpp classes/logic/Response.cpp classes/logic/PostFile.cpp
+FILES = init/init.cpp utils/errorMsg.cpp classes/logic/Request.cpp classes/logic/Response.cpp classes/logic/PostFile.cpp \
+		classes/logic/Webserv.cpp
 MAIN = main.cpp
 UTILS_FILES = utils.cpp
 ERRORS_FILES = Errors.cpp
