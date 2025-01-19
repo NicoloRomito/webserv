@@ -5,7 +5,8 @@ CONFIG_FILE = config/webserv.conf
 SRC_DIR = src/
 CLIENT_DIR = src/client/
 ERRORS_DIR = src/utils/
-PARSING_DIR = src/parsing/configParsing/
+PARSING_CONF_DIR = src/parsing/configParsing/
+PARSING_DIR = src/parsing/
 DIRECTIVES_DIR = src/DirectivesCpp/
 CGI_DIR = src/cgi/
 
@@ -14,7 +15,8 @@ FILES = init/init.cpp utils/errorMsg.cpp classes/logic/Request.cpp classes/logic
 MAIN = main.cpp
 UTILS_FILES = utils.cpp
 ERRORS_FILES = Errors.cpp
-PARSING_FILES = config.cpp parsing.cpp
+PARSING_CONF_FILES = config.cpp parsing.cpp
+PARSING_FILES = parseUpload.cpp
 DIRECTIVES_FILES = Autoindex.cpp ErrorPage.cpp Index.cpp CgiPass.cpp \
 					Location.cpp ClientMaxBodySize.cpp Root.cpp Server.cpp \
 					Http.cpp Listen.cpp ServerName.cpp 
@@ -25,6 +27,7 @@ SRC = $(addprefix $(SRC_DIR), $(FILES))
 CLIENT = $(addprefix $(CLIENT_DIR), $(CLIENT_FILES))
 UTILS = $(addprefix $(ERRORS_DIR), $(UTILS_FILES))
 ERRORS = $(addprefix $(ERRORS_DIR), $(ERRORS_FILES))
+PARSING_CONF = $(addprefix $(PARSING_CONF_DIR), $(PARSING_CONF_FILES))
 PARSING = $(addprefix $(PARSING_DIR), $(PARSING_FILES))
 DIRECTIVES = $(addprefix $(DIRECTIVES_DIR), $(DIRECTIVES_FILES))
 CGI = $(addprefix $(CGI_DIR), $(CGI_FILES))
@@ -40,7 +43,7 @@ C98 = -std=c++98
 all: $(NAME)
 
 $(NAME): $(MAIN) $(SRC) $(CLIENT) $(UTILS) $(ERRORS) $(PARSING) $(DIRECTIVES) $(CGI)
-	$(CPP) $(CFLAGS) $(C98) $(MAIN) $(SRC) $(CLIENT) $(UTILS) $(ERRORS) $(PARSING) $(DIRECTIVES) $(CGI) -o $(NAME)
+	$(CPP) $(CFLAGS) $(C98) $(MAIN) $(SRC) $(CLIENT) $(UTILS) $(ERRORS) $(PARSING_CONF) $(PARSING) $(DIRECTIVES) $(CGI) -o $(NAME)
 	@clear
 	@echo "Compilation complete."
 

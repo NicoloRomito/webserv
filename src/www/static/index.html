@@ -71,7 +71,7 @@
 <body>
     <div class="container">
         <h1>Webserver</h1>
-        <form action="/" method="POST" id="form">
+        <form action="/" method="POST" id="form" enctype="multipart/form-data">
             <label for="file-upload">Choose a file</label>
             <input id="file-upload" type="file" name="file" onchange="updateFileName()">
             <div id="file-name">No file chosen</div>

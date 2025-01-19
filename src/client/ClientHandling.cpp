@@ -185,23 +185,25 @@ void parseMultiPartBody(std::vector<char> body, std::string header) {
         // Extract the part (from partStart to partEnd)
         std::string part = bodyStr.substr(partStart, partEnd - partStart);
 
-		fileName = part.substr(part.find("filename=\"") + 9, part.find("\"", part.find("filename=\"") + 9 - part.find("filename=\"") + 9));
-		fileType = part.substr(part.find("Content-Type: ") + 14, part.find("\r\n", part.find("Content-Type: ") + 14 - part.find("Content-Type: ") + 14));
-		printDebug('a', fileName + " " + fileType);
+		fileName = parseFilename(part);
+		fileType = parseFileType(part);
+		printDebug('a', fileName);
+		printDebug('b', fileType);
 
 		std::string toSub = part.substr(0, part.find("\r\n\r\n", 4) + 4);
 		part = part.substr(toSub.length(), part.length());
 
 
-        // Here, you need to parse the part headers (e.g., Content-Disposition)
-        // Extract filename and content here
-        // For example, you can save the file:
-        std::ofstream ofs(fileName.c_str(), std::ios::binary);
-        ofs.write(part.c_str(), part.size() - 2); // Write the file content
-		if (ofs.fail())
-			std::cout << "\n" << strerror(errno) << "\n";
-		ofs.close();
-		break;
+		std::ofstream *ofs;
+		if (fileType.find("image"))
+        	ofs = new std::ofstream(fileName.c_str(), std::ios::binary);
+        else 
+			ofs = new std::ofstream(fileName.c_str());
+		ofs->write(part.c_str(), part.size() - 2); // Write the file content
+		if (ofs->fail())
+			std::cout << "\n [UPLOAD] -> " << strerror(errno) << "\n";
+		ofs->close();
+		delete ofs;
         // Continue to the next part
         pos = partEnd;
     }
