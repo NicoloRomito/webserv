@@ -197,14 +197,26 @@ void parseMultiPartBody(std::vector<char> body, std::string header)
 		std::string toSub = part.substr(0, part.find("\r\n\r\n", 4) + 4);
 		part = part.substr(toSub.length(), part.length());
 
-        std::ofstream fileUploaded(fileName.c_str(), std::ios::binary);
-		if (!fileUploaded.is_open())
-			std::cout << "Error: Failed to create file\n";
-        fileUploaded.write(part.c_str(), part.size() - 2); // Write the file content
-		if (fileUploaded.fail())
-			std::cout << "\n" << strerror(errno) << "\n";
-		fileUploaded.close();
-		break;
+        // std::ofstream fileUploaded(fileName.c_str(), std::ios::binary);
+		// if (!fileUploaded.is_open())
+		// 	std::cout << "Error: Failed to create file\n";
+        // fileUploaded.write(part.c_str(), part.size() - 2); // Write the file content
+		// if (fileUploaded.fail())
+		// 	std::cout << "\n" << strerror(errno) << "\n";
+		// fileUploaded.close();
+		// break;
+
+		std::ofstream *ofs;
+		if (fileType.find("image"))
+        	ofs = new std::ofstream(fileName.c_str(), std::ios::binary);
+        else 
+			ofs = new std::ofstream(fileName.c_str());
+		ofs->write(part.c_str(), part.size() - 2); // Write the file content
+		if (ofs->fail())
+			std::cout << "\n [UPLOAD] -> " << strerror(errno) << "\n";
+		ofs->close();
+		delete ofs;
+        // Continue to the next part
         pos = partEnd;
     }
 	// TODO: handle multiple content type with the cgi, not only the text/html
