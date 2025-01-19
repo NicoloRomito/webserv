@@ -3,87 +3,90 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Webserver</title>
+    <title>Webserver Home</title>
     <style>
         body {
             margin: 0;
-            font-family: Arial, sans-serif;
-            background: #2a5298;
+            font-family: 'Roboto', sans-serif;
+            background: radial-gradient(circle, #3a1c71, #d76d77, #ffaf7b);
             color: #fff;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
+            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
         }
 
         .container {
             text-align: center;
-            background: rgba(0, 0, 0, 0.6);
-            padding: 20px;
-            border-radius: 10px;
-            width: 300px;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+            max-width: 600px;
+            width: 90%;
+            backdrop-filter: blur(10px);
         }
 
         h1 {
-            font-size: 2rem;
-            color: #ffcc00;
-            margin-bottom: 15px;
+            font-size: 3rem;
+            margin-bottom: 20px;
+            color: #ffe4b5;
         }
 
-        label, button {
-            display: block;
-            margin: 15px auto;
-            padding: 10px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 1rem;
+        p {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+            color: #f3e5ab;
         }
 
-        label {
-            background: #ffcc00;
-            color: #000;
-        }
-
-        label:hover {
-            background: #ff9900;
-        }
-
-        button {
-            background: #4caf50;
+        a {
+            display: inline-block;
+            text-decoration: none;
+            background: linear-gradient(90deg, #6a11cb, #2575fc);
             color: #fff;
+            padding: 12px 25px;
+            margin: 10px;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: bold;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
         }
 
-        button:hover {
-            background: #45a049;
+        a:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
         }
 
-        input[type="file"] {
-            display: none;
-        }
-
-        #file-name {
+        footer {
+            margin-top: 20px;
             font-size: 0.9rem;
-            color: #ccc;
+            color: #eee;
+        }
+
+        footer a {
+            color: #ffaf7b;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>Webserver</h1>
-        <form action="/" method="POST" id="form">
-            <label for="file-upload">Choose a file</label>
-            <input id="file-upload" type="file" name="file" onchange="updateFileName()">
-            <div id="file-name">No file chosen</div>
-            <button type="submit">Upload</button>
-        </form>
+        <h1>Welcome to My Webserver</h1>
+        <p>Choose a feature to test the server's functionalities:</p>
+        <a href="upload.html">File Upload Test</a>
+        <a href="redirect">Redirect Test</a>
+        <a href="cgi-bin/bashScript.sh">CGI Test: bashScript.sh</a>
+        <a href="cgi-bin/cgi.py">CGI Test: cgi.py</a>
+        <footer>
+            &copy; 2025 <a href="#">My Webserver</a>. All rights reserved.
+        </footer>
     </div>
-    <script>
-        function updateFileName() {
-            const fileInput = document.getElementById('file-upload');
-            const fileName = fileInput.files[0] ? fileInput.files[0].name : "No file chosen";
-            document.getElementById('file-name').textContent = fileName;
-        }
-    </script>
 </body>
 </html>

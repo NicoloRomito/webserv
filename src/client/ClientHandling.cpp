@@ -163,12 +163,12 @@ void	lookForRequestType(Request* req, Http* http, Response* res, bool& locationE
 	setAllValues(res, http, serverName, locationName, locationExists);
 }
 
-void parseMultiPartBody(std::vector<char> body, std::string header) {
-
-	std::string boundary = header.substr(header.find("boundary=") + 9,
-	header.find("boundary=") + 38 - header.find("boundary="));
+void parseMultiPartBody(std::vector<char> body, std::string header)
+{
+	int boundaryStart = header.find("boundary=") + 9;
+	int boundarySize = header.find("boundary=") + 38 - header.find("boundary=");
+	std::string boundary = "--" + header.substr(boundaryStart, boundarySize);
     // Now parse the body for parts
-	boundary = "--" + boundary;
     std::string bodyStr(body.begin(), body.end());
 	std::string fileName, filePath, fileType; 
     size_t pos = 0;
@@ -181,30 +181,33 @@ void parseMultiPartBody(std::vector<char> body, std::string header) {
         if (partEnd == std::string::npos) {
             break; // No more parts, we're at the end
         }
-
         // Extract the part (from partStart to partEnd)
         std::string part = bodyStr.substr(partStart, partEnd - partStart);
 
-		fileName = part.substr(part.find("filename=\"") + 9, part.find("\"", part.find("filename=\"") + 9 - part.find("filename=\"") + 9));
-		fileType = part.substr(part.find("Content-Type: ") + 14, part.find("\r\n", part.find("Content-Type: ") + 14 - part.find("Content-Type: ") + 14));
-		printDebug('a', fileName + " " + fileType);
+		int nameStart = part.find("filename=\"") + 9;
+		int namSize = part.find("\"", nameStart - nameStart);
+		int contentStart = part.find("Content-Type: ") + 14;
+		int	contentSize = part.find("\r\n", contentStart - contentStart);
+		fileName = part.substr(nameStart, namSize);
+		fileType = part.substr(contentStart, contentSize);
+
+		std::cout << "File name: " << fileName << std::endl;
+		std::cout << "File type: " << fileType << std::endl;
 
 		std::string toSub = part.substr(0, part.find("\r\n\r\n", 4) + 4);
 		part = part.substr(toSub.length(), part.length());
 
-
-        // Here, you need to parse the part headers (e.g., Content-Disposition)
-        // Extract filename and content here
-        // For example, you can save the file:
-        std::ofstream ofs(fileName.c_str(), std::ios::binary);
-        ofs.write(part.c_str(), part.size() - 2); // Write the file content
-		if (ofs.fail())
+        std::ofstream fileUploaded(fileName.c_str(), std::ios::binary);
+		if (!fileUploaded.is_open())
+			std::cout << "Error: Failed to create file\n";
+        fileUploaded.write(part.c_str(), part.size() - 2); // Write the file content
+		if (fileUploaded.fail())
 			std::cout << "\n" << strerror(errno) << "\n";
-		ofs.close();
+		fileUploaded.close();
 		break;
-        // Continue to the next part
         pos = partEnd;
     }
+	// TODO: handle multiple content type with the cgi, not only the text/html
 }
 
 void	clientHandler(int& clientSocket, Http* http) {
@@ -250,8 +253,6 @@ void	clientHandler(int& clientSocket, Http* http) {
 			if (bytes_received <= 0) {
 				if (bytes_received == 0)
 					std::cout << "Client disconnected." << std::endl;
-				// else
-				// 	std::cerr << "Error receiving data: " << strerror(errno) << std::endl;
 				close(clientSocket);
 				clientSocket = -1;
 				delete res;
@@ -264,7 +265,7 @@ void	clientHandler(int& clientSocket, Http* http) {
 		if (std::string(header).find("multipart/form-data;") != std::string::npos)
 			parseMultiPartBody(body, header);
 		else {
-			std::string query = body.data(); 
+			std::string query = body.data();
 			request->setQuery(query.substr(0, contentLength));
 		}
 	}
@@ -272,14 +273,11 @@ void	clientHandler(int& clientSocket, Http* http) {
 	request->setClientId(clientSocket);
 	lookForRequestType(request, http, res, locationExists);
 	handleRequest(request, http, res, locationExists, STATUS_CODE);
-
 	// Send the response to the client
-	if (send(clientSocket, res->getResponse().c_str(), res->getResponse().size(), MSG_CONFIRM) <= 0) // needs a check with throw error
+	if (send(clientSocket, res->getResponse().c_str(), res->getResponse().size(), MSG_CONFIRM) <= 0)
 	{
 		if (bytesReceived == 0)
-			std::cout << "Error: " << strerror(errno) << std::endl;
-		else
-			std::cerr << "Error sending data: " << strerror(errno) << std::endl;
+			std::cout << "Error: client disconnected\n";
 		close(clientSocket);
 		clientSocket = -1;
 		usleep(3);
