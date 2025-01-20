@@ -1,7 +1,6 @@
 #include "../headers/Webserv.hpp"
-#include "../../../include/Directives/Server.hpp" // IWYU pragma: keep
-#include "../../../include/Directives/Http.hpp"
-#include "../../../include/Directives/Listen.hpp"
+#include "../../../include/includes.hpp"
+#include "../../../include/includeClasses.hpp" // IWYU pragma: keep
 #include <csignal>
 #include <cstdio>
 #include <netinet/in.h>
@@ -84,7 +83,7 @@ void Webserv::runSocket() {
             curr.sin_addr.s_addr = htonl(INADDR_ANY);  // Bind to any address
             if (bind(serverSocket[currSocket], (struct sockaddr*)&curr, sizeof(curr)) < 0) {
                 // error("Binding Failed");
-                perror("porcodio");
+                perror("Error: ");
                 close(serverSocket[currSocket]);
             }
 			this->listenMap[serverSocket[currSocket]] = "server" + int_to_string(i + 1);
@@ -164,7 +163,6 @@ void Webserv::run() {
 			if (pollFds[i].revents & POLLIN || pollFds[i].revents & POLLOUT) {
 				// DEBUG: Log activity
 				std::cout << "Handling client socket: " << pollFds[i].fd << std::endl;
-
 				clientHandler(pollFds[i].fd, http, currServer);
 				if (pollFds[i].fd == -1) {
 					pollFds.erase(pollFds.begin() + i);
@@ -183,6 +181,7 @@ void Webserv::run() {
 	}
 
 	// * Cleanup
+
 	std::cout << "pollfds = " << pollFds.size() << std::endl;
 	for (size_t i = 0; i < pollFds.size(); i++) {
 		if (pollFds[i].fd != -1)

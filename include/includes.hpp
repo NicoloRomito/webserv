@@ -56,6 +56,7 @@ class CgiPass;
 
 class Request;
 class Response;
+class Client;
 
 enum	DirectiveType {
 	HTTP,

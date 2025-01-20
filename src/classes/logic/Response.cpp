@@ -63,9 +63,8 @@ void Response::addServerNamesToHosts() {
 
 	std::vector<std::string>	fileLines;
 	std::string					line;
-	while (std::getline(fileIn, line)) {
+	while (std::getline(fileIn, line))
 		fileLines.push_back(line);
-	}
 	fileIn.close();
 
 	std::string cp = fileLines[0];

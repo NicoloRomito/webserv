@@ -2,6 +2,7 @@
 #include "../../include/includeClasses.hpp"
 #include <cerrno>
 #include <cstddef>
+#include <cstdlib>
 #include <cstring>
 #include <unistd.h>
 
@@ -221,84 +222,72 @@ void parseMultiPartBody(std::vector<char> body, std::string header)
         // Continue to the next part
         pos = partEnd;
     }
-	// TODO: handle multiple content type with the cgi, not only the text/html
+}
+
+void	deleteAndSleep(Client *client, Request *request, Response *res) {
+	client->closeSocket();
+	delete client;
+	delete request;
+	delete res;
+	usleep(3);
+}
+
+size_t	getCurrentMaxBodySize(Http* http, std::string currServer) {
+	if (http->getDirective<Server>(currServer)->getDirective<ClientMaxBodySize>("client_max_body_size"))
+		return http->getDirective<Server>(currServer)->getDirective<ClientMaxBodySize>("client_max_body_size")->getSize();
+	else
+		return http->getDirective<Http>("http")->getDirective<ClientMaxBodySize>("client_max_body_size")->getSize();
 }
 
 void	clientHandler(int& clientSocket, Http* http, std::string currServer) {
+	Client			*client = new Client(clientSocket);
 	Request			*request = new Request();
 	Response		*res = new Response();
-	char			buffer[1];
-	std::string		header;
-	int				bytesReceived = 0;
 	bool			locationExists = true;
-	// size_t			MaxBodySize = getCurrentMaxBodySize(http, currServer);
+	size_t			MaxBodySize = getCurrentMaxBodySize(http, currServer);
 
 
 	(void)currServer;
 	// Pick the header
-	int totalBytes = 0;
-	while (1) {
-		bytesReceived = recv(clientSocket, buffer, 1, 0);
-		if (bytesReceived <= 0)
-		{
-			if (bytesReceived == 0)
-				std::cout << "Client disconnected." << std::endl;
-			else
-				std::cerr << "Error receiving data: " << strerror(errno) << std::endl;
-			close(clientSocket);
-			clientSocket = -1;
-			delete res;
-			delete request;
-			usleep(3);
+	if (client->readHeader() == -1) {
+		deleteAndSleep(client, request, res);
+		return;
+	}
+	request->parseRequest(client->getHeader());
+	// TODO: check methods allowed
+
+	if (client->getHeader().find("Content-Length: ") != std::string::npos)
+		client->setContentLength(atoll(request->getHeader("Content-Length").c_str()));
+
+	if (client->getHeader().find("Content-Type: ") != std::string::npos) {
+		if (client->readBody() == -1) {
+			deleteAndSleep(client, request, res);
 			return;
 		}
-		totalBytes += bytesReceived; 
-		header += buffer[0];
-		if (header.find("\r\n\r\n") != std::string::npos)
-			break;
-	}
-	request->parseRequest(header);
-	// Pick the body if it exists
-	if (std::string(header).find("Content-Type: ") != std::string::npos)
-	{
-		int totReceived = 0;
-		int contentLength = atoi(request->getHeader("Content-Length").c_str());
-		if (contentLength > http->getDirective<Server>(currServer))
-		std::vector<char> body(contentLength);
-		while (totReceived < contentLength) {
-        	int bytes_received = recv(clientSocket, body.data() + totReceived, contentLength - totReceived, 0);        	
-			if (bytes_received <= 0) {
-				if (bytes_received == 0)
-					std::cout << "Client disconnected." << std::endl;
-				close(clientSocket);
-				clientSocket = -1;
-				delete res;
-				delete request;
-				usleep(3);
-				return;
-        	}
-        	totReceived += bytes_received;
-    	}
-		if (std::string(header).find("multipart/form-data;") != std::string::npos)
-			parseMultiPartBody(body, header);
+		if (client->getHeader().find("multipart/form-data;") != std::string::npos)
+			parseMultiPartBody(client->getBody(), client->getHeader());
 		else {
-			std::string query = body.data();
-			request->setQuery(query.substr(0, contentLength));
+			std::string query = client->getBody().data();
+			request->setQuery(query.substr(0, client->getContentLength()));
 		}
 	}
 
-	request->setClientId(clientSocket);
-	lookForRequestType(request, http, res, locationExists);
-	handleRequest(request, http, res, locationExists, STATUS_CODE);
+	request->setClientId(client->getSocket());
+	if (client->getContentLength() > MaxBodySize) {
+		STATUS_CODE = 413;
+		res->setResponse(generateResponse(request, res));
+	} else {
+		lookForRequestType(request, http, res, locationExists);
+		handleRequest(request, http, res, locationExists, STATUS_CODE);
+	}
 	// Send the response to the client
-	if (send(clientSocket, res->getResponse().c_str(), res->getResponse().size(), MSG_CONFIRM) <= 0)
+	if (send(client->getSocket(), res->getResponse().c_str(), res->getResponse().size(), MSG_CONFIRM) <= 0)
 	{
-		if (bytesReceived == 0)
-			std::cout << "Error: client disconnected\n";
-		close(clientSocket);
-		clientSocket = -1;
+		std::cout << "Error: client disconnected\n";
+		client->closeSocket();
 		usleep(3);
 	}
+	delete client;
 	delete request;
 	delete res;
 }
