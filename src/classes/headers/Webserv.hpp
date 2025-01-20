@@ -8,19 +8,20 @@ class Client;
 
 class Webserv {
 	private:
-		int						serverN;
-		std::vector<pollfd>		pollFds;
-		std::vector<int> 		serverSocket;
-		std::vector<sockaddr_in> serverAddress;
-
+		int							portN;
+		int							option;
+		Http						*http;
+		std::vector<pollfd>			pollFds;
+		std::vector<int>			serverSocket;
+		std::vector<sockaddr_in>	serverAddress;
+		std::map<int, std::string>	listenMap;
 	public:
 		Webserv();
-		void initSocket(void);
-		void socketOption(int option);
-		void runSocket(Http *http);
+		void init(Http *http);
+		void initSocket();
+		void socketOption();
+		void runSocket();
 		void run();
 };
-
-void	getErrorPage(std::string& response, Response* res);
 
 #endif

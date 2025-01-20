@@ -65,7 +65,7 @@
 <body>
     <div class="container">
         <h1>Upload Your File</h1>
-        <form action="/cgi-bin/handle_upload.py" method="POST" enctype="text/html">
+        <form action="/cgi-bin/handle_upload.py" method="POST" enctype="multipart/form-data">
             <input type="file" id="myFile" name="filename">
             <input type="submit" value="Upload">
         </form>
