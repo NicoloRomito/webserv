@@ -2,12 +2,12 @@
 #include "../../include/includeClasses.hpp"
 #include <unistd.h>
 
-void	handleRequest(Request* request, Http* http, Response* res, bool locationExists, int& statusCode) {
+void	handleRequest(Request* request, Http* http, Response* res, bool locationExists, int& statusCode, Upload *upload) {
 	(void)http;
 	if (request->getMethod() == "GET") {
 		handleGet(request, res, locationExists, statusCode);
 	} else if (request->getMethod() == "POST") {
-		handlePost(request, res, statusCode);
+		handlePost(request, res, statusCode, upload);
 	} else if (request->getMethod() == "DELETE") {
 		handleDelete(request, res, statusCode);
 	} else {

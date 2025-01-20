@@ -7,7 +7,9 @@ bool checkPostReqErrors(Request* req, Response* res, int& statusCode)
 {
 	//CONTENT-TYPE
 	if (!req->isKeyInMap("Content-Type", req->getHeader()) ||
-	(req->getHeader("Content-Type") != " application/json" && req->getHeader("Content-Type") != " application/x-www-form-urlencoded"))
+	(req->getHeader("Content-Type") != " application/json" && 
+	req->getHeader("Content-Type") != " application/x-www-form-urlencoded" &&
+	req->getHeader("Content-Type").find("multipart/form-data;") == std::string::npos))
 	{
 		statusCode = 501;
 		res->setResponse(generateResponse(req, res));
@@ -15,7 +17,8 @@ bool checkPostReqErrors(Request* req, Response* res, int& statusCode)
 	}
 
 	//EMPTY QUERY
-	if (req->getQuery() == "")
+	if (req->getQuery() == "" && 
+		req->getHeader("Content-Type").find("multipart/form-data;") == std::string::npos)
 	{
 		statusCode = 400;
 		res->setResponse(generateResponse(req, res));
@@ -25,7 +28,6 @@ bool checkPostReqErrors(Request* req, Response* res, int& statusCode)
 	//BODY EXCEEDS LIMIT
 	if (req->getQuery().length() > res->getClientMaxBodySize())
 	{
-		printDebug('-', int_to_string(req->getQuery().length()));
 		statusCode = 413;
 		res->setResponse(generateResponse(req, res));
 		return true;

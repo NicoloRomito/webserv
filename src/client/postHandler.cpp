@@ -76,9 +76,33 @@ void setResponseBodyForEntries(Request* req, Response* res, int &statusCode)
 	res->setBody(resBody);
 }
 
+void	uploadResponse(Response* res, Upload* up, int& statusCode)
+{
+	std::map<std::string, std::string> resBody;
+	std::string status = up->getStatus();
 
+	statusCode = 500;
 
-void	handlePost(Request* req, Response* res, int & statusCode) {
+	resBody.insert(std::pair<std::string, std::string>(
+		"operation", "\"" + up->getOperation() + "\""
+	));
+	resBody.insert(std::pair<std::string, std::string>(
+		"status", "\"" + up->getStatus() + "\""
+	));
+	if (up->getStatus() == "success") 
+	{
+		statusCode = 201;
+		resBody.insert(std::pair<std::string, std::string>(
+			"fileName", "\"" + up->getFilename() + "\""
+		));
+		resBody.insert(std::pair<std::string, std::string>(
+			"fileType", "\"" + up->getFiletype() + "\""
+		));
+	}	
+	res->setBody(resBody);
+}
+
+void	handlePost(Request* req, Response* res, int & statusCode, Upload* up) {
 
 	std::string filePath;
 
@@ -89,10 +113,10 @@ void	handlePost(Request* req, Response* res, int & statusCode) {
 
 	setRequestBody(req, statusCode);
 
+	std::cout << "\n AAAAAAAAAAAAAAAAAAAAA\n" << statusCode << "\n AAAAAAAAAAAAAAAAAAAAA\n";
 	if (statusCode != 200)
 		return ;
 
-	printDebug('*', req->getUrlPath().substr(0, 8));
 	if (req->getUrlPath().substr(0, 8) == "/entries")
 	{
 		if (checkforPostEntryErrors(req, res, statusCode))
@@ -115,11 +139,12 @@ void	handlePost(Request* req, Response* res, int & statusCode) {
 			return;
 		}
 	}	
-	else if (req->getUrlPath().substr(0, 9) == "/cgi-bin/" && 
-				req->getUrlPath() != "/cgi-bin/")
+	else if (req->getUrlPath().substr(0, 9) == "/cgi-bin/" && req->getUrlPath() != "/cgi-bin/")
 	{
 		if (checkForCgiBodyErrors(req, res, statusCode))
 			return ;
+	} else if (req->getUrlPath().substr(0, 8) == "/upload") {
+		uploadResponse(res, up, statusCode);
 	} else {
 		statusCode = 404;
 	}

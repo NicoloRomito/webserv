@@ -57,6 +57,7 @@ class CgiPass;
 class Request;
 class Response;
 class Client;
+class Upload;
 
 enum	DirectiveType {
 	HTTP,
@@ -84,7 +85,7 @@ std::string		generateResponse(Request* req, Response* res);
 std::string		generateDirectoryListing(const std::string& urlPath, const std::string& root, Response* res);
 
 // RequestHandler
-void	handleRequest(Request* request, Http* http, Response* res, bool locationExists, int& statusCode);
+void	handleRequest(Request* request, Http* http, Response* res, bool locationExists, int& statusCode, Upload *up);
 void	handleGet(Request* req, Response* res, bool locationExists, int& statusCode);
 void	handleDelete(Request* req, Response* res, int& statusCode);
 

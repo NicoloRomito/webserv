@@ -31,19 +31,37 @@ int	Client::readHeader()
 	return 1;
 }
 
-int	Client::readBody() {
+int	Client::readBody(bool isMultipart) {
 	size_t totReceived = 0;
 	std::vector<char> body(_contentLength);
+	int cycle = 0;
+
 	while (totReceived < _contentLength) {
-    	int bytes_received = recv(_socket, body.data() + totReceived, _contentLength - totReceived, 0);        	
+    	int bytes_received = recv(_socket, body.data() + totReceived, _contentLength - totReceived, MSG_WAITALL);
 		if (bytes_received <= 0) {
-			if (bytes_received == 0)
-				std::cout << "Client disconnected." << std::endl;
-			else
-				std::cerr << "Error receiving data\n";
-			return -1;
+			if (isMultipart)
+			{
+				if (bytes_received == 0)
+				{
+					std::cout << "Client disconnected." << std::endl;
+					return -1;
+				}
+				else if (cycle < 1 || cycle > 40000 || totReceived >= _contentLength)  //hard cap ~8mb
+				{
+					std::cerr << "Error receiving data\n";
+					return -1;
+				}
+			} else {
+				if (bytes_received == 0)
+					std::cout << "Client disconnected." << std::endl;
+				else
+					std::cerr << "Error receiving data\n";
+				return -1;
+			}
     	}
-    	totReceived += bytes_received;
+		if (bytes_received != -1)
+    		totReceived += bytes_received;
+		cycle++;
     }
 	_body = body;
 	return 1;
