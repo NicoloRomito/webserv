@@ -87,7 +87,17 @@ void	handleGet(Request* req, Response* res, bool locationExists, int& statusCode
 void	handleDelete(Request* req, Response* res, int& statusCode);
 
 // postHandler
-bool 	isValidPostReq(int statusCode, Request* req);
+bool 			isValidPostReq(int statusCode, Request* req);
+void			setRequestBody(Request* req, int & statusCode);
+void			formatError(int &statusCode, std::string encoding);
+std::string 	trimQuotes(std::string target);
+std::string 	trimSpaces(std::string target);
+bool 			checkPostReqErrors(Request* req, Response* res, int& statusCode);
+bool 			checkforPostEntryErrors(Request* req, Response* res, int& statusCode);
+bool 			checkForCgiBodyErrors(Request* req, Response* res, int& statusCode);
+void 			formatError(int &statusCode, std::string encoding);
+
+
 
 
 // errors

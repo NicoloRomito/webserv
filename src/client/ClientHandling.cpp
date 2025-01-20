@@ -163,7 +163,7 @@ void	lookForRequestType(Request* req, Http* http, Response* res, bool& locationE
 	setAllValues(res, http, serverName, locationName, locationExists);
 }
 
-void parseMultiPartBody(std::vector<char> body, std::string header)
+void parseMultiPartBody(std::vector<char> body, std::string header, Response* res)
 {
 	int boundaryStart = header.find("boundary=") + 9;
 	int boundarySize = header.find("boundary=") + 38 - header.find("boundary=");
@@ -184,12 +184,8 @@ void parseMultiPartBody(std::vector<char> body, std::string header)
         // Extract the part (from partStart to partEnd)
         std::string part = bodyStr.substr(partStart, partEnd - partStart);
 
-		int nameStart = part.find("filename=\"") + 9;
-		int namSize = part.find("\"", nameStart - nameStart);
-		int contentStart = part.find("Content-Type: ") + 14;
-		int	contentSize = part.find("\r\n", contentStart - contentStart);
-		fileName = part.substr(nameStart, namSize);
-		fileType = part.substr(contentStart, contentSize);
+		fileName = parseFilename(part);
+		fileType = parseFileType(part);
 
 		std::cout << "File name: " << fileName << std::endl;
 		std::cout << "File type: " << fileType << std::endl;
@@ -197,17 +193,10 @@ void parseMultiPartBody(std::vector<char> body, std::string header)
 		std::string toSub = part.substr(0, part.find("\r\n\r\n", 4) + 4);
 		part = part.substr(toSub.length(), part.length());
 
-        // std::ofstream fileUploaded(fileName.c_str(), std::ios::binary);
-		// if (!fileUploaded.is_open())
-		// 	std::cout << "Error: Failed to create file\n";
-        // fileUploaded.write(part.c_str(), part.size() - 2); // Write the file content
-		// if (fileUploaded.fail())
-		// 	std::cout << "\n" << strerror(errno) << "\n";
-		// fileUploaded.close();
-		// break;
+		fileName = res->getRoot() + "/uploads/" + fileName;
 
 		std::ofstream *ofs;
-		if (fileType.find("image"))
+		if (fileType.find("image") || fileType.find("pdf"))
         	ofs = new std::ofstream(fileName.c_str(), std::ios::binary);
         else 
 			ofs = new std::ofstream(fileName.c_str());
@@ -219,7 +208,6 @@ void parseMultiPartBody(std::vector<char> body, std::string header)
         // Continue to the next part
         pos = partEnd;
     }
-	// TODO: handle multiple content type with the cgi, not only the text/html
 }
 
 void	clientHandler(int& clientSocket, Http* http) {
@@ -275,7 +263,7 @@ void	clientHandler(int& clientSocket, Http* http) {
         	totReceived += bytes_received;
     	}
 		if (std::string(header).find("multipart/form-data;") != std::string::npos)
-			parseMultiPartBody(body, header);
+			parseMultiPartBody(body, header, res);
 		else {
 			std::string query = body.data();
 			request->setQuery(query.substr(0, contentLength));
