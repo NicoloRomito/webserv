@@ -1,5 +1,5 @@
 #include "../../include/includes.hpp"
-#include "../../include/includeClasses.hpp"
+#include "../../include/includeClasses.hpp" // IWYU pragma: keep
 #include <cerrno>
 #include <cstddef>
 #include <cstdlib>
@@ -58,9 +58,16 @@ std::string	generateDirectoryListing(const std::string& urlPath, const std::stri
 	return response.str();
 }
 
-void redirectingUrl(std::string index) {
-	index += "";
-	// index += "location: http://localhost:8080/redirect.html";
+void redirectingUrl(std::string& index, Request* req, Response* res, std::string& response) {
+	std::cout << STATUS_CODE << std::endl;
+	if (STATUS_CODE == 301) {
+		std::string uri = req->getUri().substr(0, req->getUri().size() - req->getUrlPath().size());
+		std::cout << "URI: " << uri << std::endl;
+		response += "Location: " + uri + res->getRewriteReplacement() + "\r\n";
+	}
+	else if (STATUS_CODE == 307)
+		response += "Location: " + res->getRewriteReplacement() + "\r\n";
+	index = "";
 }
 
 std::string    generateResponse(Request* req, Response* res) {
@@ -75,6 +82,8 @@ std::string    generateResponse(Request* req, Response* res) {
         contentType = "image/x-icon";
     }
 
+	bool isRedirect = false; 
+
 	switch (STATUS_CODE) {
 		case 200:
 			message = "OK";
@@ -85,8 +94,13 @@ std::string    generateResponse(Request* req, Response* res) {
 		case 204:
 			message = "No Content";
 			break;
+		case 301:
+			message = "Moved Permanently";
+			isRedirect = true;
+			break;
 		case 307:
 			message = "Temporary redirect";
+			isRedirect = true;
 			break;
 		case 400:
 			message = "Bad Request";
@@ -118,12 +132,16 @@ std::string    generateResponse(Request* req, Response* res) {
 		default:
 			break;
 	}
+	// TODO: update error.html with nicer code and refactor this function
 
 	response = "HTTP/1.1 " + statusCode + " " + message + "\r\n";
 
-	if (STATUS_CODE == 307) {
-		response += "Location: http://localhost:8080/saluto.html\r\n";
-		redirectingUrl(index);
+
+	std::cout << "URI in generateResponse: " << req->getUri() << std::endl;
+	if (isRedirect) {
+		std::cout << "REDIRECTING URL" << std::endl;
+		redirectingUrl(index, req, res, response);
+		std::cout << "INDEX: " << index << std::endl;
 	} else if (STATUS_CODE == 200 && req->getMethod() != "POST")
 		readHtml(index, req, res, STATUS_CODE);
 	else if (isValidPostReq(STATUS_CODE, req))
@@ -254,7 +272,6 @@ void	clientHandler(int& clientSocket, Http* http, std::string currServer) {
 		return;
 	}
 	request->parseRequest(client->getHeader());
-	// TODO: check methods allowed
 
 	if (client->getHeader().find("Content-Length: ") != std::string::npos)
 		client->setContentLength(atoll(request->getHeader("Content-Length").c_str()));
@@ -277,6 +294,7 @@ void	clientHandler(int& clientSocket, Http* http, std::string currServer) {
 		STATUS_CODE = 413;
 		res->setResponse(generateResponse(request, res));
 	} else {
+		// TODO: check redirections
 		lookForRequestType(request, http, res, locationExists);
 		handleRequest(request, http, res, locationExists, STATUS_CODE);
 	}

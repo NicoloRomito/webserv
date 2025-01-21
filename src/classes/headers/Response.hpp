@@ -20,8 +20,12 @@ class Response {
 		std::string 						_pathForCgiScript;
 		std::vector<std::string>			_cgiPass;
 		std::set<std::string>				_serverNames;
+		std::set<std::string>				_allowedMethods;
 		std::set<int>						_statusCodes;
 		std::map<std::string, std::string> 	_body;
+		std::string 						_rewriteToReplace;
+		std::string 						_rewriteReplacement;
+		std::string 						_rewriteFlag;
 		
 	public:
 		Response();
@@ -34,6 +38,7 @@ class Response {
 
 		// SETTERS
 		void setClientMaxBodySize(size_t clientMaxBodySize);
+		void setAllowedMethods(const std::set<std::string>& allowedMethods);
 		void setServerNames(const std::set<std::string>& serverNames);
 		void setAvailableErrorCodes(const std::set<int>& clientCodes, const std::set<int>& serverCodes);
 		void setCgiPass(const std::vector<std::string>& cgiPass);
@@ -47,11 +52,15 @@ class Response {
 		void setErrorPage4xx(const std::string& error_page4xx);
 		void setErrorPage5xx(const std::string& error_page5xx);
 		void setBody(const std::map<std::string, std::string> body);
+		void setRewriteToReplace(const std::string& toReplace);
+		void setRewriteReplacement(const std::string& replacement);
+		void setRewriteFlag(const std::string& flag);
 
 		// GETTERS
 		size_t										getClientMaxBodySize() const;
 		bool										getAutoindex() const;
 		const std::set<int>							getAvailableErrorCodes() const;
+		const std::set<std::string>					getAllowedMethods() const;
 		const std::set<std::string>					getServerNames() const;
 		const std::vector<std::string>				getCgiPass() const;
 		const std::string&							getLocationPath() const;
@@ -62,5 +71,8 @@ class Response {
 		const std::string&							getIndex() const;
 		const std::string&							getErrorPage4xx() const;
 		const std::string&							getErrorPage5xx() const;
+		const std::string&							getRewriteToReplace() const;
+		const std::string&							getRewriteReplacement() const;
+		const std::string&							getRewriteFlag() const;
 		const std::map<std::string, std::string>	getBody() const;
 };

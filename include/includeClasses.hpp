@@ -13,6 +13,8 @@
 #include "../include/Directives/Autoindex.hpp" // IWYU pragma: keep
 #include "../include/Directives/CgiPass.hpp" // IWYU pragma: keep
 #include "../include/Directives/Listen.hpp" // IWYU pragma: keep
+#include "../include/Directives/AllowMethods.hpp" // IWYU pragma: keep
+#include "../include/Directives/Rewrite.hpp" // IWYU pragma: keep
 
  // CGI
 #include "../src/cgi/Cgi.hpp" // IWYU pragma: keep

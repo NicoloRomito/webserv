@@ -20,7 +20,9 @@ PARSING_CONF_FILES = config.cpp parsing.cpp
 PARSING_FILES = parseUpload.cpp
 DIRECTIVES_FILES = Autoindex.cpp ErrorPage.cpp Index.cpp CgiPass.cpp \
 					Location.cpp ClientMaxBodySize.cpp Root.cpp Server.cpp \
-					Http.cpp Listen.cpp ServerName.cpp 
+					Http.cpp Listen.cpp ServerName.cpp AllowMethods.cpp \
+					Rewrite.cpp
+
 CGI_FILES = Cgi.cpp CgiUtils.cpp
 
 

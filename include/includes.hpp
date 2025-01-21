@@ -70,6 +70,8 @@ enum	DirectiveType {
 	AUTOINDEX,
 	LOCATION,
 	CGI_PASS,
+	ALLOW_METHODS,
+	REWRITE,
 	UNKNOWN
 };
 

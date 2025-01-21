@@ -32,6 +32,7 @@ public:
 	void setClientId(const int);
 	void setQuery(const std::string);
 	void setBody(const std::map<std::string, std::string> _body);
+	void setUrlPath(const std::string &urlPath);
 
 	// GETTERS
 	std::string getUri() const;

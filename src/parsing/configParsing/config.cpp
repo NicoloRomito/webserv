@@ -1,22 +1,5 @@
-#include "../../../include/Errors.hpp"
-#include "../../../include/Directives/config.hpp"
-#include "../../../include/Directives/Http.hpp"
-#include "../../../include/Directives/Listen.hpp"
-#include "../../../include/Directives/Server.hpp"
-#include "../../../include/Directives/ServerName.hpp"
-#include "../../../include/Directives/Root.hpp"
-#include "../../../include/Directives/Index.hpp"
-#include "../../../include/Directives/ErrorPage.hpp"
-#include "../../../include/Directives/ClientMaxBodySize.hpp"
-#include "../../../include/Directives/Autoindex.hpp"
-#include "../../../include/Directives/CgiPass.hpp"
-#include "../../../include/Directives/Location.hpp"
-#include "../../../include/Directives/Http.hpp"
-#include "../../../include/Directives/Server.hpp"
+#include "../../../include/includeClasses.hpp" // IWYU pragma: keep
 #include "../../../include/includes.hpp"
-#include <exception>
-#include <iostream>
-#include <sstream>
 
 AConfig::AConfig() {}
 
@@ -59,6 +42,14 @@ AConfig*	AConfig::createDirective(const std::string& directive, std::vector<std:
 			CgiPass *cgiPass = new CgiPass();
 			cgiPass->parseDirective(args);
 			return cgiPass;
+		} case ALLOW_METHODS: {
+			AllowMethods *allowMethods = new AllowMethods();
+			allowMethods->setMethods(args);
+			return allowMethods;
+		} case REWRITE: {
+			Rewrite *rewrite = new Rewrite();
+			rewrite->parseDirective(args);
+			return rewrite;
 		} default:
 			throw Errors::UnknownDirectiveException("Unknown directive", ConfigLine, __FILE__);
 	}
@@ -97,6 +88,8 @@ void	AConfig::createDefaultDirectives(DirectiveType type) {
 		case HTTP:
 			if (this->_directives.find("client_max_body_size") == this->_directives.end())
 				this->_directives["client_max_body_size"] = new ClientMaxBodySize();
+			if (this->_directives.find("allow_methods") == this->_directives.end())
+				this->_directives["allow_methods"] = new AllowMethods("GET", "POST", "DELETE");
 			break;
 		case SERVER:
 			if (this->_directives.find("listen") == this->_directives.end())

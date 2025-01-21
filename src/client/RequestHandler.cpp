@@ -2,13 +2,19 @@
 #include "../../include/includeClasses.hpp"
 #include <unistd.h>
 
+bool	isAllowedMethod(Request* req, Response* res) {
+	if (res->getAllowedMethods().find(req->getMethod()) == res->getAllowedMethods().end())
+		return false;
+	return true;
+}
+
 void	handleRequest(Request* request, Http* http, Response* res, bool locationExists, int& statusCode) {
 	(void)http;
-	if (request->getMethod() == "GET") {
+	if (request->getMethod() == "GET" && isAllowedMethod(request, res)) {
 		handleGet(request, res, locationExists, statusCode);
-	} else if (request->getMethod() == "POST") {
+	} else if (request->getMethod() == "POST" && isAllowedMethod(request, res)) {
 		handlePost(request, res, statusCode);
-	} else if (request->getMethod() == "DELETE") {
+	} else if (request->getMethod() == "DELETE" && isAllowedMethod(request, res)) {
 		handleDelete(request, res, statusCode);
 	} else {
 		statusCode = 405;
@@ -36,10 +42,13 @@ void	handleGet(Request* req, Response* res, bool locationExists, int& statusCode
 		return;
 	}
 
-	if (req->getUrlPath() == "/redirect") {
-		statusCode = 307;
+	if (req->getUrlPath() == res->getRewriteToReplace()) {
+		if (res->getRewriteFlag() == "redirect")
+			statusCode = 307;
+		else if (res->getRewriteFlag() == "permanent")
+			statusCode = 301;
 		res->setResponse(generateResponse(req, res));
-		return ;
+		return;
 	}
 
 	if (isADirectory(req->getUrlPath(), res->getRoot())) {

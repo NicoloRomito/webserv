@@ -36,6 +36,8 @@ DirectiveType	getDirectiveType(const std::string& dir) {
 		model["root"] = ROOT;
 		model["server_name"] = SERVER_NAME;
 		model["listen"] = LISTEN;
+		model["allow_methods"] = ALLOW_METHODS;
+		model["rewrite"] = REWRITE;
 
 	std::map<std::string, DirectiveType>::iterator it = model.find(dir);
 	if (it != model.end()) {

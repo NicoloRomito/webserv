@@ -121,6 +121,10 @@ void	Response::setClientMaxBodySize(size_t clientMaxBodySize) {
 	_clientMaxBodySize = clientMaxBodySize;
 }
 
+void	Response::setAllowedMethods(const std::set<std::string>& allowedMethods) {
+	_allowedMethods = allowedMethods;
+}
+
 void	Response::setCgiPass(const std::vector<std::string>& cgiPass) {
 	_cgiPass = cgiPass;
 }
@@ -169,12 +173,28 @@ void	Response::setErrorPage5xx(const std::string& error_page5xx) {
 	_errorPage5xx = error_page5xx;
 }
 
+void	Response::setRewriteToReplace(const std::string& toReplace) {
+	_rewriteToReplace = toReplace;
+}
+
+void	Response::setRewriteReplacement(const std::string& replacement) {
+	_rewriteReplacement = replacement;
+}
+
+void	Response::setRewriteFlag(const std::string& flag) {
+	_rewriteFlag = flag;
+}
+
 	// --------------------- //
 	// -------GETTERS------- //
 	// --------------------- //
 
-const	std::set<int> Response::getAvailableErrorCodes() const {
+const	std::set<int>	Response::getAvailableErrorCodes() const {
 	return _statusCodes;
+}
+
+const	std::set<std::string>	Response::getAllowedMethods() const {
+	return _allowedMethods;
 }
 
 size_t	Response::getClientMaxBodySize() const {
@@ -229,3 +249,14 @@ const std::map<std::string, std::string> Response::getBody() const {
 	return this->_body;
 }
 
+const std::string& Response::getRewriteToReplace() const {
+	return _rewriteToReplace;
+}
+
+const std::string& Response::getRewriteReplacement() const {
+	return _rewriteReplacement;
+}
+
+const std::string& Response::getRewriteFlag() const {
+	return _rewriteFlag;
+}

@@ -162,10 +162,15 @@ bool Request::isKeyInMap(std::string key, std::map<std::string, std::string> map
 	return true;
 }
 
-//	SETTERS
+//	* SETTERS
 void Request::setCgiOutput(const std::string toSet)
 {
 	this->_cgiOutput = toSet;
+}
+
+void Request::setUrlPath(const std::string& urlPath)
+{
+	this->url = urlPath;
 }
 
 void Request::setClientId(const int clientId)
@@ -201,7 +206,8 @@ const std::string &Request::getPath() const
 
 std::string Request::getUri() const
 {
-	return "http://" + this->host + this->url;
+	// TODO: FIX the parsing of the uri
+	return "http://" + this->host.substr(1, host.size() - 1) + this->url;
 }
 
 const std::string &Request::getUrlPath() const

@@ -118,6 +118,13 @@ std::string	getCurrentDir() {
 
 void	setServerDirectives(Response* res, Server* server)
 {
+	if (server->getDirective<Rewrite>("rewrite")) {
+		res->setRewriteToReplace(server->getDirective<Rewrite>("rewrite")->getToReplace());
+		res->setRewriteReplacement(server->getDirective<Rewrite>("rewrite")->getReplacement());
+		res->setRewriteFlag(server->getDirective<Rewrite>("rewrite")->getFlag());
+	}
+	if (server->getDirective<AllowMethods>("allow_methods"))
+		res->setAllowedMethods(server->getDirective<AllowMethods>("allow_methods")->getMethods());
 	if (server->getDirective<Index>("index"))
 		res->setIndex(server->getDirective<Index>("index")->getFile());
 	if (server->getDirective<Autoindex>("autoindex"))
@@ -134,6 +141,14 @@ void	setServerDirectives(Response* res, Server* server)
 
 void	setLocationDirectives(Response* res, Location* location, const std::string serverName)
 {
+	//TODO: add Rewrite directive
+	if (location->getDirective<Rewrite>("rewrite")) {
+		res->setRewriteToReplace(location->getDirective<Rewrite>("rewrite")->getToReplace());
+		res->setRewriteReplacement(location->getDirective<Rewrite>("rewrite")->getReplacement());
+		res->setRewriteFlag(location->getDirective<Rewrite>("rewrite")->getFlag());
+	}
+	if (location->getDirective<AllowMethods>("allow_methods"))
+		res->setAllowedMethods(location->getDirective<AllowMethods>("allow_methods")->getMethods());
 	if (location->getDirective<ClientMaxBodySize>("client_max_body_size"))
 		res->setClientMaxBodySize(location->getDirective<ClientMaxBodySize>("client_max_body_size")->getSize());
 	if (location->getDirective<ServerName>("server_name"))
@@ -151,6 +166,7 @@ void	setLocationDirectives(Response* res, Location* location, const std::string 
 void	setAllValues(Response* res, Http* http, const std::string& serverName, const std::string& locationName, bool locationExists) {
 	Server			*server = http->getDirective<Server>(serverName);
 	size_t			clientMaxBodySize = http->getDirective<ClientMaxBodySize>("client_max_body_size")->getSize();
+	std::set<std::string>	methods = http->getDirective<AllowMethods>("allow_methods")->getMethods();
 	std::string		clientErrorPage = server->getDirective<ErrorPage>(serverName + "error_page4xx")->getPath();
 	std::string		serverErrorPage = server->getDirective<ErrorPage>(serverName + "error_page5xx")->getPath();
 	std::set<int>	clientErrors = server->getDirective<ErrorPage>(serverName + "error_page4xx")->getCodes();
@@ -161,6 +177,7 @@ void	setAllValues(Response* res, Http* http, const std::string& serverName, cons
 	res->setErrorPage4xx(clientErrorPage);
 	res->setErrorPage5xx(serverErrorPage);
 	res->setAvailableErrorCodes(clientErrors, serverErrors);
+	res->setAllowedMethods(methods);
 
 	if (!locationExists) {
 		setServerDirectives(res, server);
