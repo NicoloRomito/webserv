@@ -294,7 +294,7 @@ size_t	getCurrentMaxBodySize(Http* http, Request* req, std::string currServer) {
 	else if (http->getDirective<Server>(currServer)->getDirective<ClientMaxBodySize>("client_max_body_size"))
 		return http->getDirective<Server>(currServer)->getDirective<ClientMaxBodySize>("client_max_body_size")->getSize();
 	else 
-		return http->getDirective<Http>("http")->getDirective<ClientMaxBodySize>("client_max_body_size")->getSize();
+		return http->getDirective<ClientMaxBodySize>("client_max_body_size")->getSize();
 }
 
 void	clientHandler(int& clientSocket, Http* http, std::string currServer) {
@@ -312,8 +312,7 @@ void	clientHandler(int& clientSocket, Http* http, std::string currServer) {
 	}
 	request->parseRequest(client->getHeader());
 
-	size_t	MaxBodySize = getCurrentMaxBodySize(http, request, currServer);
-	std::cout << "Max body size: " << MaxBodySize << std::endl;
+	const size_t	MaxBodySize = getCurrentMaxBodySize(http, request, currServer);
 	if (client->getHeader().find("Content-Length: ") != std::string::npos)
 		client->setContentLength(atoll(request->getHeader("Content-Length").c_str()));
 
