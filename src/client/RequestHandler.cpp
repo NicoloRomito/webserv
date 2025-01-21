@@ -8,13 +8,13 @@ bool	isAllowedMethod(Request* req, Response* res) {
 	return true;
 }
 
-void	handleRequest(Request* request, Http* http, Response* res, bool locationExists, int& statusCode) {
+void	handleRequest(Request* request, Http* http, Response* res, bool locationExists, int& statusCode, Upload *upload) {
 	(void)http;
 	if (request->getMethod() == "GET" && isAllowedMethod(request, res)) {
 		handleGet(request, res, locationExists, statusCode);
 	} else if (request->getMethod() == "POST" && isAllowedMethod(request, res)) {
-		handlePost(request, res, statusCode);
-	} else if (request->getMethod() == "DELETE" && isAllowedMethod(request, res)) {
+		handlePost(request, res, statusCode, upload);
+	} else if (request->getMethod() == "DELETE") {
 		handleDelete(request, res, statusCode);
 	} else {
 		statusCode = 405;

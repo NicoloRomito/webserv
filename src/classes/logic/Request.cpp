@@ -122,7 +122,7 @@ void Request::parseRequest(std::string buffer)
 	splitReq = getBasicInfo(temp, 32);
 
 	printVec(splitReq);
-	printDebug('+', buffer, "START");
+	// printDebug('+', buffer, "START");
 	if (splitReq.size() < 3 || invalidMethod(splitReq[0]))
 	{
 		error("client error");
@@ -150,9 +150,6 @@ void Request::parseRequest(std::string buffer)
 	// std::cout << "get map: " << getHeader("Accept-Encoding") << '\n';
 	if (buffer.empty())
 		return;
-	this->query = std::string(buffer);
-	buffer.erase(0, buffer.length());
-	// this->body = std::string(buffer);
 }
 
 bool Request::isKeyInMap(std::string key, std::map<std::string, std::string> map)

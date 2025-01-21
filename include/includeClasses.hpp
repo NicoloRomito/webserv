@@ -24,3 +24,4 @@
 #include "../src/classes/headers/Response.hpp" // IWYU pragma: keep
 #include "../src/classes/headers/Client.hpp" // IWYU pragma: keep
 #include "../src/classes/headers/Socket.hpp" // IWYU pragma: keep
+#include "../src/classes/headers/Upload.hpp"

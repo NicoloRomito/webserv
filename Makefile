@@ -12,12 +12,12 @@ CGI_DIR = src/cgi/
 
 CLIENT_FILES = ClientHandling.cpp ReadFiles.cpp RequestHandler.cpp postHandler.cpp
 FILES = init/init.cpp utils/errorMsg.cpp classes/logic/Request.cpp classes/logic/Response.cpp classes/logic/PostFile.cpp \
-		classes/logic/Webserv.cpp classes/logic/Client.cpp
+		classes/logic/Webserv.cpp classes/logic/Client.cpp classes/logic/Upload.cpp
 MAIN = main.cpp
 UTILS_FILES = utils.cpp
-ERRORS_FILES = Errors.cpp
+ERRORS_FILES = Errors.cpp postReqErrors.cpp
 PARSING_CONF_FILES = config.cpp parsing.cpp
-PARSING_FILES = parseUpload.cpp
+PARSING_FILES = parseUpload.cpp parseBody.cpp
 DIRECTIVES_FILES = Autoindex.cpp ErrorPage.cpp Index.cpp CgiPass.cpp \
 					Location.cpp ClientMaxBodySize.cpp Root.cpp Server.cpp \
 					Http.cpp Listen.cpp ServerName.cpp AllowMethods.cpp \

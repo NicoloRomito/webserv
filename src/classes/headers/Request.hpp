@@ -49,7 +49,7 @@ public:
 	const std::map<std::string, std::string> getBody() const;
 };
 
-void handlePost(Request *req, Response *res, int &statusCode);
+void handlePost(Request *req, Response *res, int &statusCode, Upload* up);
 bool invalidMethod(std::string str);
 bool validRequestContent(int errno);
 

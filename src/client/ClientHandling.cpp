@@ -183,7 +183,7 @@ void	lookForRequestType(Request* req, Http* http, Response* res, bool& locationE
 	setAllValues(res, http, serverName, locationName, locationExists);
 }
 
-void parseMultiPartBody(std::vector<char> body, std::string header)
+void parseMultiPartBody(std::vector<char> body, std::string header, Upload* uploadRes)
 {
 	// take the boundary from the header dinamically
 	int boundaryStart = header.find("boundary=") + 9;
@@ -205,12 +205,8 @@ void parseMultiPartBody(std::vector<char> body, std::string header)
         // Extract the part (from partStart to partEnd)
         std::string part = bodyStr.substr(partStart, partEnd - partStart);
 
-		int nameStart = part.find("filename=\"") + 9;
-		int namSize = part.find("\"", nameStart - nameStart);
-		int contentStart = part.find("Content-Type: ") + 14;
-		int	contentSize = part.find("\r\n", contentStart - contentStart);
-		fileName = part.substr(nameStart, namSize);
-		fileType = part.substr(contentStart, contentSize);
+		fileName = parseFilename(part);
+		fileType = parseFileType(part);
 
 		std::cout << "File name: " << fileName << std::endl;
 		std::cout << "File type: " << fileType << std::endl;
@@ -218,35 +214,33 @@ void parseMultiPartBody(std::vector<char> body, std::string header)
 		std::string toSub = part.substr(0, part.find("\r\n\r\n", 4) + 4);
 		part = part.substr(toSub.length(), part.length());
 
-        // std::ofstream fileUploaded(fileName.c_str(), std::ios::binary);
-		// if (!fileUploaded.is_open())
-		// 	std::cout << "Error: Failed to create file\n";
-        // fileUploaded.write(part.c_str(), part.size() - 2); // Write the file content
-		// if (fileUploaded.fail())
-		// 	std::cout << "\n" << strerror(errno) << "\n";
-		// fileUploaded.close();
-		// break;
+		filePath = "./src/www/static/uploads/" + fileName;
 
 		std::ofstream *ofs;
-		if (fileType.find("image"))
-        	ofs = new std::ofstream(fileName.c_str(), std::ios::binary);
-        else 
-			ofs = new std::ofstream(fileName.c_str());
+		ofs = new std::ofstream(filePath.c_str(), std::ios::binary);
 		ofs->write(part.c_str(), part.size() - 2); // Write the file content
 		if (ofs->fail())
+		{
 			std::cout << "\n [UPLOAD] -> " << strerror(errno) << "\n";
+			ofs->close();
+			delete ofs;
+			uploadRes->setFailure();
+			return ;
+		}
 		ofs->close();
 		delete ofs;
         // Continue to the next part
         pos = partEnd;
     }
+	uploadRes->setSuccess(fileName, fileType);
 }
 
-void	deleteAndSleep(Client *client, Request *request, Response *res) {
+void	deleteAndSleep(Client *client, Request *request, Response *res, Upload* up) {
 	client->closeSocket();
 	delete client;
 	delete request;
 	delete res;
+	delete up;
 	usleep(3);
 }
 
@@ -259,6 +253,7 @@ size_t	getCurrentMaxBodySize(Http* http, std::string currServer) {
 
 void	clientHandler(int& clientSocket, Http* http, std::string currServer) {
 	Client			*client = new Client(clientSocket);
+	Upload			*uploadRes = new Upload();
 	Request			*request = new Request();
 	Response		*res = new Response();
 	bool			locationExists = true;
@@ -268,7 +263,7 @@ void	clientHandler(int& clientSocket, Http* http, std::string currServer) {
 	(void)currServer;
 	// Pick the header
 	if (client->readHeader() == -1) {
-		deleteAndSleep(client, request, res);
+		deleteAndSleep(client, request, res, uploadRes);
 		return;
 	}
 	request->parseRequest(client->getHeader());
@@ -277,12 +272,15 @@ void	clientHandler(int& clientSocket, Http* http, std::string currServer) {
 		client->setContentLength(atoll(request->getHeader("Content-Length").c_str()));
 
 	if (client->getHeader().find("Content-Type: ") != std::string::npos) {
-		if (client->readBody() == -1) {
-			deleteAndSleep(client, request, res);
+		bool isMultipart = client->getHeader().find("multipart/form-data;") != std::string::npos;
+		if (client->readBody(isMultipart) == -1) {
+			deleteAndSleep(client, request, res, uploadRes);
 			return;
 		}
-		if (client->getHeader().find("multipart/form-data;") != std::string::npos)
-			parseMultiPartBody(client->getBody(), client->getHeader());
+		if (isMultipart)
+		{
+			parseMultiPartBody(client->getBody(), client->getHeader(), uploadRes);
+		}
 		else {
 			std::string query = client->getBody().data();
 			request->setQuery(query.substr(0, client->getContentLength()));
@@ -296,7 +294,7 @@ void	clientHandler(int& clientSocket, Http* http, std::string currServer) {
 	} else {
 		// TODO: check redirections
 		lookForRequestType(request, http, res, locationExists);
-		handleRequest(request, http, res, locationExists, STATUS_CODE);
+		handleRequest(request, http, res, locationExists, STATUS_CODE, uploadRes);
 	}
 	// Send the response to the client
 	if (send(client->getSocket(), res->getResponse().c_str(), res->getResponse().size(), MSG_CONFIRM) <= 0)
@@ -308,4 +306,5 @@ void	clientHandler(int& clientSocket, Http* http, std::string currServer) {
 	delete client;
 	delete request;
 	delete res;
+	delete uploadRes;
 }

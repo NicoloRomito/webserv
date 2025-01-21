@@ -25,7 +25,7 @@ class Client {
 		~Client();
 
 		int		readHeader();
-		int		readBody();
+		int		readBody(bool isMultipart);
 		void	closeSocket();
 
 		// SETTERS
