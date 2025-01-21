@@ -1,5 +1,7 @@
 #include "../../include/includes.hpp"
 #include "../../include/includeClasses.hpp"
+#include <cstdio>
+#include <fstream>
 #include <string>
 
 std::string	assignErrorPage(Response *res, int statusCode) {
@@ -11,9 +13,9 @@ std::string	assignErrorPage(Response *res, int statusCode) {
 }	
 
 void	getErrorPage(std::string& response, Response* res, int statusCode) {
-	bool			inSection = false;
 	std::ifstream	file;
 	std::string		line;
+	bool			inSection = false;
 	std::string		errorPage = assignErrorPage(res, statusCode);
 
 	std::cout << "ERROR PAGE: " << errorPage << std::endl;
@@ -49,29 +51,6 @@ void	readHtml(std::string &response, Request* req, Response* res, int& statusCod
 	std::cout << "\nURL PATH: " << req->getUrlPath() << std::endl;
 	std::cout << "\nPATH FOR HTML FILE: " << res->getPathForHtml() << std::endl;
 
-    if (req->getUrlPath().find("/favicon.ico") != std::string::npos) {
-        // Open file in binary mode
-        file.open(res->getPathForHtml().c_str(), std::ios::binary);
-        if (!file.is_open()) {
-            statusCode = 404;
-            getErrorPage(response, res, statusCode);
-            return;
-        }
-        
-        // Get file size
-        file.seekg(0, std::ios::end);
-        std::streampos size = file.tellg();
-        file.seekg(0, std::ios::beg);
-
-        // Read the binary file
-        char* buffer = new char[size];
-        file.read(buffer, size);
-        response.assign(buffer, size);
-        delete[] buffer;
-        
-        return;
-    }
-
 	if (req->getUrlPath().substr(0, 9) == "/cgi-bin/" && req->getUrlPath() != "/cgi-bin/")
 	{
 		if (cgiHandler(req, statusCode, response, res) != 200)
@@ -97,4 +76,28 @@ void	readHtml(std::string &response, Request* req, Response* res, int& statusCod
 		line.insert(line.size() - 2, "\r");
 		response += line;
 	}
+}
+
+void	readFile(std::string& index, Response* res, int& statusCode) {
+	std::ifstream	fileToRead;
+	std::string		line;
+
+	// The path is already checked 
+	fileToRead.open(res->getPathForHtml().c_str(), std::ios::binary);
+	if (!fileToRead.is_open()) {
+		statusCode = 404;
+		getErrorPage(index, res, statusCode);
+		return;
+	}
+
+	fileToRead.seekg(0, std::ios::end);
+	std::streampos size = fileToRead.tellg();
+	fileToRead.seekg(0, std::ios::beg);
+
+	char* buffer = new char[size];
+	fileToRead.read(buffer, size);
+	index.assign(buffer, size);
+	delete[] buffer;
+
+	fileToRead.close();
 }

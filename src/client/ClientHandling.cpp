@@ -70,19 +70,60 @@ void redirectingUrl(std::string& index, Request* req, Response* res, std::string
 	index = "";
 }
 
+const std::string setContentType(Request* req) {
+	std::string contentType = "text/html";
+	std::string extension = req->getUrlPath().substr(req->getUrlPath().find_last_of('.') + 1);
+	std::cout << "Extension: " << extension << std::endl;
+	if (extension == "html" || extension == "css")
+		contentType = "text/" + extension;
+	else if (extension == "js")
+		contentType = "application/javascript";
+	else if (extension == "jpg" || extension == "jpeg")
+		contentType = "image/jpeg";
+	else if (extension == "png")
+		contentType = "image/png";
+	else if (extension == "gif")
+		contentType = "image/gif";
+	else if (extension == "ico")
+		contentType = "image/x-icon";
+	else if (extension == "json")
+		contentType = "application/json";
+	else if (extension == "xml")
+		contentType = "application/xml";
+	else if (extension == "pdf")
+		contentType = "application/pdf";
+	else if (extension == "zip")
+		contentType = "application/zip";
+	else if (extension == "tar")
+		contentType = "application/x-tar";
+	else if (extension == "gz")
+		contentType = "application/x-gzip";
+	else if (extension == "mp3")
+		contentType = "audio/mpeg";
+	else if (extension == "mp4")
+		contentType = "video/mp4";
+	else if (extension == "mpeg")
+		contentType = "video/mpeg";
+	else if (extension == "webm")
+		contentType = "video/webm";
+	else if (extension == "ogg")
+		contentType = "video/ogg";
+	else if (extension == "wav")
+		contentType = "audio/wav";
+	else if (extension == "avi")
+		contentType = "video/x-msvideo";
+	else if (extension == "txt")
+		contentType = "text/plain";
+	return contentType;
+}
+
 std::string    generateResponse(Request* req, Response* res) {
 	std::string response, index, message, statusCode, contentType;
 	std::ostringstream oss;
 
-	std::cout << "STATUS CODE in GENERATE RESPONSE: " << STATUS_CODE << std::endl;
-
-    contentType = "text/html";
+	bool isRedirect = false;
+	contentType = setContentType(req);
 	statusCode = int_to_string(STATUS_CODE);
-    if (req->getUrlPath() == "/favicon.ico") {
-        contentType = "image/x-icon";
-    }
-
-	bool isRedirect = false; 
 
 	switch (STATUS_CODE) {
 		case 200:
@@ -136,14 +177,16 @@ std::string    generateResponse(Request* req, Response* res) {
 
 	response = "HTTP/1.1 " + statusCode + " " + message + "\r\n";
 
-
+	std::cout << "Content type: " << contentType << std::endl;
 	std::cout << "URI in generateResponse: " << req->getUri() << std::endl;
 	if (isRedirect) {
 		std::cout << "REDIRECTING URL" << std::endl;
 		redirectingUrl(index, req, res, response);
 		std::cout << "INDEX: " << index << std::endl;
-	} else if (STATUS_CODE == 200 && req->getMethod() != "POST")
+	} else if (STATUS_CODE == 200 && req->getMethod() != "POST" && contentType == "text/html")
 		readHtml(index, req, res, STATUS_CODE);
+	else if (STATUS_CODE == 200 && contentType != "text/html")
+		readFile(index, res, STATUS_CODE);
 	else if (isValidPostReq(STATUS_CODE, req))
 	{
 		if (req->getUrlPath().substr(0, 9) != "/cgi-bin/") {
@@ -153,8 +196,7 @@ std::string    generateResponse(Request* req, Response* res) {
 		if (req->getUrlPath().substr(0, 9) == "/cgi-bin/" &&
 		 	req->getUrlPath() != "/cgi-bin/")
 			readHtml(index, req, res, STATUS_CODE);
-	}
-	else if (STATUS_CODE == 204)
+	} else if (STATUS_CODE == 204)
 		index = "";
 	else
 		getErrorPage(index, res, STATUS_CODE);
@@ -244,10 +286,14 @@ void	deleteAndSleep(Client *client, Request *request, Response *res, Upload* up)
 	usleep(3);
 }
 
-size_t	getCurrentMaxBodySize(Http* http, std::string currServer) {
-	if (http->getDirective<Server>(currServer)->getDirective<ClientMaxBodySize>("client_max_body_size"))
+size_t	getCurrentMaxBodySize(Http* http, Request* req, std::string currServer) {
+	std::string	locationName = http->getLocationName(req->getUrlPath(), currServer);
+	if (!locationName.empty() && 
+		http->getDirective<Server>(currServer)->getDirective<Location>(locationName)->getDirective<ClientMaxBodySize>("client_max_body_size"))
+		return http->getDirective<Server>(currServer)->getDirective<Location>(locationName)->getDirective<ClientMaxBodySize>("client_max_body_size")->getSize();
+	else if (http->getDirective<Server>(currServer)->getDirective<ClientMaxBodySize>("client_max_body_size"))
 		return http->getDirective<Server>(currServer)->getDirective<ClientMaxBodySize>("client_max_body_size")->getSize();
-	else
+	else 
 		return http->getDirective<Http>("http")->getDirective<ClientMaxBodySize>("client_max_body_size")->getSize();
 }
 
@@ -257,10 +303,8 @@ void	clientHandler(int& clientSocket, Http* http, std::string currServer) {
 	Request			*request = new Request();
 	Response		*res = new Response();
 	bool			locationExists = true;
-	size_t			MaxBodySize = getCurrentMaxBodySize(http, currServer);
 
 
-	(void)currServer;
 	// Pick the header
 	if (client->readHeader() == -1) {
 		deleteAndSleep(client, request, res, uploadRes);
@@ -268,10 +312,12 @@ void	clientHandler(int& clientSocket, Http* http, std::string currServer) {
 	}
 	request->parseRequest(client->getHeader());
 
+	size_t	MaxBodySize = getCurrentMaxBodySize(http, request, currServer);
+	std::cout << "Max body size: " << MaxBodySize << std::endl;
 	if (client->getHeader().find("Content-Length: ") != std::string::npos)
 		client->setContentLength(atoll(request->getHeader("Content-Length").c_str()));
 
-	if (client->getHeader().find("Content-Type: ") != std::string::npos) {
+	if (client->getHeader().find("Content-Type: ") != std::string::npos && client->getContentLength() <= MaxBodySize) {
 		bool isMultipart = client->getHeader().find("multipart/form-data;") != std::string::npos;
 		if (client->readBody(isMultipart) == -1) {
 			deleteAndSleep(client, request, res, uploadRes);
@@ -292,7 +338,6 @@ void	clientHandler(int& clientSocket, Http* http, std::string currServer) {
 		STATUS_CODE = 413;
 		res->setResponse(generateResponse(request, res));
 	} else {
-		// TODO: check redirections
 		lookForRequestType(request, http, res, locationExists);
 		handleRequest(request, http, res, locationExists, STATUS_CODE, uploadRes);
 	}

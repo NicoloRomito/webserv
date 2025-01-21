@@ -79,6 +79,7 @@ enum	DirectiveType {
 // ReadFIles
 void	getErrorPage(std::string& response, Response* res, int statusCode);
 void	readHtml(std::string &response, Request* req, Response* res, int& statusCode);
+void	readFile(std::string& index, Response* res, int& statusCode);
 
 // ClientHandling
 void			clientHandler(int& clientSocket, Http* http, std::string currServer);
@@ -101,9 +102,6 @@ bool 			checkPostReqErrors(Request* req, Response* res, int& statusCode);
 bool 			checkforPostEntryErrors(Request* req, Response* res, int& statusCode);
 bool 			checkForCgiBodyErrors(Request* req, Response* res, int& statusCode);
 void 			formatError(int &statusCode, std::string encoding);
-
-
-
 
 // errors
 void 	error(std::string msg);
