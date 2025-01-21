@@ -35,7 +35,6 @@ void Webserv::init(Http *http) {
 			this->portN++;
 		}
 	}
-
 }
 
 void Webserv::initSocket() {
@@ -109,60 +108,12 @@ void sigHandler(int signal) {
 	}
 }
 
-void Webserv::run() {
-	std::string currServer;
-
-	std::cout << "Server listening on port " << ntohs(serverAddress[0].sin_port) << "..." << std::endl;
-
-	std::cout << "sto funzionando porcodio\n";
-	// Prepare for polling
-	std::vector<pollfd> pollFds;
-	for (int i = 0; i < portN; i++) {
-		pollfd serverPollFd = {serverSocket[i], POLLIN, 0};
-		pollFds.push_back(serverPollFd);
-	}
-	signal(SIGINT, sigHandler);
-	while (true) {
-    // Use poll to wait for incoming connections or data
-		int pollResult = poll(pollFds.data(), pollFds.size(), 200); // Timeout of 200ms
-		if (pollResult < 0) {
-			std::cerr << "Error with poll: " << strerror(errno) << std::endl;
-			break;
-		}
-		// DEBUG: Log poll results
-		// Handle new connections on all server sockets
-		for (int i = 0; i < portN; i++) {
-			if (pollFds[i].revents & POLLIN) { // Check if the server socket is ready
-				int acceptSocket = serverSocket[i];
-
-				currServer = this->listenMap[acceptSocket];
-
-				int clientSocket = accept(acceptSocket, NULL, NULL);
-				if (clientSocket < 0) {
-					std::cerr << "Client connection failed on socket " << i 
-							<< " (errno: " << strerror(errno) << ")." << std::endl;
-					continue;
-				}
-				std::cout << "Client connected on port " << ntohs(serverAddress[i].sin_port) << "." << std::endl;
-
-				// Set the client socket to non-blocking mode
-				if (setNonBlocking(clientSocket) == -1) {
-					std::cerr << "Failed to set client socket to non-blocking. Closing socket." << std::endl;
-					close(clientSocket);
-					continue;
-				}
-
-				// Add the new client socket to the poll list
-				pollfd clientPollFd = {clientSocket, POLLIN, 0};
-				pollFds.push_back(clientPollFd);
-			}
-		}
-
-		// Handle data from connected clients
-		for (size_t i = portN; i < pollFds.size(); i++) {
+int Webserv::acceptClient() {
+	for (size_t i = portN; i < pollFds.size(); i++) {
 			if (pollFds[i].revents & POLLIN || pollFds[i].revents & POLLOUT) {
 				// DEBUG: Log activity
 				std::cout << "Handling client socket: " << pollFds[i].fd << std::endl;
+				std::cout << "serveeeeeeer: " << currServer << std::endl;
 				clientHandler(pollFds[i].fd, http, currServer);
 				if (pollFds[i].fd == -1) {
 					pollFds.erase(pollFds.begin() + i);
@@ -172,15 +123,77 @@ void Webserv::run() {
 				// Optionally, handle disconnection or cleanup
 				if (QUIT) {
 					std::cout << "QUIT signal received. Exiting loop." << std::endl;
-					break;
+					return 1;
 				}
 			}
 		}
-		// Exit outer loop on QUIT
-		if (QUIT) break;
+		return 1;
+}
+
+int Webserv::handleNewConnection() {
+	int		acceptSocket, clientSocket;
+	pollfd	clientPollFd;
+
+	for (int i = 0; i < portN; i++) {
+			if (pollFds[i].revents & POLLIN) { // Check if the server socket is ready
+				acceptSocket = serverSocket[i];
+
+				currServer = this->listenMap[acceptSocket];
+
+				clientSocket = accept(acceptSocket, NULL, NULL);
+				if (clientSocket < 0) {
+					std::cerr << "Client connection failed on socket " << i 
+							<< " (errno: " << strerror(errno) << ")." << std::endl;
+					continue;
+				}
+		
+				std::cout << "Client connected on port " << ntohs(serverAddress[i].sin_port) << "." << std::endl;
+
+				// Set the client socket to non-blocking mode
+				if (setNonBlocking(clientSocket) == -1) {
+					std::cerr << "Failed to set client socket to non-blocking. Closing socket." << std::endl;
+					close(clientSocket);
+					continue;
+				}
+
+				clientPollFd.fd = clientSocket;
+				clientPollFd.events = POLLIN;
+				clientPollFd.revents = 0;
+
+				pollFds.push_back(clientPollFd);
+			}
+		}
+		return 1;
+}
+
+void Webserv::run() {
+	int pollResult;
+
+	for (size_t i = 0; i < serverAddress.size(); i++) {
+		std::cout << "Server listening on port " << "http://localhost:" << ntohs(serverAddress[i].sin_port) << "..." << std::endl;
 	}
 
-	// * Cleanup
+	for (int i = 0; i < portN; i++) {
+		pollfd serverPollFd = {serverSocket[i], POLLIN, 0};
+		pollFds.push_back(serverPollFd);
+	}
+	signal(SIGINT, sigHandler);
+	while (true) {
+		pollResult = poll(pollFds.data(), pollFds.size(), 200); // Timeout of 200ms
+		if (pollResult < 0 && !QUIT) {
+			std::cerr << "Error with poll: " << strerror(errno) << std::endl;
+			break;
+		}
+
+		if (!handleNewConnection())
+			continue;
+
+		if (!acceptClient())
+			break;
+
+		if (QUIT) break;
+
+	}
 
 	std::cout << "pollfds = " << pollFds.size() << std::endl;
 	for (size_t i = 0; i < pollFds.size(); i++) {
