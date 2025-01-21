@@ -69,11 +69,9 @@ void Webserv::runSocket() {
 
     int currSocket = 0;
     int serverN = http->getServerN();
-    std::cout << "serverN = " << serverN << '\n';
     for (int i = 0; i < serverN; i++) {
         server << i + 1;
         int nListen = http->getDirective<Server>("server" + server.str())->getNumberOfListen();
-        std::cout << "io sto lissenando porcodo: " << nListen << std::endl;
         for (int j = 0; j < nListen; j++) {
             sListen << j + 1;
             port = atoi(http->getDirective<Server>("server" + server.str())->getDirective<Listen>("listen" + sListen.str())->getPort().c_str());
@@ -112,8 +110,7 @@ int Webserv::acceptClient() {
 	for (size_t i = portN; i < pollFds.size(); i++) {
 			if (pollFds[i].revents & POLLIN || pollFds[i].revents & POLLOUT) {
 				// DEBUG: Log activity
-				std::cout << "Handling client socket: " << pollFds[i].fd << std::endl;
-				std::cout << "serveeeeeeer: " << currServer << std::endl;
+				printLog("Handling client socket: " + int_to_string(pollFds[i].fd));
 				clientHandler(pollFds[i].fd, http, currServer);
 				if (pollFds[i].fd == -1) {
 					pollFds.erase(pollFds.begin() + i);
@@ -122,7 +119,7 @@ int Webserv::acceptClient() {
 
 				// Optionally, handle disconnection or cleanup
 				if (QUIT) {
-					std::cout << "QUIT signal received. Exiting loop." << std::endl;
+					printLog("QUIT signal received. Exiting loop.");
 					return 1;
 				}
 			}
@@ -147,7 +144,7 @@ int Webserv::handleNewConnection() {
 					continue;
 				}
 		
-				std::cout << "Client connected on port " << ntohs(serverAddress[i].sin_port) << "." << std::endl;
+				printLog("Client connected on port " + int_to_string(ntohs(serverAddress[i].sin_port)) + ".");
 
 				// Set the client socket to non-blocking mode
 				if (setNonBlocking(clientSocket) == -1) {
@@ -170,7 +167,7 @@ void Webserv::run() {
 	int pollResult;
 
 	for (size_t i = 0; i < serverAddress.size(); i++) {
-		std::cout << "Server listening on port " << "http://localhost:" << ntohs(serverAddress[i].sin_port) << "..." << std::endl;
+		printLog("Server listening on port http://localhost:" + int_to_string(ntohs(serverAddress[i].sin_port)) + "...");
 	}
 
 	for (int i = 0; i < portN; i++) {
