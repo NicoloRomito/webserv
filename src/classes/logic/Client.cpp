@@ -4,19 +4,14 @@
 #include <cstddef>
 #include <string>
 
-Client::Client(int& socket) : _socket(socket), _bytesRecived(0), _contentLength(0) {}
+Client::Client() : _bytesRecived(0), _contentLength(0) {}
 
 Client::~Client() {}
 
-void	Client::closeSocket() {
-	close(_socket);
-	_socket = -1;
-}
-
-int	Client::readHeader()
+int	Client::readHeader(int& clientSocket)
 {
 	while (1) {
-		_bytesRecived = recv(_socket, _buffer, 1, 0);
+		_bytesRecived = recv(clientSocket, _buffer, 1, 0);
 		if (_bytesRecived <= 0) {
 			if (_bytesRecived == 0)
 				std::cout << "Client disconnected." << std::endl;
@@ -31,13 +26,13 @@ int	Client::readHeader()
 	return 1;
 }
 
-int	Client::readBody(bool isMultipart) {
+int	Client::readBody(bool isMultipart, int& clientSocket) {
 	size_t totReceived = 0;
 	std::vector<char> body(_contentLength);
 	int cycle = 0;
 
 	while (totReceived < _contentLength) {
-    	int bytes_received = recv(_socket, body.data() + totReceived, _contentLength - totReceived, MSG_WAITALL);
+    	int bytes_received = recv(clientSocket, body.data() + totReceived, _contentLength - totReceived, MSG_WAITALL);
 		if (bytes_received <= 0) {
 			if (isMultipart)
 			{
@@ -86,8 +81,4 @@ const std::vector<char>&	Client::getBody() const {
 
 size_t	Client::getContentLength() const {
 	return _contentLength;
-}
-
-int	Client::getSocket() const {
-	return _socket;
 }

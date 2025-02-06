@@ -141,7 +141,6 @@ void	setServerDirectives(Response* res, Server* server)
 
 void	setLocationDirectives(Response* res, Location* location, const std::string serverName)
 {
-	//TODO: add Rewrite directive
 	if (location->getDirective<Rewrite>("rewrite")) {
 		res->setRewriteToReplace(location->getDirective<Rewrite>("rewrite")->getToReplace());
 		res->setRewriteReplacement(location->getDirective<Rewrite>("rewrite")->getReplacement());
@@ -192,6 +191,4 @@ void	setAllValues(Response* res, Http* http, const std::string& serverName, cons
 		// NON-DEFAULT VALUES FOR LOCATION
 		setLocationDirectives(res, location, serverName);
 	}
-	if (!res->getServerNames().empty())
-		res->addServerNamesToHosts();
 }

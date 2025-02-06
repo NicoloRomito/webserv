@@ -7,6 +7,7 @@
 #include <string>
 #include <cstdlib>
 #include <fcntl.h>
+#include <unistd.h>
 
 int    setNonBlocking(int socket) {
     int flags = fcntl(socket, F_GETFL, 0); // get the current flags of the socket
@@ -108,23 +109,25 @@ void sigHandler(int signal) {
 
 int Webserv::acceptClient() {
 	for (size_t i = portN; i < pollFds.size(); i++) {
-			if (pollFds[i].revents & POLLIN || pollFds[i].revents & POLLOUT) {
-				// DEBUG: Log activity
-				printLog("Handling client socket: " + int_to_string(pollFds[i].fd));
-				clientHandler(pollFds[i].fd, http, currServer);
-				if (pollFds[i].fd == -1) {
-					pollFds.erase(pollFds.begin() + i);
-					i--;
-				}
+		if (pollFds[i].revents & POLLIN || pollFds[i].revents & POLLOUT) {
+			// DEBUG: Log activity
+			printLog("Handling client socket: " + int_to_string(pollFds[i].fd));
+			clientHandler(pollFds[i].fd, http, currServer);
+			if (pollFds[i].fd == -1) {
+				if (http->getDirective<Server>(currServer)->getDirective<ServerName>("server_name"))
+					http->getDirective<Server>(currServer)->removeServerNamesFromHosts();
+				pollFds.erase(pollFds.begin() + i);
+				i--;
+			}
 
-				// Optionally, handle disconnection or cleanup
-				if (QUIT) {
-					printLog("QUIT signal received. Exiting loop.");
-					return 1;
-				}
+			// Optionally, handle disconnection or cleanup
+			if (QUIT) {
+				printLog("QUIT signal received. Exiting loop.");
+				return 1;
 			}
 		}
-		return 1;
+	}
+	return 1;
 }
 
 int Webserv::handleNewConnection() {
@@ -132,42 +135,48 @@ int Webserv::handleNewConnection() {
 	pollfd	clientPollFd;
 
 	for (int i = 0; i < portN; i++) {
-			if (pollFds[i].revents & POLLIN) { // Check if the server socket is ready
-				acceptSocket = serverSocket[i];
+		if (pollFds[i].revents & POLLIN) { // Check if the server socket is ready
+			acceptSocket = serverSocket[i];
 
-				currServer = this->listenMap[acceptSocket];
+			currServer = this->listenMap[acceptSocket];
 
-				clientSocket = accept(acceptSocket, NULL, NULL);
-				if (clientSocket < 0) {
-					std::cerr << "Client connection failed on socket " << i 
-							<< " (errno: " << strerror(errno) << ")." << std::endl;
-					continue;
-				}
-		
-				printLog("Client connected on port " + int_to_string(ntohs(serverAddress[i].sin_port)) + ".");
-
-				// Set the client socket to non-blocking mode
-				if (setNonBlocking(clientSocket) == -1) {
-					std::cerr << "Failed to set client socket to non-blocking. Closing socket." << std::endl;
-					close(clientSocket);
-					continue;
-				}
-
-				clientPollFd.fd = clientSocket;
-				clientPollFd.events = POLLIN;
-				clientPollFd.revents = 0;
-
-				pollFds.push_back(clientPollFd);
+			clientSocket = accept(acceptSocket, NULL, NULL);
+			if (clientSocket < 0) {
+				std::cerr << "Client connection failed on socket " << i << "." << std::endl;
+				continue;
 			}
+
+			printLog("Client connected on port " + int_to_string(ntohs(serverAddress[i].sin_port)) + ".");
+
+			// Set server names in /etc/hosts file if are set in the config file
+			if (http->getDirective<Server>(currServer)->getDirective<ServerName>("server_name"))
+				http->getDirective<Server>(currServer)->addServerNamesToHosts();
+
+			// TODO: add check for server names when attempting to connect to specific server name, if is present on that config server.
+			// TODO: finish to the removeServerNamesFromHosts function
+
+			// Set the client socket to non-blocking mode
+			if (setNonBlocking(clientSocket) == -1) {
+				std::cerr << "Failed to set client socket to non-blocking. Closing socket." << std::endl;
+				close(clientSocket);
+				continue;
+			}
+
+			clientPollFd.fd = clientSocket;
+			clientPollFd.events = POLLIN;
+			clientPollFd.revents = 0;
+
+			pollFds.push_back(clientPollFd);
 		}
-		return 1;
+	}
+	return 1;
 }
 
 void Webserv::run() {
 	int pollResult;
 
 	for (size_t i = 0; i < serverAddress.size(); i++) {
-		printLog("Server listening on port http://localhost:" + int_to_string(ntohs(serverAddress[i].sin_port)) + "...");
+		printLog("Server listening on port " + int_to_string(ntohs(serverAddress[i].sin_port)) + "...");
 	}
 
 	for (int i = 0; i < portN; i++) {
@@ -178,7 +187,7 @@ void Webserv::run() {
 	while (true) {
 		pollResult = poll(pollFds.data(), pollFds.size(), 200); // Timeout of 200ms
 		if (pollResult < 0 && !QUIT) {
-			std::cerr << "Error with poll: " << strerror(errno) << std::endl;
+			std::cerr << "Error with poll." << std::endl;
 			break;
 		}
 

@@ -77,9 +77,9 @@ enum	DirectiveType {
 };
 
 // ReadFIles
-void	getErrorPage(std::string& response, Response* res, int statusCode);
-void	readHtml(std::string &response, Request* req, Response* res, int& statusCode);
-void	readFile(std::string& index, Response* res, int& statusCode);
+void			getErrorPage(std::string& response, Response* res, int statusCode);
+void			readHtml(std::string &response, Request* req, Response* res, int& statusCode);
+void			readFile(std::string& index, Response* res, int& statusCode);
 
 // ClientHandling
 void			clientHandler(int& clientSocket, Http* http, std::string currServer);
@@ -87,10 +87,14 @@ void			lookForRequestType(Request* req, Http* http, Response* res, bool& locatio
 std::string		generateResponse(Request* req, Response* res);
 std::string		generateDirectoryListing(const std::string& urlPath, const std::string& root, Response* res);
 
+// utilsForClientHandling
+void				setMessageandRedirect(std::string& message, int statusCode, bool& isRedirect);
+const std::string	setContentType(Request* req);
+
 // RequestHandler
-void	handleRequest(Request* request, Http* http, Response* res, bool locationExists, int& statusCode, Upload *up);
-void	handleGet(Request* req, Response* res, bool locationExists, int& statusCode);
-void	handleDelete(Request* req, Response* res, int& statusCode);
+void			handleRequest(Request* request, Http* http, Response* res, bool locationExists, int& statusCode, Upload *up);
+void			handleGet(Request* req, Response* res, bool locationExists, int& statusCode);
+void			handleDelete(Request* req, Response* res, int& statusCode);
 
 // postHandler
 bool 			isValidPostReq(int statusCode, Request* req);
@@ -104,8 +108,8 @@ bool 			checkForCgiBodyErrors(Request* req, Response* res, int& statusCode);
 void 			formatError(int &statusCode, std::string encoding);
 
 // errors
-void 	error(std::string msg);
-void	printError(std::string msg);
+void 			error(std::string msg);
+void			printError(std::string msg);
 // utils
 DirectiveType	checkDirectiveType(const std::string& dir);
 void			printLog(std::string msg);
@@ -128,8 +132,8 @@ std::vector<std::string>	returnLine(const std::string& line);
 
 //init socket
 std::vector<int>		initSocket(int serverN);
-int		setNonBlocking(int socket);
-void	socketOption(std::vector<int> serverSocket, int serverN, int opt = 1);
-int		runSocket(std::vector<sockaddr_in> &serverAddress, std::vector<int> serverSocket, Http* http);
+int				setNonBlocking(int socket);
+void			socketOption(std::vector<int> serverSocket, int serverN, int opt = 1);
+int				runSocket(std::vector<sockaddr_in> &serverAddress, std::vector<int> serverSocket, Http* http);
 
 #endif

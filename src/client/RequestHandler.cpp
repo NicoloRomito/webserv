@@ -18,6 +18,7 @@ void	handleRequest(Request* request, Http* http, Response* res, bool locationExi
 		handleDelete(request, res, statusCode);
 	} else {
 		statusCode = 405;
+		res->setResponse(generateResponse(request, res));
 	}
 }
 

@@ -1,6 +1,4 @@
-#include "../../include/Directives/Server.hpp"
-#include "../../include/Directives/ErrorPage.hpp"
-#include "../../include/Directives/Location.hpp"
+#include "../../include/includeClasses.hpp" // IWYU pragma: keep
 #include "../../include/Errors.hpp"
 #include <iostream>
 #include <sstream>
@@ -14,6 +12,7 @@ int	locationN = 0;
 Server::Server() : AConfig(), _nListen(0), _locationN(0) {}
 
 Server::~Server() {
+	removeServerNamesFromHosts();
 	cleanDirectives();
 }
 
@@ -93,6 +92,83 @@ bool	Server::parseErrorPage(const std::vector<std::string>& args, const std::str
 	}
 
 	return false;
+}
+
+void	Server::addServerNamesToHosts()
+{
+	std::ifstream	fileIn("/etc/hosts");
+	if (!fileIn.is_open()) {
+		std::cerr << "Error opening /etc/hosts for reading\n";
+		return;
+	}
+
+	std::vector<std::string>	fileLines;
+	std::string					line;
+	while (std::getline(fileIn, line)) {
+		fileLines.push_back(line);
+	}
+	fileIn.close();
+
+	std::set<std::string>	_serverNames = this->getDirective<ServerName>("server_name")->getNames();
+
+	for (std::set<std::string>::iterator Serverit = _serverNames.begin(); Serverit != _serverNames.end(); ++Serverit) {
+		std::string serverName = "127.0.0.1 " + *Serverit;
+		for (std::vector<std::string>::iterator it = fileLines.begin(); it != fileLines.end(); ++it) {
+			if (it->find(serverName) != std::string::npos) {
+				return;
+			}
+		}
+		fileLines.push_back(serverName);
+	}
+
+	std::ofstream	fileOut("/etc/hosts");
+	if (!fileOut.is_open()) {
+		std::cerr << "Error opening /etc/hosts for writing\n";
+		return;
+	}
+
+	for (std::vector<std::string>::iterator it = fileLines.begin(); it != fileLines.end(); ++it) {
+		fileOut << *it << std::endl;
+	}
+
+	fileOut.close();
+}
+
+
+void	Server::removeServerNamesFromHosts() {
+	std::ifstream	fileIn("/etc/hosts");
+	if (!fileIn.is_open()) {
+		std::cerr << "Error opening /etc/hosts for reading\n";
+		return;
+	}
+
+	std::vector<std::string>	fileLines;
+	std::string					line;
+	while (std::getline(fileIn, line))
+		fileLines.push_back(line);
+	fileIn.close();
+
+	std::set<std::string>	_serverNames = this->getDirective<ServerName>("server_name")->getNames();
+
+	for (std::vector<std::string>::iterator i = fileLines.end() - 1; i != fileLines.begin(); i--) {
+		for (std::set<std::string>::iterator it = _serverNames.begin(); it != _serverNames.end(); ++it) {
+			if (i->find("127.0.0.1 " + *it) != std::string::npos)
+				fileLines.erase(i);
+		}
+	}
+
+	std::ofstream	fileOut;
+	fileOut.open("/etc/hosts");
+	if (!fileOut.is_open()) {
+		std::cerr << "Error opening /etc/hosts for writing\n";
+		return;
+	}
+
+	for (std::vector<std::string>::iterator it = fileLines.begin(); it != fileLines.end(); ++it) {
+		fileOut << *it << std::endl;
+	}
+
+	fileOut.close();
 }
 
 int	Server::getNumberOfListen() const {

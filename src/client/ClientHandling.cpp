@@ -59,62 +59,13 @@ std::string	generateDirectoryListing(const std::string& urlPath, const std::stri
 }
 
 void redirectingUrl(std::string& index, Request* req, Response* res, std::string& response) {
-	std::cout << STATUS_CODE << std::endl;
 	if (STATUS_CODE == 301) {
 		std::string uri = req->getUri().substr(0, req->getUri().size() - req->getUrlPath().size());
-		std::cout << "URI: " << uri << std::endl;
 		response += "Location: " + uri + res->getRewriteReplacement() + "\r\n";
 	}
 	else if (STATUS_CODE == 307)
 		response += "Location: " + res->getRewriteReplacement() + "\r\n";
 	index = "";
-}
-
-const std::string setContentType(Request* req) {
-	std::string contentType = "text/html";
-	std::string extension = req->getUrlPath().substr(req->getUrlPath().find_last_of('.') + 1);
-	std::cout << "Extension: " << extension << std::endl;
-	if (extension == "html" || extension == "css")
-		contentType = "text/" + extension;
-	else if (extension == "js")
-		contentType = "application/javascript";
-	else if (extension == "jpg" || extension == "jpeg")
-		contentType = "image/jpeg";
-	else if (extension == "png")
-		contentType = "image/png";
-	else if (extension == "gif")
-		contentType = "image/gif";
-	else if (extension == "ico")
-		contentType = "image/x-icon";
-	else if (extension == "json")
-		contentType = "application/json";
-	else if (extension == "xml")
-		contentType = "application/xml";
-	else if (extension == "pdf")
-		contentType = "application/pdf";
-	else if (extension == "zip")
-		contentType = "application/zip";
-	else if (extension == "tar")
-		contentType = "application/x-tar";
-	else if (extension == "gz")
-		contentType = "application/x-gzip";
-	else if (extension == "mp3")
-		contentType = "audio/mpeg";
-	else if (extension == "mp4")
-		contentType = "video/mp4";
-	else if (extension == "mpeg")
-		contentType = "video/mpeg";
-	else if (extension == "webm")
-		contentType = "video/webm";
-	else if (extension == "ogg")
-		contentType = "video/ogg";
-	else if (extension == "wav")
-		contentType = "audio/wav";
-	else if (extension == "avi")
-		contentType = "video/x-msvideo";
-	else if (extension == "txt")
-		contentType = "text/plain";
-	return contentType;
 }
 
 std::string    generateResponse(Request* req, Response* res) {
@@ -124,65 +75,14 @@ std::string    generateResponse(Request* req, Response* res) {
 	bool isRedirect = false;
 	contentType = setContentType(req);
 	statusCode = int_to_string(STATUS_CODE);
+	setMessageandRedirect(message, STATUS_CODE, isRedirect);
 
-	switch (STATUS_CODE) {
-		case 200:
-			message = "OK";
-			break;
-		case 201:
-			message = "Created";
-			break;
-		case 204:
-			message = "No Content";
-			break;
-		case 301:
-			message = "Moved Permanently";
-			isRedirect = true;
-			break;
-		case 307:
-			message = "Temporary redirect";
-			isRedirect = true;
-			break;
-		case 400:
-			message = "Bad Request";
-			break;
-		case 403:
-			message = "Forbidden";
-			break;
-		case 404:
-			message = "Not Found";
-			break;
-		case 405:
-			message = "Method Not Allowed";
-			break;
-		case 413:
-			message = "Content Too Large";
-			break;
-		case 422:
-			message = "Unprocessable Content";
-			break;
-		case 500:
-			message = "Internal Server Error";
-			break;
-		case 501:
-			message = "Not Implemented";
-			break;
-		case 502:
-			message = "Bad Gateway";
-			break;
-		default:
-			break;
-	}
 	// TODO: update error.html with nicer code and refactor this function
 
 	response = "HTTP/1.1 " + statusCode + " " + message + "\r\n";
 
-	std::cout << "Content type: " << contentType << std::endl;
-	std::cout << "URI in generateResponse: " << req->getUri() << std::endl;
 	if (isRedirect) {
-		std::cout << "REDIRECTING URL" << std::endl;
 		redirectingUrl(index, req, res, response);
-		std::cout << "INDEX: " << index << std::endl;
 	} else if (STATUS_CODE == 200 && req->getMethod() != "POST" && contentType == "text/html")
 		readHtml(index, req, res, STATUS_CODE);
 	else if (STATUS_CODE == 200 && contentType != "text/html")
@@ -240,7 +140,7 @@ void parseMultiPartBody(std::vector<char> body, std::string header, Upload* uplo
     while ((pos = bodyStr.find(boundary, pos)) != std::string::npos) {
         size_t partStart = pos + boundary.length(); // Skip the boundary
         size_t partEnd = bodyStr.find(boundary, partStart);
-        
+
         if (partEnd == std::string::npos) {
             break; // No more parts, we're at the end
         }
@@ -249,9 +149,6 @@ void parseMultiPartBody(std::vector<char> body, std::string header, Upload* uplo
 
 		fileName = parseFilename(part);
 		fileType = parseFileType(part);
-
-		std::cout << "File name: " << fileName << std::endl;
-		std::cout << "File type: " << fileType << std::endl;
 
 		std::string toSub = part.substr(0, part.find("\r\n\r\n", 4) + 4);
 		part = part.substr(toSub.length(), part.length());
@@ -263,7 +160,7 @@ void parseMultiPartBody(std::vector<char> body, std::string header, Upload* uplo
 		ofs->write(part.c_str(), part.size() - 2); // Write the file content
 		if (ofs->fail())
 		{
-			std::cout << "\n [UPLOAD] -> " << strerror(errno) << "\n";
+			std::cout << "\n [UPLOAD] -> FAILED" << "\n";
 			ofs->close();
 			delete ofs;
 			uploadRes->setFailure();
@@ -278,12 +175,10 @@ void parseMultiPartBody(std::vector<char> body, std::string header, Upload* uplo
 }
 
 void	deleteAndSleep(Client *client, Request *request, Response *res, Upload* up) {
-	client->closeSocket();
 	delete client;
 	delete request;
 	delete res;
 	delete up;
-	usleep(3);
 }
 
 size_t	getCurrentMaxBodySize(Http* http, Request* req, std::string currServer) {
@@ -298,16 +193,18 @@ size_t	getCurrentMaxBodySize(Http* http, Request* req, std::string currServer) {
 }
 
 void	clientHandler(int& clientSocket, Http* http, std::string currServer) {
-	Client			*client = new Client(clientSocket);
+	Client			*client = new Client();
 	Upload			*uploadRes = new Upload();
 	Request			*request = new Request();
 	Response		*res = new Response();
 	bool			locationExists = true;
 
-
 	// Pick the header
-	if (client->readHeader() == -1) {
+	if (client->readHeader(clientSocket) == -1) {
+		close(clientSocket);
+		clientSocket = -1;
 		deleteAndSleep(client, request, res, uploadRes);
+		usleep(5);
 		return;
 	}
 	request->parseRequest(client->getHeader());
@@ -318,7 +215,7 @@ void	clientHandler(int& clientSocket, Http* http, std::string currServer) {
 
 	if (client->getHeader().find("Content-Type: ") != std::string::npos && client->getContentLength() <= MaxBodySize) {
 		bool isMultipart = client->getHeader().find("multipart/form-data;") != std::string::npos;
-		if (client->readBody(isMultipart) == -1) {
+		if (client->readBody(isMultipart, clientSocket) == -1) {
 			deleteAndSleep(client, request, res, uploadRes);
 			return;
 		}
@@ -332,7 +229,7 @@ void	clientHandler(int& clientSocket, Http* http, std::string currServer) {
 		}
 	}
 
-	request->setClientId(client->getSocket());
+	request->setClientId(clientSocket);
 	if (client->getContentLength() > MaxBodySize) {
 		STATUS_CODE = 413;
 		res->setResponse(generateResponse(request, res));
@@ -341,10 +238,11 @@ void	clientHandler(int& clientSocket, Http* http, std::string currServer) {
 		handleRequest(request, http, res, locationExists, STATUS_CODE, uploadRes);
 	}
 	// Send the response to the client
-	if (send(client->getSocket(), res->getResponse().c_str(), res->getResponse().size(), MSG_CONFIRM) <= 0)
+	if (send(clientSocket, res->getResponse().c_str(), res->getResponse().size(), MSG_CONFIRM) <= 0)
 	{
 		std::cout << "Error: client disconnected\n";
-		client->closeSocket();
+		close(clientSocket);
+		clientSocket = -1;
 		usleep(3);
 	}
 	delete client;

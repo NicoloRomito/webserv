@@ -123,7 +123,7 @@ void Request::parseRequest(std::string buffer)
 
 	printVec(splitReq);
 	// printDebug('+', buffer, "START");
-	if (splitReq.size() < 3 || invalidMethod(splitReq[0]))
+	if (splitReq.size() < 3)
 	{
 		error("client error");
 		return;

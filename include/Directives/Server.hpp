@@ -19,5 +19,7 @@ class	Server : public AConfig {
 
 		bool		parseErrorPage(const std::vector<std::string>& args, const std::string& directive);
 		void		parseListen(const std::vector<std::string>& args, const std::string& directive, int listenN);
+		void		addServerNamesToHosts();
+		void		removeServerNamesFromHosts();
 		void		parse(std::stringstream& file);
 };

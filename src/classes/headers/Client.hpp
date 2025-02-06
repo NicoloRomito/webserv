@@ -8,7 +8,6 @@
 
 class Client {
 	private:
-		int					_socket;
 		int					_bytesRecived;
 		// bool				_connected;
 		char				_buffer[1];
@@ -21,12 +20,11 @@ class Client {
 
 
 	public:
-		Client(int& socket);
+		Client();
 		~Client();
 
-		int		readHeader();
-		int		readBody(bool isMultipart);
-		void	closeSocket();
+		int		readHeader(int& clientSocket);
+		int		readBody(bool isMultipart, int& clientSocket);
 
 		// SETTERS
 		void	setContentLength(int contentLength);
@@ -37,7 +35,6 @@ class Client {
 		const	std::vector<char>& getBody() const;
 		const	std::string& getBoundary() const;
 		size_t	getContentLength() const;
-		int		getSocket() const;
 
 };
 

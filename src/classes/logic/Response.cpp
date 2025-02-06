@@ -9,41 +9,10 @@
 Response::Response() : _clientMaxBodySize(0), _response(""), _root(""), _locationPath(""), _autoindex(), _index(""), _errorPage4xx(""), _errorPage5xx(""), _pathForHtml("") {}
 
 Response::~Response() {
-	removeServerNamesFromHosts();
 	_serverNames.clear();
 	_statusCodes.clear();
 	_cgiPass.clear();
 	_body.clear();
-}
-
-void	Response::removeServerNamesFromHosts() {
-	std::ifstream	fileIn("/etc/hosts");
-	if (!fileIn.is_open()) {
-		std::cerr << "Error opening /etc/hosts for reading\n";
-		return;
-	}
-
-	std::vector<std::string>	fileLines;
-	std::string					line;
-	while (std::getline(fileIn, line)) {
-		fileLines.push_back(line);
-	}
-	fileIn.close();
-
-	fileLines[0] = "127.0.0.1 localhost\n";
-
-	std::ofstream	fileOut;
-	fileOut.open("/etc/hosts");
-	if (!fileOut.is_open()) {
-		std::cerr << "Error opening /etc/hosts for writing\n";
-		return;
-	}
-
-	for (std::vector<std::string>::iterator it = fileLines.begin(); it != fileLines.end(); ++it) {
-		fileOut << *it << std::endl;
-	}
-
-	fileOut.close();
 }
 
 bool Response::isAvailableErrorCode(int code) const {
@@ -52,43 +21,6 @@ bool Response::isAvailableErrorCode(int code) const {
 			return true;
 	}
 	return false;
-}
-
-void Response::addServerNamesToHosts() {
-	std::ifstream	fileIn("/etc/hosts");
-	if (!fileIn.is_open()) {
-		std::cerr << "Error opening /etc/hosts for reading\n";
-		return;
-	}
-
-	std::vector<std::string>	fileLines;
-	std::string					line;
-	while (std::getline(fileIn, line))
-		fileLines.push_back(line);
-	fileIn.close();
-
-	std::string cp = fileLines[0];
-
-	if (cp.find("localhost") != std::string::npos) {
-		for (std::set<std::string>::iterator Serverit = _serverNames.begin(); Serverit != _serverNames.end(); ++Serverit) {
-			if (cp.find(*Serverit) == std::string::npos) {
-				fileLines[0] += " " + *Serverit;
-			}
-		}
-	}
-
-	std::ofstream	fileOut;
-	fileOut.open("/etc/hosts");
-	if (!fileOut.is_open()) {
-		std::cerr << "Error opening /etc/hosts for writing\n";
-		return;
-	}
-
-	for (std::vector<std::string>::iterator it = fileLines.begin(); it != fileLines.end(); ++it) {
-		fileOut << *it << std::endl;
-	}
-
-	fileOut.close();
 }
 
 typedef std::map<std::string, std::string>::iterator mapIt;

@@ -32,8 +32,6 @@ class Response {
 		~Response();
 
 		std::string bodyToJson();
-		void 		addServerNamesToHosts();
-		void		removeServerNamesFromHosts();
 		bool 		isAvailableErrorCode(int code) const;
 
 		// SETTERS
