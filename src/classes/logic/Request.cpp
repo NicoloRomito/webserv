@@ -125,7 +125,7 @@ void Request::parseRequest(std::string buffer)
 	// printDebug('+', buffer, "START");
 	if (splitReq.size() < 3)
 	{
-		error("client error");
+		printError("Client error");
 		return;
 	}
 	this->method = splitReq[0];

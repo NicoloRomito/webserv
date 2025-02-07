@@ -113,9 +113,10 @@ void	handlePost(Request* req, Response* res, int & statusCode, Upload* up) {
 
 	setRequestBody(req, statusCode);
 
-	std::cout << "\n AAAAAAAAAAAAAAAAAAAAA\n" << statusCode << "\n AAAAAAAAAAAAAAAAAAAAA\n";
-	if (statusCode != 200)
+	if (statusCode != 200) {
+		res->setResponse(generateResponse(req, res));
 		return ;
+	}
 
 	if (req->getUrlPath().substr(0, 8) == "/entries")
 	{
@@ -133,7 +134,7 @@ void	handlePost(Request* req, Response* res, int & statusCode, Upload* up) {
 			setResponseBodyForEntries(req, res, statusCode);
 			PostFile(filePath, trimQuotes(req->getBody().at("filebody")));
 		} else if (access(filePath.c_str(), F_OK) != -1) {
-			std::cout << "\nPermission denied\n";
+			printError("Permission denied");
 			statusCode = 403;
 			res->setResponse(generateResponse(req, res));
 			return;

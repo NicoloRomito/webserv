@@ -98,7 +98,7 @@ void	Server::addServerNamesToHosts()
 {
 	std::ifstream	fileIn("/etc/hosts");
 	if (!fileIn.is_open()) {
-		std::cerr << "Error opening /etc/hosts for reading\n";
+		printError("Error opening /etc/hosts for reading");
 		return;
 	}
 
@@ -123,7 +123,7 @@ void	Server::addServerNamesToHosts()
 
 	std::ofstream	fileOut("/etc/hosts");
 	if (!fileOut.is_open()) {
-		std::cerr << "Error opening /etc/hosts for writing\n";
+		printError("Error opening /etc/hosts for writing");
 		return;
 	}
 
@@ -138,7 +138,7 @@ void	Server::addServerNamesToHosts()
 void	Server::removeServerNamesFromHosts() {
 	std::ifstream	fileIn("/etc/hosts");
 	if (!fileIn.is_open()) {
-		std::cerr << "Error opening /etc/hosts for reading\n";
+		printError("Error opening /etc/hosts for reading");
 		return;
 	}
 
@@ -160,7 +160,7 @@ void	Server::removeServerNamesFromHosts() {
 	std::ofstream	fileOut;
 	fileOut.open("/etc/hosts");
 	if (!fileOut.is_open()) {
-		std::cerr << "Error opening /etc/hosts for writing\n";
+		printError("Error opening /etc/hosts for writing");
 		return;
 	}
 

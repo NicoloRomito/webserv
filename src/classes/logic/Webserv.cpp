@@ -1,6 +1,7 @@
 #include "../headers/Webserv.hpp"
 #include "../../../include/includes.hpp"
 #include "../../../include/includeClasses.hpp" // IWYU pragma: keep
+#include <asm-generic/socket.h>
 #include <csignal>
 #include <cstdio>
 #include <netinet/in.h>
@@ -10,16 +11,16 @@
 #include <unistd.h>
 
 int    setNonBlocking(int socket) {
-    int flags = fcntl(socket, F_GETFL, 0); // get the current flags of the socket
-    if (flags == -1) {
-        error("Failed to get flags");
-        return -1;
-    }
-    if (fcntl(socket, F_SETFL, flags | O_NONBLOCK) == -1) { // set the socket to non-blocking
-        error("Failed to set non-blocking");
-        return -1;
-    }
-    return socket;
+	int flags = fcntl(socket, F_GETFL, 0); // get the current flags of the socket
+	if (flags == -1) {
+		printError("Failed to get flags");
+		return -1;
+	}
+	if (fcntl(socket, F_SETFL, flags | O_NONBLOCK) == -1) { // set the socket to non-blocking
+		printError("Failed to set non-blocking");
+		return -1;
+	}
+	return socket;
 }
 
 Webserv::Webserv(): portN(0), option(1), http(NULL), pollFds(0), serverSocket(0), serverAddress(0) {}
@@ -44,7 +45,7 @@ void Webserv::initSocket() {
 
         currSocket = socket(AF_INET, SOCK_STREAM, 0);
         if (currSocket < 0) {
-            error("Failed to create socket");
+            printError("Failed to create socket");
         }
         if (setNonBlocking(currSocket) == -1) {
         }
@@ -55,11 +56,10 @@ void Webserv::initSocket() {
 
 void Webserv::socketOption() {
    for (int i = 0; i < portN; i++) {
-
-        if (setsockopt(serverSocket[i], SOL_SOCKET, SO_REUSEADDR, &option, sizeof(option)) < 0) {
-            error("Failed to set server socket");
-            close(serverSocket[i]);
-        }
+		if (setsockopt(serverSocket[i], SOL_SOCKET, SO_REUSEADDR, &option, sizeof(option)) < 0) {
+			printError("Failed to set server socket");
+			close(serverSocket[i]);
+		}
     }
 }
 
@@ -80,14 +80,13 @@ void Webserv::runSocket() {
             curr.sin_port = htons(port);
             curr.sin_addr.s_addr = htonl(INADDR_ANY);  // Bind to any address
             if (bind(serverSocket[currSocket], (struct sockaddr*)&curr, sizeof(curr)) < 0) {
-                // error("Binding Failed");
                 perror("Error: ");
                 close(serverSocket[currSocket]);
             }
 			this->listenMap[serverSocket[currSocket]] = "server" + int_to_string(i + 1);
             // listening to the assigned socket
-            if (listen(serverSocket[currSocket], 1024) < 0) {
-                error("Listen Failed");
+            if (listen(serverSocket[currSocket], SOMAXCONN) < 0) {
+                printError("Listen Failed");
                 close(serverSocket[currSocket]);
             }
             sListen.str("");
@@ -151,9 +150,6 @@ int Webserv::handleNewConnection() {
 			// Set server names in /etc/hosts file if are set in the config file
 			if (http->getDirective<Server>(currServer)->getDirective<ServerName>("server_name"))
 				http->getDirective<Server>(currServer)->addServerNamesToHosts();
-
-			// TODO: add check for server names when attempting to connect to specific server name, if is present on that config server.
-			// TODO: finish to the removeServerNamesFromHosts function
 
 			// Set the client socket to non-blocking mode
 			if (setNonBlocking(clientSocket) == -1) {

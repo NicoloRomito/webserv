@@ -98,21 +98,24 @@ void			handleDelete(Request* req, Response* res, int& statusCode);
 
 // postHandler
 bool 			isValidPostReq(int statusCode, Request* req);
-void			setRequestBody(Request* req, int & statusCode);
-void			formatError(int &statusCode, std::string encoding);
 std::string 	trimQuotes(std::string target);
 std::string 	trimSpaces(std::string target);
+
+// parseBody
+void			setRequestBody(Request* req, int & statusCode);
+
+// postReqErrors
 bool 			checkPostReqErrors(Request* req, Response* res, int& statusCode);
 bool 			checkforPostEntryErrors(Request* req, Response* res, int& statusCode);
 bool 			checkForCgiBodyErrors(Request* req, Response* res, int& statusCode);
 void 			formatError(int &statusCode, std::string encoding);
 
-// errors
-void 			error(std::string msg);
+// printUtils
+void			printLog(std::string msg);
 void			printError(std::string msg);
+
 // utils
 DirectiveType	checkDirectiveType(const std::string& dir);
-void			printLog(std::string msg);
 bool			isNumber(const std::string& str);
 bool			checkLine(const std::string& line);
 bool			semicolonFound(const std::string& line);

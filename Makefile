@@ -9,10 +9,10 @@ PARSING_CONF_DIR = src/parsing/configParsing/
 PARSING_DIR = src/parsing/
 DIRECTIVES_DIR = src/DirectivesCpp/
 CGI_DIR = src/cgi/
+LOGIC_DIR = src/classes/logic/
 
 CLIENT_FILES = ClientHandling.cpp ReadFiles.cpp RequestHandler.cpp postHandler.cpp utilsForClientHandling.cpp
-FILES = init/init.cpp utils/errorMsg.cpp classes/logic/Request.cpp classes/logic/Response.cpp classes/logic/PostFile.cpp \
-		classes/logic/Webserv.cpp classes/logic/Client.cpp classes/logic/Upload.cpp
+FILES = Request.cpp Response.cpp PostFile.cpp Webserv.cpp Client.cpp Upload.cpp
 MAIN = main.cpp
 UTILS_FILES = utils.cpp printUtils.cpp
 ERRORS_FILES = Errors.cpp postReqErrors.cpp
@@ -26,7 +26,7 @@ DIRECTIVES_FILES = Autoindex.cpp ErrorPage.cpp Index.cpp CgiPass.cpp \
 CGI_FILES = Cgi.cpp CgiUtils.cpp
 
 
-SRC = $(addprefix $(SRC_DIR), $(FILES))
+LOGIC = $(addprefix $(LOGIC_DIR), $(FILES))
 CLIENT = $(addprefix $(CLIENT_DIR), $(CLIENT_FILES))
 UTILS = $(addprefix $(ERRORS_DIR), $(UTILS_FILES))
 ERRORS = $(addprefix $(ERRORS_DIR), $(ERRORS_FILES))
@@ -45,8 +45,8 @@ C98 = -std=c++98
 
 all: $(NAME)
 
-$(NAME): $(MAIN) $(SRC) $(CLIENT) $(UTILS) $(ERRORS) $(PARSING) $(DIRECTIVES) $(CGI)
-	$(CPP) $(CFLAGS) $(C98) $(MAIN) $(SRC) $(CLIENT) $(UTILS) $(ERRORS) $(PARSING_CONF) $(PARSING) $(DIRECTIVES) $(CGI) -o $(NAME)
+$(NAME): $(MAIN) $(LOGIC) $(CLIENT) $(UTILS) $(ERRORS) $(PARSING) $(DIRECTIVES) $(CGI)
+	$(CPP) $(CFLAGS) $(C98) $(MAIN) $(LOGIC) $(CLIENT) $(UTILS) $(ERRORS) $(PARSING_CONF) $(PARSING) $(DIRECTIVES) $(CGI) -o $(NAME)
 	@clear
 	@echo "Compilation complete."
 

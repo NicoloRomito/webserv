@@ -71,7 +71,7 @@ char **Cgi::_createArgvGet(Request &req, Response *res)
 		argv = (char **)malloc(sizeof(char *) * 3);
 		if (!argv)
 		{
-			error("failed malloc for argvp");
+			printError("Failed malloc for argvp");
 			throw;
 		}
 		argv[0] = getScriptAbsPath(req.getPath(), res->getRoot());
@@ -83,7 +83,7 @@ char **Cgi::_createArgvGet(Request &req, Response *res)
 		argv = (char **)malloc(sizeof(char *) * 2);
 		if (!argv)
 		{
-			error("failed malloc for argvp");
+			printError("Failed malloc for argvp");
 			throw;
 		}
 		argv[0] = getScriptAbsPath(req.getPath(), res->getRoot());

@@ -14,9 +14,9 @@ int	Client::readHeader(int& clientSocket)
 		_bytesRecived = recv(clientSocket, _buffer, 1, 0);
 		if (_bytesRecived <= 0) {
 			if (_bytesRecived == 0)
-				std::cout << "Client disconnected." << std::endl;
+				printLog("Client disconnected.");
 			else
-				std::cerr << "Error receiving data\n";
+				printError("Error receiving data.");
 			return -1;
 		}
 		_header += _buffer[0];
@@ -38,19 +38,19 @@ int	Client::readBody(bool isMultipart, int& clientSocket) {
 			{
 				if (bytes_received == 0)
 				{
-					std::cout << "Client disconnected." << std::endl;
+					printLog("Client disconnected.");
 					return -1;
 				}
 				else if (cycle < 1 || cycle > 40000 || totReceived >= _contentLength)  //hard cap ~8mb
 				{
-					std::cerr << "Error receiving data\n";
+					printError("Error receiving data.");
 					return -1;
 				}
 			} else {
 				if (bytes_received == 0)
-					std::cout << "Client disconnected." << std::endl;
+					printLog("Client disconnected.");
 				else
-					std::cerr << "Error receiving data\n";
+					printError("Error receiving data.");
 				return -1;
 			}
     	}

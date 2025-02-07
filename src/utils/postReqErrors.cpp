@@ -65,7 +65,7 @@ bool checkforPostEntryErrors(Request* req, Response* res, int& statusCode)
 	{
 		statusCode = 422;
 		res->setResponse(generateResponse(req, res));
-		std::cout << "POST request body invalid format\n";
+		printError("POST request body invalid format");
 		return true;
 	}
 	return false;
@@ -81,7 +81,7 @@ bool checkForCgiBodyErrors(Request* req, Response* res, int& statusCode)
 		{
 			statusCode = 422;
 			res->setResponse(generateResponse(req, res));
-			std::cout << "POST request body invalid format\n";
+			printError("POST request body invalid format");
 			return true; 
 		}
 		oss.str(std::string());
@@ -90,6 +90,6 @@ bool checkForCgiBodyErrors(Request* req, Response* res, int& statusCode)
 }
 
 void formatError(int &statusCode, std::string encoding) {
-	error((encoding == "json") ?  "Invalid JSON format" : "Invalid form-urlencoded format");
+	printError((encoding == "json") ?  "Invalid JSON format" : "Invalid form-urlencoded format");
 	statusCode = 400;
 }

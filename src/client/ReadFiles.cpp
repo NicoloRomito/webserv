@@ -17,14 +17,11 @@ void	getErrorPage(std::string& response, Response* res, int statusCode) {
 	std::string		line;
 	bool			inSection = false;
 	std::string		errorPage = assignErrorPage(res, statusCode);
-
-	std::cout << "ERROR PAGE: " << errorPage << std::endl;
-	std::cout << "STATUS CODE: " << statusCode << std::endl;
 	
 	if (res->getAvailableErrorCodes().count(statusCode) > 0) {
 		file.open(errorPage.c_str());
 		if (!file.is_open()) {
-			std::cerr << "Error page not found\n";
+			printError("Error opening error page");
 		}
 		while (getline(file, line)) {
 			if (line.find("<!-- START " + int_to_string(statusCode) + " -->") != std::string::npos) {
@@ -47,9 +44,6 @@ void	getErrorPage(std::string& response, Response* res, int statusCode) {
 void	readHtml(std::string &response, Request* req, Response* res, int& statusCode) {
 	std::ifstream	file;
 	std::string		line;
-
-	std::cout << "\nURL PATH: " << req->getUrlPath() << std::endl;
-	std::cout << "\nPATH FOR HTML FILE: " << res->getPathForHtml() << std::endl;
 
 	if (req->getUrlPath().substr(0, 9) == "/cgi-bin/" && req->getUrlPath() != "/cgi-bin/")
 	{
