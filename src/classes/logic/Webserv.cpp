@@ -10,7 +10,7 @@
 #include <fcntl.h>
 #include <unistd.h>
 
-int    setNonBlocking(int socket) {
+int	setNonBlocking(int socket) {
 	int flags = fcntl(socket, F_GETFL, 0); // get the current flags of the socket
 	if (flags == -1) {
 		printError("Failed to get flags");
@@ -24,6 +24,12 @@ int    setNonBlocking(int socket) {
 }
 
 Webserv::Webserv(): portN(0), option(1), http(NULL), pollFds(0), serverSocket(0), serverAddress(0) {}
+
+Webserv::~Webserv() {
+	for (size_t i = 0; i < serverSocket.size(); i++) {
+		close(serverSocket[i]);
+	}
+}
 
 void Webserv::init(Http *http) {
 	this->http = http;
@@ -46,8 +52,11 @@ void Webserv::initSocket() {
         currSocket = socket(AF_INET, SOCK_STREAM, 0);
         if (currSocket < 0) {
             printError("Failed to create socket");
+			continue;
         }
         if (setNonBlocking(currSocket) == -1) {
+			close(currSocket);
+			continue;
         }
         currSocket = setNonBlocking(currSocket);
         serverSocket.push_back(currSocket);
@@ -194,7 +203,6 @@ void Webserv::run() {
 			break;
 
 		if (QUIT) break;
-
 	}
 
 	std::cout << "pollfds = " << pollFds.size() << std::endl;

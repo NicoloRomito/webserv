@@ -33,7 +33,6 @@ class	Errors {
 			public:
 				TooFewArgsException(const std::string& message, int line, const char* file)
 					: BaseException(message, line, file) {};
-				
 		};
 
 		class	NoSemiColonException : public BaseException {
@@ -62,8 +61,8 @@ class	Errors {
 
 		class	UnknownFileException : public BaseException {
 			public:
-				UnknownFileException(const std::string& message, int line, const char* file)
-					: BaseException(message, line, file) {};
+				UnknownFileException(const std::string& message, const char* file)
+					: BaseException(message, file) {};
 		};
 
 		class	DuplicateDirectiveException : public BaseException {
@@ -74,8 +73,8 @@ class	Errors {
 
 		class	SameListenException : public BaseException {
 			public:
-				SameListenException(const std::string& message, int line, const char* file)
-					: BaseException(message, line, file) {};
+				SameListenException(const std::string& message, const char* file)
+					: BaseException(message, file) {};
 		};
 
 		class	InvalidPathException : public BaseException {

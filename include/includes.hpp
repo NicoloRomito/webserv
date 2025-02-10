@@ -92,7 +92,7 @@ void				setMessageandRedirect(std::string& message, int statusCode, bool& isRedi
 const std::string	setContentType(Request* req);
 
 // RequestHandler
-void			handleRequest(Request* request, Http* http, Response* res, bool locationExists, int& statusCode, Upload *up);
+void			handleRequest(Request* request, Response* res, bool locationExists, int& statusCode, Upload *up);
 void			handleGet(Request* req, Response* res, bool locationExists, int& statusCode);
 void			handleDelete(Request* req, Response* res, int& statusCode);
 

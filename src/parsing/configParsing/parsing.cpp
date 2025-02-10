@@ -47,7 +47,8 @@ DirectiveType	getDirectiveType(const std::string& dir) {
 }
 
 
-std::vector<std::string>	returnLine(const std::string& line) {
+std::vector<std::string>	returnLine(const std::string& line)
+{
 	std::string	token;
 	std::vector<std::string>	tokens;
 	std::istringstream	fileLine(line);
@@ -59,16 +60,17 @@ std::vector<std::string>	returnLine(const std::string& line) {
 	return tokens;
 }
 
-void	startParsing(const std::string& file, std::stringstream& fileStream) {
+void	startParsing(const std::string& file, std::stringstream& fileStream)
+{
 	if (file.find(".conf") == std::string::npos) {
-		throw Errors::UnknownFileException("Unknown file extension", __LINE__, __FILE__);
+		throw Errors::UnknownFileException("Unknown file extension", __FILE__);
 	}
 
 	std::ifstream	configFile(file.c_str());
 	std::string		token, directive, args;
 
 	if (!configFile)
-		throw Errors::UnknownFileException("File failed to open", __LINE__, __FILE__);
+		throw Errors::UnknownFileException("File failed to open", __FILE__);
 
 	while (std::getline(configFile, token)) {
 		ConfigLine++;
@@ -77,5 +79,5 @@ void	startParsing(const std::string& file, std::stringstream& fileStream) {
 			return;
 		}
 	}
-	throw Errors::UnknownFileException("No http block found", __LINE__, __FILE__);
+	throw Errors::UnknownFileException("No http block found", __FILE__);
 }

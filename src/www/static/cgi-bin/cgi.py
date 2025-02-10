@@ -5,4 +5,5 @@ print("<h1>This is my first CGI script</h1>")
 print("Hello, JavaTpoint!")
 # to test 
 # while 1:
+exit 0;
 	

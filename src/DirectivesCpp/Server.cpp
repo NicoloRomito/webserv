@@ -123,7 +123,7 @@ void	Server::addServerNamesToHosts()
 
 	std::ofstream	fileOut("/etc/hosts");
 	if (!fileOut.is_open()) {
-		printError("Error opening /etc/hosts for writing");
+		printError("Error opening /etc/hosts for writing. Use sudo when running the server.");
 		return;
 	}
 
@@ -160,7 +160,7 @@ void	Server::removeServerNamesFromHosts() {
 	std::ofstream	fileOut;
 	fileOut.open("/etc/hosts");
 	if (!fileOut.is_open()) {
-		printError("Error opening /etc/hosts for writing");
+		printError("Error opening /etc/hosts for writing. Use sudo when running the server.");
 		return;
 	}
 

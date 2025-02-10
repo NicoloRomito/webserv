@@ -27,7 +27,7 @@ void	Http::compareServerPorts() {
 			std::string listenName = "listen" + int_to_string(j + 1);
 			std::string port = this->getDirective<Server>(serverName)->getDirective<Listen>(listenName)->getPort();
 			if (ports.find(port) != ports.end())
-				throw Errors::SameListenException("Duplicate port not allowed", ConfigLine, __FILE__);
+				throw Errors::SameListenException("Duplicate port not allowed", __FILE__);
 			ports.insert(port);
 		}
 	}

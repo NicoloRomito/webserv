@@ -77,16 +77,20 @@ std::string    generateResponse(Request* req, Response* res) {
 	statusCode = int_to_string(STATUS_CODE);
 	setMessageandRedirect(message, STATUS_CODE, isRedirect);
 
-	// TODO: update error.html with nicer code and refactor this function
-
 	response = "HTTP/1.1 " + statusCode + " " + message + "\r\n";
 
-	if (isRedirect) {
+	if (isRedirect)
+	{
 		redirectingUrl(index, req, res, response);
-	} else if (STATUS_CODE == 200 && req->getMethod() != "POST" && contentType == "text/html")
+	}
+	else if (STATUS_CODE == 200 && req->getMethod() != "POST" && contentType == "text/html")
+	{
 		readHtml(index, req, res, STATUS_CODE);
+	}
 	else if (STATUS_CODE == 200 && contentType != "text/html")
+	{
 		readFile(index, res, STATUS_CODE);
+	}
 	else if (isValidPostReq(STATUS_CODE, req))
 	{
 		if (req->getUrlPath().substr(0, 9) != "/cgi-bin/") {
@@ -96,7 +100,8 @@ std::string    generateResponse(Request* req, Response* res) {
 		if (req->getUrlPath().substr(0, 9) == "/cgi-bin/" &&
 		 	req->getUrlPath() != "/cgi-bin/")
 			readHtml(index, req, res, STATUS_CODE);
-	} else if (STATUS_CODE == 204)
+	}
+	else if (STATUS_CODE == 204)
 		index = "";
 	else
 		getErrorPage(index, res, STATUS_CODE);
@@ -160,7 +165,7 @@ void parseMultiPartBody(std::vector<char> body, std::string header, Upload* uplo
 		ofs->write(part.c_str(), part.size() - 2); // Write the file content
 		if (ofs->fail())
 		{
-			std::cout << "\n [UPLOAD] -> FAILED" << "\n";
+			printError("Upload failed.");
 			ofs->close();
 			delete ofs;
 			uploadRes->setFailure();
@@ -201,10 +206,7 @@ void	clientHandler(int& clientSocket, Http* http, std::string currServer) {
 
 	// Pick the header
 	if (client->readHeader(clientSocket) == -1) {
-		close(clientSocket);
-		clientSocket = -1;
 		deleteAndSleep(client, request, res, uploadRes);
-		usleep(5);
 		return;
 	}
 	request->parseRequest(client->getHeader());
@@ -230,12 +232,13 @@ void	clientHandler(int& clientSocket, Http* http, std::string currServer) {
 	}
 
 	request->setClientId(clientSocket);
+	
+	lookForRequestType(request, http, res, locationExists);
 	if (client->getContentLength() > MaxBodySize) {
 		STATUS_CODE = 413;
 		res->setResponse(generateResponse(request, res));
 	} else {
-		lookForRequestType(request, http, res, locationExists);
-		handleRequest(request, http, res, locationExists, STATUS_CODE, uploadRes);
+		handleRequest(request, res, locationExists, STATUS_CODE, uploadRes);
 	}
 	// Send the response to the client
 	if (send(clientSocket, res->getResponse().c_str(), res->getResponse().size(), MSG_CONFIRM) <= 0)

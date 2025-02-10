@@ -3,6 +3,7 @@
 #include "../../../include/includeClasses.hpp"
 #include <cstddef>
 #include <string>
+#include <unistd.h>
 
 Client::Client() : _bytesRecived(0), _contentLength(0) {}
 
@@ -17,6 +18,9 @@ int	Client::readHeader(int& clientSocket)
 				printLog("Client disconnected.");
 			else
 				printError("Error receiving data.");
+			close(clientSocket);
+			clientSocket = -1;
+			usleep(50);
 			return -1;
 		}
 		_header += _buffer[0];
@@ -37,22 +41,20 @@ int	Client::readBody(bool isMultipart, int& clientSocket) {
 			if (isMultipart)
 			{
 				if (bytes_received == 0)
-				{
 					printLog("Client disconnected.");
-					return -1;
-				}
 				else if (cycle < 1 || cycle > 40000 || totReceived >= _contentLength)  //hard cap ~8mb
-				{
 					printError("Error receiving data.");
-					return -1;
-				}
-			} else {
+			}
+			else 
+			{
 				if (bytes_received == 0)
 					printLog("Client disconnected.");
 				else
 					printError("Error receiving data.");
-				return -1;
 			}
+			close(clientSocket);
+			clientSocket = -1;
+			return -1;
     	}
 		if (bytes_received != -1)
     		totReceived += bytes_received;

@@ -3,6 +3,7 @@
 #include "include/includes.hpp"
 #include "include/includeClasses.hpp"
 #include "src/classes/headers/Webserv.hpp"
+#include <iostream>
 
 // * NOTE: This is a list of the directives that need to be called with numbers
 // * at the end of the directive name. Here is the list:
@@ -37,7 +38,6 @@ int main(int ac, char **av) {
 	}
 	std::stringstream fileStream;
 	Http *http = new Http();
-	Webserv	webserv;
 
 	try {
 		startParsing(av[1], fileStream);
@@ -48,6 +48,7 @@ int main(int ac, char **av) {
 		return 0;
 	}
 
+	Webserv	webserv;
 	webserv.init(http);
 	webserv.initSocket();
 	webserv.socketOption();
@@ -56,6 +57,8 @@ int main(int ac, char **av) {
 	//todo thow an error on init scoket
 
 	delete http;
-	std::cout << "[SERVER MESSAGE] -> SERVER IS NOW SHUT DOWN\n";
+	printLog("Server stopped.");
 	return 0;
 }
+
+// TODO: remove the redirect test from the index.html

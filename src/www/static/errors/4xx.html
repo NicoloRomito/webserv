@@ -1,51 +1,127 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Error</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Error</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Roboto', sans-serif;
+            background: radial-gradient(circle, #3a1c71, #d76d77, #ffaf7b);
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        .container {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.1);
+            padding: 40px;
+            border-radius: 15px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+            max-width: 600px;
+            width: 90%;
+            backdrop-filter: blur(10px);
+        }
+
+        h1 {
+            font-size: 3rem;
+            margin-bottom: 15px;
+            color: #ffe4b5;
+        }
+
+        p {
+            font-size: 1.2rem;
+            margin-bottom: 30px;
+            color: #f3e5ab;
+        }
+
+        .error-box {
+            padding: 20px;
+            border-radius: 8px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        #error-400 { background: rgba(255, 107, 107, 0.3); }
+        #error-403 { background: rgba(255, 159, 67, 0.3); }
+        #error-404 { background: rgba(59, 89, 152, 0.3); }
+        #error-405 { background: rgba(30, 144, 255, 0.3); }
+        #error-413 { background: rgba(255, 71, 87, 0.3); }
+        #error-422 { background: rgba(106, 137, 204, 0.3); }
+
+        a {
+            display: inline-block;
+            text-decoration: none;
+            background: linear-gradient(90deg, #6a11cb, #2575fc);
+            color: #fff;
+            padding: 12px 25px;
+            margin-top: 20px;
+            border-radius: 25px;
+            font-size: 1rem;
+            font-weight: bold;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        a:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+        }
+    </style>
 </head>
 <body>
-  <!-- START 400 -->
-  <div id="400">
-    <h1>400 Bad Request</h1>
-    <p>Your request could not be understood by the server.</p>
-  </div>
-  <!-- END 400 -->
-  
-  <!-- START 403 -->
-  <div id="403">
-    <h1>403 Forbidden</h1>
-    <p>You do not have permission to access this resource.</p>
-  </div>
-  <!-- END 403 -->
+    <div class="container">
+        <!-- START ERRORS -->
+        <!-- START 400 -->
+        <div id="400" class="error-box" style="display: block;">
+            <h1>400 Bad Request</h1>
+            <p>Your request could not be understood by the server.</p>
+        </div>
+        <!-- END 400 -->
 
-  <!-- START 404 -->
-  <div id="404">
-    <h1>404 Not Found</h1>
-    <p>The requested resource could not be found on this server.</p>
-  </div>
-  <!-- END 404 -->
-  
-  <!-- START 405 -->
-  <div id="405">
-    <h1>405 Method Not Allowed</h1>
-    <p>The request method is not allowed for the requested resource.</p>
-  </div>
-  <!-- END 405 -->
+        <!-- START 403 -->
+        <div id="403" class="error-box" style="display: block;">
+            <h1>403 Forbidden</h1>
+            <p>You do not have permission to access this resource.</p>
+        </div>
+        <!-- END 403 -->
 
-  <!-- START 413 -->
-  <div id="413">
-    <h1>413 Content Too Large</h1>
-    <p>The request is larger than the server is willing or able to process.</p>
-  </div>
-  <!-- END 413 -->
+        <!-- START 404 -->
+        <div id="404" class="error-box" style="display: block;">
+            <h1>404 Not Found</h1>
+            <p>The requested resource could not be found on this server.</p>
+        </div>
+        <!-- END 404 -->
 
-  <!-- START 422 -->
-  <div id="422">
-    <h1>422 Unprocessable Content</h1>
-    <p>The request was well-formed but was unable to be followed due to semantic errors.</p>
-  </div>
-  <!-- END 422 -->
+        <!-- START 405 -->
+        <div id="405" class="error-box" style="display: block;">
+            <h1>405 Method Not Allowed</h1>
+            <p>The request method is not allowed for the requested resource.</p>
+        </div>
+        <!-- END 405 -->
+
+        <!-- START 413 -->
+        <div id="413" class="error-box" style="display: block;">
+            <h1>413 Content Too Large</h1>
+            <p>The request is larger than the server is willing or able to process.</p>
+        </div>
+        <!-- END 413 -->
+
+        <!-- START 422 -->
+        <div id="422" class="error-box" style="display: block;">
+            <h1>422 Unprocessable Content</h1>
+            <p>The request was well-formed but was unable to be followed due to semantic errors.</p>
+        </div>
+        <!-- END 422 -->
+        <!-- END ERRORS -->
+
+        <a href="/">Go Home</a>
+    </div>
 </body>
 </html>

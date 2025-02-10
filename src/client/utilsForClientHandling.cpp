@@ -68,6 +68,8 @@ const std::string setContentType(Request* req) {
 		contentType = "image/gif";
 	else if (extension == "ico")
 		contentType = "image/x-icon";
+	else if (extension == "image/heic")
+		contentType = "image/heic";
 	else if (extension == "json")
 		contentType = "application/json";
 	else if (extension == "xml")
@@ -80,21 +82,8 @@ const std::string setContentType(Request* req) {
 		contentType = "application/x-tar";
 	else if (extension == "gz")
 		contentType = "application/x-gzip";
-	else if (extension == "mp3")
-		contentType = "audio/mpeg";
-	else if (extension == "mp4")
-		contentType = "video/mp4";
-	else if (extension == "mpeg")
-		contentType = "video/mpeg";
-	else if (extension == "webm")
-		contentType = "video/webm";
-	else if (extension == "ogg")
-		contentType = "video/ogg";
-	else if (extension == "wav")
-		contentType = "audio/wav";
-	else if (extension == "avi")
-		contentType = "video/x-msvideo";
 	else if (extension == "txt")
 		contentType = "text/plain";
+
 	return contentType;
 }

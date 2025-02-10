@@ -22,6 +22,8 @@ class Webserv {
 		int acceptClient();
 	public:
 		Webserv();
+		~Webserv();
+
 		void init(Http *http);
 		void initSocket();
 		void socketOption();

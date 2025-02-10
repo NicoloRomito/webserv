@@ -10,12 +10,16 @@ ErrorPage::ErrorPage() {}
 ErrorPage::ErrorPage(int errorCode) {
 	if (errorCode == 500) {
 		this->_codes.insert(500);
+		this->_codes.insert(501);
 		this->_codes.insert(502);
 		_path = "/src/www/static/errors/5xx.html";
 	} else if (errorCode == 400) {
 		this->_codes.insert(400);
 		this->_codes.insert(403);
 		this->_codes.insert(404);
+		this->_codes.insert(405);
+		this->_codes.insert(413);
+		this->_codes.insert(422);
 		_path = "/src/www/static/errors/4xx.html";
 	}
 }

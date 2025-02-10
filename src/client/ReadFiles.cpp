@@ -16,6 +16,7 @@ void	getErrorPage(std::string& response, Response* res, int statusCode) {
 	std::ifstream	file;
 	std::string		line;
 	bool			inSection = false;
+	bool			errorSection = false;
 	std::string		errorPage = assignErrorPage(res, statusCode);
 	
 	if (res->getAvailableErrorCodes().count(statusCode) > 0) {
@@ -24,13 +25,23 @@ void	getErrorPage(std::string& response, Response* res, int statusCode) {
 			printError("Error opening error page");
 		}
 		while (getline(file, line)) {
+			if (line.find("<!-- START ERRORS -->") != std::string::npos) {
+				errorSection = true;
+				continue;
+			}
+			if (line.find("<!-- END ERRORS -->") != std::string::npos) {
+				errorSection = false;
+				continue;
+			}
+			if (!errorSection)
+				response += line + "\n";
 			if (line.find("<!-- START " + int_to_string(statusCode) + " -->") != std::string::npos) {
 				inSection = true;
 				continue;
 			}
 			if (line.find("<!-- END " + int_to_string(statusCode) + " -->") != std::string::npos) {
 				inSection = false;
-				break;
+				continue;
 			}
 			if (inSection)
 				response += line + "\n";

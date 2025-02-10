@@ -97,8 +97,6 @@ bool	isADirectory(const std::string urlPath, const std::string& root) {
 	if (stat(requestPath.c_str(), &pathStat) == 0) {
 		if (S_ISDIR(pathStat.st_mode))
 			return true;
-	} else {
-		std::cout << "Error: " << requestPath << " is not a directory\n";
 	}
 	return false;
 }
@@ -123,18 +121,25 @@ void	setServerDirectives(Response* res, Server* server)
 		res->setRewriteReplacement(server->getDirective<Rewrite>("rewrite")->getReplacement());
 		res->setRewriteFlag(server->getDirective<Rewrite>("rewrite")->getFlag());
 	}
+
 	if (server->getDirective<AllowMethods>("allow_methods"))
 		res->setAllowedMethods(server->getDirective<AllowMethods>("allow_methods")->getMethods());
+
 	if (server->getDirective<Index>("index"))
 		res->setIndex(server->getDirective<Index>("index")->getFile());
+
 	if (server->getDirective<Autoindex>("autoindex"))
 		res->setAutoindex(server->getDirective<Autoindex>("autoindex")->getAutoindex());
+
 	if (server->getDirective<Root>("root"))
 		res->setRoot(server->getDirective<Root>("root")->getPath());
+
 	if (server->getDirective<CgiPass>("cgi_pass"))
 		res->setCgiPass(server->getDirective<CgiPass>("cgi_pass")->getPath());
+
 	if (server->getDirective<ServerName>("server_name"))
 		res->setServerNames(server->getDirective<ServerName>("server_name")->getNames());
+
 	if (server->getDirective<ClientMaxBodySize>("client_max_body_size"))
 		res->setClientMaxBodySize(server->getDirective<ClientMaxBodySize>("client_max_body_size")->getSize());
 }
@@ -146,30 +151,37 @@ void	setLocationDirectives(Response* res, Location* location, const std::string 
 		res->setRewriteReplacement(location->getDirective<Rewrite>("rewrite")->getReplacement());
 		res->setRewriteFlag(location->getDirective<Rewrite>("rewrite")->getFlag());
 	}
+
 	if (location->getDirective<AllowMethods>("allow_methods"))
 		res->setAllowedMethods(location->getDirective<AllowMethods>("allow_methods")->getMethods());
+
 	if (location->getDirective<ClientMaxBodySize>("client_max_body_size"))
 		res->setClientMaxBodySize(location->getDirective<ClientMaxBodySize>("client_max_body_size")->getSize());
+
 	if (location->getDirective<ServerName>("server_name"))
 		res->setServerNames(location->getDirective<ServerName>("server_name")->getNames());
+
 	if (location->getDirective<ErrorPage>(serverName + "error_page4xx"))
 		res->setErrorPage4xx(location->getDirective<ErrorPage>(serverName + "error_page4xx")->getPath());
+
 	if (location->getDirective<ErrorPage>(serverName + "error_page5xx"))
 		res->setErrorPage5xx(location->getDirective<ErrorPage>(serverName + "error_page5xx")->getPath());
+
 	if (location->getDirective<ErrorPage>(serverName + "error_page4xx")
 		|| location->getDirective<ErrorPage>(serverName + "error_page5xx"))
 		res->setAvailableErrorCodes(location->getDirective<ErrorPage>(serverName + "error_page4xx")->getCodes(),
 			location->getDirective<ErrorPage>(serverName + "error_page5xx")->getCodes());
 }
 
-void	setAllValues(Response* res, Http* http, const std::string& serverName, const std::string& locationName, bool locationExists) {
-	Server			*server = http->getDirective<Server>(serverName);
-	size_t			clientMaxBodySize = http->getDirective<ClientMaxBodySize>("client_max_body_size")->getSize();
+void	setAllValues(Response* res, Http* http, const std::string& serverName, const std::string& locationName, bool locationExists)
+{
+	Server					*server = http->getDirective<Server>(serverName);
+	size_t					clientMaxBodySize = http->getDirective<ClientMaxBodySize>("client_max_body_size")->getSize();
 	std::set<std::string>	methods = http->getDirective<AllowMethods>("allow_methods")->getMethods();
-	std::string		clientErrorPage = server->getDirective<ErrorPage>(serverName + "error_page4xx")->getPath();
-	std::string		serverErrorPage = server->getDirective<ErrorPage>(serverName + "error_page5xx")->getPath();
-	std::set<int>	clientErrors = server->getDirective<ErrorPage>(serverName + "error_page4xx")->getCodes();
-	std::set<int>	serverErrors = server->getDirective<ErrorPage>(serverName + "error_page5xx")->getCodes();
+	std::string				clientErrorPage = server->getDirective<ErrorPage>(serverName + "error_page4xx")->getPath();
+	std::string				serverErrorPage = server->getDirective<ErrorPage>(serverName + "error_page5xx")->getPath();
+	std::set<int>			clientErrors = server->getDirective<ErrorPage>(serverName + "error_page4xx")->getCodes();
+	std::set<int>			serverErrors = server->getDirective<ErrorPage>(serverName + "error_page5xx")->getCodes();
 
 	// DEFAULT VALUES FOR RESPONSE
 	res->setClientMaxBodySize(clientMaxBodySize);

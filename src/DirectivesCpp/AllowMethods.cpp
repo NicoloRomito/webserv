@@ -16,6 +16,8 @@ AllowMethods::AllowMethods(const std::string& get, const std::string& post, cons
 
 void	AllowMethods::setMethods(std::vector<std::string> args) {
 	for (std::vector<std::string>::iterator it = args.begin(); it != args.end(); it++) {
+		if (it->find(";") != std::string::npos)
+			*it = it->substr(0, it->find(";"));
 		if (*it == "GET" || *it == "POST" || *it == "DELETE")
 			_methods.insert(*it);
 		else
