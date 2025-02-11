@@ -21,6 +21,17 @@
 
 // ! NOTE: getDirective returns NULL if the directive does not exist
 
+
+// ? FOR TESTING PURPOSES WITH SIEGE
+// ? Run the webserver with make val
+// ? In a terminal run htop and filter for webserver
+// ? Then in another terminal use: siege -v -b -c10 -t20S http://localhost:8080/vuoto-test.html
+// ? In another terminal run: ss -tanp | grep webserv to see if there are hanging connections
+
+// ? TEST FOR POST REQUEST WITH CGI SCRIPT
+// ? Run the webserver.
+// ? make this request: curl -X POST http://localhost:8080/cgi-bin/echo.sh -H "Content-Type: application/json"  -d '{"param1": 123456, "param2": 100}'
+
 int QUIT = 0;
 
 int checkSocketAvailable(std::vector<pollfd> pollFds, int serverN) {
@@ -61,4 +72,3 @@ int main(int ac, char **av) {
 	return 0;
 }
 
-// TODO: remove the redirect test from the index.html

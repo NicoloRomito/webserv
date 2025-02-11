@@ -226,7 +226,11 @@ void	clientHandler(int& clientSocket, Http* http, std::string currServer) {
 			parseMultiPartBody(client->getBody(), client->getHeader(), uploadRes);
 		}
 		else {
-			std::string query = client->getBody().data();
+			// std::string query = client->getBody().data();
+			// request->setQuery(query.substr(0, client->getContentLength()));
+
+			const char* tmp = client->getBody().data();
+			std::string query(tmp, client->getBody().size());
 			request->setQuery(query.substr(0, client->getContentLength()));
 		}
 	}

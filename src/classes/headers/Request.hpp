@@ -51,6 +51,5 @@ public:
 
 void handlePost(Request *req, Response *res, int &statusCode, Upload* up);
 bool invalidMethod(std::string str);
-bool validRequestContent(int errno);
 
 #endif

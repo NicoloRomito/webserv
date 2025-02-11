@@ -251,8 +251,3 @@ bool invalidMethod(std::string str)
 {
 	return (str != "GET" && str != "POST" && str != "DELETE");
 }
-
-bool validRequestContent(int errno)
-{
-	return (errno == 11);
-}

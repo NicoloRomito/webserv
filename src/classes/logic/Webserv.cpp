@@ -164,8 +164,10 @@ int Webserv::handleNewConnection() {
 			if (setNonBlocking(clientSocket) == -1) {
 				std::cerr << "Failed to set client socket to non-blocking. Closing socket." << std::endl;
 				close(clientSocket);
+				clientSocket = -1;
 				continue;
 			}
+			clientSocket = setNonBlocking(clientSocket);
 
 			clientPollFd.fd = clientSocket;
 			clientPollFd.events = POLLIN;
