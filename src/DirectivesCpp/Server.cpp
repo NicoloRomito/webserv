@@ -12,7 +12,8 @@ int	locationN = 0;
 Server::Server() : AConfig(), _nListen(0), _locationN(0) {}
 
 Server::~Server() {
-	removeServerNamesFromHosts();
+	if (this->getDirective<ServerName>("server_name") != NULL)
+		removeServerNamesFromHosts();
 	cleanDirectives();
 }
 
