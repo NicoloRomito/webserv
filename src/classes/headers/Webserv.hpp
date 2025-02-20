@@ -27,7 +27,7 @@ class Webserv {
 		void init(Http *http);
 		void initSocket();
 		void socketOption();
-		void runSocket();
+		bool runSocket();
 		void run();
 };
 

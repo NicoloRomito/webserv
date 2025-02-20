@@ -72,7 +72,7 @@ void Webserv::socketOption() {
     }
 }
 
-void Webserv::runSocket() {
+bool Webserv::runSocket() {
 	int port;
     sockaddr_in curr;
     std::stringstream server, sListen;
@@ -91,6 +91,7 @@ void Webserv::runSocket() {
             if (bind(serverSocket[currSocket], (struct sockaddr*)&curr, sizeof(curr)) < 0) {
                 perror("Error: ");
                 close(serverSocket[currSocket]);
+				return false;
             }
 			this->listenMap[serverSocket[currSocket]] = "server" + int_to_string(i + 1);
             // listening to the assigned socket
@@ -105,6 +106,7 @@ void Webserv::runSocket() {
         server.str("");
         // binding the socket to the address
     }
+	return true;
 }
 
 void sigHandler(int signal) {

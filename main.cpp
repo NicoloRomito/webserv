@@ -14,6 +14,10 @@
 // * Listen -> listen1, listen2, listen3, ...
 // * ErrorPage -> server1error_page4xx, server1error_page5xx, ...
 
+// test for curl --resolve
+// curl --resolve ginopino.com:8080:127.0.0.1 http://ginopino.com:8080/
+
+
 // ! NOTE: DEFAULT DIRECTIVES ARE:
 // * Http: client_max_body_size;
 // * Server: listen, server_name, error_page4xx, error_page5xx;
@@ -63,8 +67,8 @@ int main(int ac, char **av) {
 	webserv.init(http);
 	webserv.initSocket();
 	webserv.socketOption();
-	webserv.runSocket();
-	webserv.run();
+	if (webserv.runSocket())
+		webserv.run();
 	//todo thow an error on init scoket
 
 	delete http;

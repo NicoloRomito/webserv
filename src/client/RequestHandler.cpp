@@ -19,7 +19,7 @@ void	handleRequest(Request* request, Response* res, bool locationExists, int& st
 	} else if (request->getMethod() == "DELETE" && isAllowedMethod(request, res)) {
 		handleDelete(request, res, statusCode);
 	} else {
-		statusCode = 405;
+		statusCode = 501;
 		res->setResponse(generateResponse(request, res));
 	}
 }
@@ -28,6 +28,10 @@ bool	indexExists(const std::string& cwd, const std::string& root, const std::str
 	if (index.empty())
 		return false;
 	std::string path = cwd + root + "/" + index;
+	if (isADirectory(index, root))
+	{
+		return false;
+	}
 	if (access(path.c_str(), F_OK) == 0)
 		return true;
 	return false;

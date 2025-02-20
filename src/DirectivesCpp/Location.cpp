@@ -8,6 +8,7 @@ Location::Location(const std::string& locationPath) : AConfig(), _path(locationP
 
 Location::~Location() {
 	cleanDirectives();
+	
 }
 
 void	Location::parse(std::stringstream& file) {
