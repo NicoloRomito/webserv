@@ -8,50 +8,75 @@ AConfig::~AConfig() {}
 
 AConfig*	AConfig::createDirective(const std::string& directive, std::vector<std::string> args) {
 	DirectiveType	type = getDirectiveType(directive);
+	Listen *listen = NULL;
+	ServerName *serverName = NULL;
+	Root *root = NULL;
+	Index *index = NULL;
+	ErrorPage *errorPage = NULL;
+	ClientMaxBodySize *clientMaxBodySize = NULL;
+	Autoindex *autoindex = NULL;
+	CgiPass *cgiPass = NULL;
+	AllowMethods *allowMethods = NULL;
+	Rewrite *rewrite = NULL;
 
-	switch (type) {
-		case LISTEN: {
-			Listen *listen = new Listen();
-			listen->parseDirective(args);
-			return listen;
-		} case SERVER_NAME: {
-			ServerName *serverName = new ServerName();
-			serverName->parseDirective(args);
-			return serverName;
-		} case ROOT: {
-			Root *root = new Root();
-			root->parseDirective(args);
-			return root;
-		} case INDEX: {
-			Index *index = new Index();
-			index->parseDirective(args);
-			return index;
-		} case ERROR_PAGE: {
-			ErrorPage *errorPage = new ErrorPage();
-			errorPage->parseDirective(args);
-			return errorPage;
-		} case CLIENT_MAX_BODY_SIZE: {
-			ClientMaxBodySize *clientMaxBodySize = new ClientMaxBodySize();
-			clientMaxBodySize->parseDirective(args);
-			return clientMaxBodySize;
-		} case AUTOINDEX: {
-			Autoindex *autoindex = new Autoindex();
-			autoindex->parseDirective(args);
-			return autoindex;
-		} case CGI_PASS: {
-			CgiPass *cgiPass = new CgiPass();
-			cgiPass->parseDirective(args);
-			return cgiPass;
-		} case ALLOW_METHODS: {
-			AllowMethods *allowMethods = new AllowMethods();
-			allowMethods->setMethods(args);
-			return allowMethods;
-		} case REWRITE: {
-			Rewrite *rewrite = new Rewrite();
-			rewrite->parseDirective(args);
-			return rewrite;
-		} default:
-			throw Errors::UnknownDirectiveException("Unknown directive", ConfigLine, __FILE__);
+	try {
+		switch (type) {
+			case LISTEN: {
+				listen = new Listen();
+				listen->parseDirective(args);
+				return listen;
+			} case SERVER_NAME: {
+				serverName = new ServerName();
+				serverName->parseDirective(args);
+				return serverName;
+			} case ROOT: {
+				root = new Root();
+				root->parseDirective(args);
+				return root;
+			} case INDEX: {
+				index = new Index();
+				index->parseDirective(args);
+				return index;
+			} case ERROR_PAGE: {
+				errorPage = new ErrorPage();
+				errorPage->parseDirective(args);
+				return errorPage;
+			} case CLIENT_MAX_BODY_SIZE: {
+				clientMaxBodySize = new ClientMaxBodySize();
+				clientMaxBodySize->parseDirective(args);
+				return clientMaxBodySize;
+			} case AUTOINDEX: {
+				autoindex = new Autoindex();
+				autoindex->parseDirective(args);
+				return autoindex;
+			} case CGI_PASS: {
+				cgiPass = new CgiPass();
+				cgiPass->parseDirective(args);
+				return cgiPass;
+			} case ALLOW_METHODS: {
+				allowMethods = new AllowMethods();
+				allowMethods->setMethods(args);
+				return allowMethods;
+			} case REWRITE: {
+				rewrite = new Rewrite();
+				rewrite->parseDirective(args);
+				return rewrite;
+			} default:
+				throw Errors::UnknownDirectiveException("Unknown directive", ConfigLine, __FILE__);
+		}
+	} catch (std::exception& e) {
+		delete listen;
+		delete serverName;
+		delete root;
+		delete index;
+		delete errorPage;
+		delete clientMaxBodySize;
+		delete autoindex;
+		delete cgiPass;
+		delete allowMethods;
+		delete rewrite;
+
+		throw;
 	}
 	return NULL;
 }
